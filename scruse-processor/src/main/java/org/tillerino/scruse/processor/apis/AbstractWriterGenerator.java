@@ -11,39 +11,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.Map;
 
-public abstract class AbstractWriterCodeGenerator<SELF extends AbstractWriterCodeGenerator<SELF>> {
-	protected final AnnotationProcessorUtils utils;
-	protected final Type type;
-	protected final Key key;
-	protected final CodeBlock.Builder code;
-	protected final Mode mode;
-	protected final SELF parent;
+public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
 
-	enum Mode {
-		ROOT,
-		IN_OBJECT,
-		IN_ARRAY
-	}
-
-	public AbstractWriterCodeGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, SELF parent) {
-		this.utils = utils;
-		this.type = type;
-		this.key = key;
-		this.code = code;
-		this.mode = mode;
-		this.parent = parent;
-	}
-
-	String varName() {
-		if (mode == Mode.ROOT) {
-			// in this case, the name is determined by the method parameter
-			return key.propertyName();
-		}
-		return key.propertyName() + "$" + stackDepth();
-	}
-
-	int stackDepth() {
-		return parent != null ? 1 + parent.stackDepth() : 1;
+	public AbstractWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, SELF parent) {
+		super(utils, type, key, code, mode, parent);
 	}
 
 	public CodeBlock.Builder build() {
@@ -152,7 +123,7 @@ public abstract class AbstractWriterCodeGenerator<SELF extends AbstractWriterCod
 			if (accessor.getAccessedType().getKind().isPrimitive() && writePrimitiveField(propertyName, accessor)) {
 				// field was written
 			} else {
-				SELF nested = nest(accessor.getAccessedType(), propertyName);
+				SELF nested = nestIntoObject(accessor.getAccessedType(), propertyName);
 				code.addStatement("$T $L = $L.$L", accessor.getAccessedType(), nested.varName(), varName(), accessor.getReadValueSource());
 				nested.build();
 				code.add("\n");
@@ -162,52 +133,8 @@ public abstract class AbstractWriterCodeGenerator<SELF extends AbstractWriterCod
 		endObject();
 	}
 
-	SELF nest(TypeMirror type, String propertyName) {
-		return nest(type, new Key(propertyName, propertyName + "$" + stackDepth() + 1, "$S", propertyName), Mode.IN_OBJECT);
-	}
-
-	SELF nestIntoArray(TypeMirror type, String elemName) {
-		return nest(type, new Key("element", elemName + "$" + stackDepth() + 1, null, null), Mode.IN_ARRAY);
-	}
-
-	SELF nestIntoMap(TypeMirror type, String keyVariable, String valueVariable) {
-		return nest(type, new Key("value", valueVariable, "$L", keyVariable), Mode.IN_OBJECT);
-	}
-
 	protected abstract void startObject();
 
 	protected abstract void endObject();
 
-	protected abstract SELF nest(TypeMirror type, Key nestedKey, Mode mode);
-
-	protected StringBuilder stack() {
-		if (parent != null) {
-			return parent.stack().append(" -> ").append(key.propertyName());
-		}
-		return new StringBuilder(key.propertyName());
-	}
-
-	enum StringKind {
-		STRING,
-		CHAR_ARRAY
-	}
-
-	enum BinaryKind {
-		BYTE_ARRAY
-	}
-
-	/**
-	 * If {@link Mode#IN_OBJECT}, describes the key of the current value.
-	 *
-	 * @param propertyName For error message traces. Either the property name or can be something like "element", or "value".
-	 *                     This is also used as prefix for the variable name.
-	 * @param varName      The variable name to use for the current value.
-	 * @param keyDollar    $S or $L: how to retrieve the key value.
-	 * @param keyValue     What to use put in keyDollar.
-	 */
-	protected record Key(String propertyName, String varName, String keyDollar, String keyValue) {
-		static Key root(String variableName) {
-			return new Key(variableName, variableName, null, null);
-		}
-	}
 }

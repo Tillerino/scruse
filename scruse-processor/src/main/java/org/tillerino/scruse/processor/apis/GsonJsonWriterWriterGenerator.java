@@ -11,15 +11,15 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.Base64;
 
-public class GsonJsonWriterCodeGenerator extends AbstractWriterCodeGenerator<GsonJsonWriterCodeGenerator> {
+public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJsonWriterWriterGenerator> {
 	private final VariableElement writerVariable;
 
-	public GsonJsonWriterCodeGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
+	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
+		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0)), CodeBlock.builder(), Mode.ROOT, null);
 		this.writerVariable = method.getParameters().get(1);
 	}
 
-	public GsonJsonWriterCodeGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, VariableElement writerVariable, Mode mode, GsonJsonWriterCodeGenerator parent) {
+	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, VariableElement writerVariable, Mode mode, GsonJsonWriterWriterGenerator parent) {
 		super(utils, type, key, code, mode, parent);
 		this.writerVariable = writerVariable;
 	}
@@ -102,8 +102,8 @@ public class GsonJsonWriterCodeGenerator extends AbstractWriterCodeGenerator<Gso
 	}
 
 	@Override
-	protected GsonJsonWriterCodeGenerator nest(TypeMirror type, Key key, Mode mode) {
-		return new GsonJsonWriterCodeGenerator(utils, utils.tf.getType(type), key, code, writerVariable, mode, this);
+	protected GsonJsonWriterWriterGenerator nest(TypeMirror type, Key key, Mode mode) {
+		return new GsonJsonWriterWriterGenerator(utils, utils.tf.getType(type), key, code, writerVariable, mode, this);
 	}
 
 	private void addFieldNameIfNeeded() {

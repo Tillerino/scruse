@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class ScalarsTests {
+public class ScalarsWriterTest {
 	public static final boolean[] BOOLEANS = {true, false};
 	public static final Boolean[] BOXED_BOOLEANS = {true, false, null};
 	public static final byte[] BYTES = {Byte.MIN_VALUE, -1, 0, 1, Byte.MAX_VALUE};

@@ -84,20 +84,20 @@ public class AnnotationProcessorUtils {
 		return commonTypes.boxedTypes.contains(type.toString());
 	}
 
-	class CommonTypes {
-		final TypeMirror string = elements.getTypeElement(String.class.getName()).asType();
-		final TypeMirror jsonIgnore = elements.getTypeElement(JsonIgnore.class.getName()).asType();
+	public class CommonTypes {
+		public final TypeMirror string = elements.getTypeElement(String.class.getName()).asType();
+		public final TypeMirror jsonIgnore = elements.getTypeElement(JsonIgnore.class.getName()).asType();
 
-		final TypeMirror boxedBoolean = elements.getTypeElement(Boolean.class.getName()).asType();
-		final TypeMirror boxedByte = elements.getTypeElement(Byte.class.getName()).asType();
-		final TypeMirror boxedShort = elements.getTypeElement(Short.class.getName()).asType();
-		final TypeMirror boxedInteger = elements.getTypeElement(Integer.class.getName()).asType();
-		final TypeMirror boxedLong = elements.getTypeElement(Long.class.getName()).asType();
-		final TypeMirror boxedFloat = elements.getTypeElement(Float.class.getName()).asType();
-		final TypeMirror boxedDouble = elements.getTypeElement(Double.class.getName()).asType();
-		final TypeMirror boxedCharacter = elements.getTypeElement(Character.class.getName()).asType();
+		public final TypeMirror boxedBoolean = elements.getTypeElement(Boolean.class.getName()).asType();
+		public final TypeMirror boxedByte = elements.getTypeElement(Byte.class.getName()).asType();
+		public final TypeMirror boxedShort = elements.getTypeElement(Short.class.getName()).asType();
+		public final TypeMirror boxedInteger = elements.getTypeElement(Integer.class.getName()).asType();
+		public final TypeMirror boxedLong = elements.getTypeElement(Long.class.getName()).asType();
+		public final TypeMirror boxedFloat = elements.getTypeElement(Float.class.getName()).asType();
+		public final TypeMirror boxedDouble = elements.getTypeElement(Double.class.getName()).asType();
+		public final TypeMirror boxedCharacter = elements.getTypeElement(Character.class.getName()).asType();
 
-		final Set<String> boxedTypes = Set.of(
+		public final Set<String> boxedTypes = Set.of(
 			boxedBoolean.toString(),
 			boxedByte.toString(),
 			boxedShort.toString(),

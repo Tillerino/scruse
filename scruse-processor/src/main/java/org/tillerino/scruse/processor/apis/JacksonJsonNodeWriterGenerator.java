@@ -10,16 +10,16 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-public class JacksonJsonNodeCodeGenerator extends AbstractWriterCodeGenerator<JacksonJsonNodeCodeGenerator> {
+public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<JacksonJsonNodeWriterGenerator> {
 	private final ClassName jsonNodeFactory = ClassName.get("com.fasterxml.jackson.databind.node", "JsonNodeFactory");
 	private final ClassName arrayNode = ClassName.get("com.fasterxml.jackson.databind.node", "ArrayNode");
 	private final ClassName objectNode = ClassName.get("com.fasterxml.jackson.databind.node", "ObjectNode");
 
-	public JacksonJsonNodeCodeGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
+	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
+		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0)), CodeBlock.builder(), Mode.ROOT, null);
 	}
 
-	public JacksonJsonNodeCodeGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, JacksonJsonNodeCodeGenerator parent) {
+	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, JacksonJsonNodeWriterGenerator parent) {
 		super(utils, type, key, code, mode, parent);
 	}
 
@@ -134,8 +134,8 @@ public class JacksonJsonNodeCodeGenerator extends AbstractWriterCodeGenerator<Ja
 	}
 
 	@Override
-	protected JacksonJsonNodeCodeGenerator nest(TypeMirror type, Key key, Mode mode) {
-		return new JacksonJsonNodeCodeGenerator(utils, utils.tf.getType(type), key, code, mode, this);
+	protected JacksonJsonNodeWriterGenerator nest(TypeMirror type, Key key, Mode mode) {
+		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), key, code, mode, this);
 	}
 
 	String nodeName() {

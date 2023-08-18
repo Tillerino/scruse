@@ -10,15 +10,15 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-public class JacksonJsonGeneratorCodeGenerator extends AbstractWriterCodeGenerator<JacksonJsonGeneratorCodeGenerator> {
+public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {
 	private final VariableElement generatorVariable;
 
-	public JacksonJsonGeneratorCodeGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
+	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
+		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0)), CodeBlock.builder(), Mode.ROOT, null);
 		this.generatorVariable = method.getParameters().get(1);
 	}
 
-	protected JacksonJsonGeneratorCodeGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, VariableElement generatorVariable, Mode mode, JacksonJsonGeneratorCodeGenerator parent) {
+	protected JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, VariableElement generatorVariable, Mode mode, JacksonJsonGeneratorWriterGenerator parent) {
 		super(utils, type, key, code, mode, parent);
 		this.generatorVariable = generatorVariable;
 	}
@@ -117,8 +117,8 @@ public class JacksonJsonGeneratorCodeGenerator extends AbstractWriterCodeGenerat
 	}
 
 	@Override
-	protected JacksonJsonGeneratorCodeGenerator nest(TypeMirror type, Key key, Mode mode) {
-		return new JacksonJsonGeneratorCodeGenerator(utils, utils.tf.getType(type), key, code, generatorVariable, mode, this);
+	protected JacksonJsonGeneratorWriterGenerator nest(TypeMirror type, Key key, Mode mode) {
+		return new JacksonJsonGeneratorWriterGenerator(utils, utils.tf.getType(type), key, code, generatorVariable, mode, this);
 	}
 
 }

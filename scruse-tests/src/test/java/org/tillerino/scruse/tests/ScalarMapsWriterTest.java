@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class ScalarMapsTest {
+public class ScalarMapsWriterTest {
 	ScalarMapsWriter impl = new ScalarMapsWriterImpl();
 
 	@Test

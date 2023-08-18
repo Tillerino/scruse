@@ -7,13 +7,13 @@ import java.util.List;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class ScalarListsTest {
+public class ScalarListsWriterTest {
 	ScalarListsWriter impl = new ScalarListsWriterImpl();
 	@Test
 	public void testBoxedBooleanList() throws Exception {
 		List<List<Boolean>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.BOXED_BOOLEANS)
+			Arrays.asList(ScalarsWriterTest.BOXED_BOOLEANS)
 		);
 		for (List<Boolean> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedBooleanList);
@@ -26,7 +26,7 @@ public class ScalarListsTest {
 	public void testBoxedByteList() throws Exception {
 		List<List<Byte>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.BOXED_BYTES)
+			Arrays.asList(ScalarsWriterTest.BOXED_BYTES)
 		);
 		for (List<Byte> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedByteList);
@@ -39,7 +39,7 @@ public class ScalarListsTest {
 	public void testBoxedShortList() throws Exception {
 		List<List<Short>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.BOXED_SHORTS)
+			Arrays.asList(ScalarsWriterTest.BOXED_SHORTS)
 		);
 		for (List<Short> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedShortList);
@@ -52,7 +52,7 @@ public class ScalarListsTest {
 	public void testBoxedIntList() throws Exception {
 		List<List<Integer>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.INTEGERS)
+			Arrays.asList(ScalarsWriterTest.INTEGERS)
 		);
 		for (List<Integer> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedIntList);
@@ -65,7 +65,7 @@ public class ScalarListsTest {
 	public void testBoxedLongList() throws Exception {
 		List<List<Long>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.BOXED_LONGS)
+			Arrays.asList(ScalarsWriterTest.BOXED_LONGS)
 		);
 		for (List<Long> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedLongList);
@@ -78,7 +78,7 @@ public class ScalarListsTest {
 	public void testBoxedCharList() throws Exception {
 		List<List<Character>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.CHARACTERS)
+			Arrays.asList(ScalarsWriterTest.CHARACTERS)
 		);
 		for (List<Character> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedCharList);
@@ -91,7 +91,7 @@ public class ScalarListsTest {
 	public void testBoxedFloatList() throws Exception {
 		List<List<Float>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.BOXED_FLOATS)
+			Arrays.asList(ScalarsWriterTest.BOXED_FLOATS)
 		);
 		for (List<Float> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedFloatList);
@@ -104,7 +104,7 @@ public class ScalarListsTest {
 	public void testBoxedDoubleList() throws Exception {
 		List<List<Double>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.BOXED_DOUBLES)
+			Arrays.asList(ScalarsWriterTest.BOXED_DOUBLES)
 		);
 		for (List<Double> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedDoubleList);
@@ -117,7 +117,7 @@ public class ScalarListsTest {
 	public void testStringList() throws Exception {
 		List<List<String>> values = Arrays.asList(
 			null,
-			Arrays.asList(ScalarsTests.STRINGS)
+			Arrays.asList(ScalarsWriterTest.STRINGS)
 		);
 		for (List<String> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringList);

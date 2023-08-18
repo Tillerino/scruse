@@ -60,7 +60,7 @@ Its intended for two contexts:
 - [x] Serialize Maps
 - [x] Serialize record components, getters, fields
 
-- [ ] Deserialize all eight primitive types raw and boxed
+- [x] Deserialize all eight primitive types raw and boxed
 - [ ] Deserialize String (includes char[])
 - [ ] Deserialize Arrays, Lists (generalized as Iterables)
 - [ ] Deserialize byte[]
@@ -68,3 +68,4 @@ Its intended for two contexts:
 - [ ] Deserialize record components, getters, fields
 
 - [ ] Delegate to other readers/writers
+- [ ] enums

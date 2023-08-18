@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class ScalarArraysTest {
+public class ScalarArraysWriterTest {
 	ScalarArraysWriter impl = new ScalarArraysWriterImpl();
 
 	@Test
 	public void testPrimitiveBooleanArray() throws Exception {
 		boolean[][] values = {
 			null,
-			ScalarsTests.BOOLEANS
+			ScalarsWriterTest.BOOLEANS
 		};
 		for (boolean[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveBooleanArray);
@@ -24,7 +24,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveByteArray() throws Exception {
 		byte[][] values = {
 			null,
-			ScalarsTests.BYTES
+			ScalarsWriterTest.BYTES
 		};
 		for (byte[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveByteArray);
@@ -37,7 +37,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveShortArray() throws Exception {
 		short[][] values = {
 			null,
-			ScalarsTests.SHORTS
+			ScalarsWriterTest.SHORTS
 		};
 		for (short[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveShortArray);
@@ -50,7 +50,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveIntArray() throws Exception {
 		int[][] values = {
 			null,
-			ScalarsTests.INTS
+			ScalarsWriterTest.INTS
 		};
 		for (int[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveIntArray);
@@ -63,7 +63,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveLongArray() throws Exception {
 		long[][] values = {
 			null,
-			ScalarsTests.LONGS
+			ScalarsWriterTest.LONGS
 		};
 		for (long[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveLongArray);
@@ -76,7 +76,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveCharArray() throws Exception {
 		char[][] values = {
 			null,
-			ScalarsTests.CHARS
+			ScalarsWriterTest.CHARS
 		};
 		for (char[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveCharArray);
@@ -89,7 +89,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveFloatArray() throws Exception {
 		float[][] values = {
 			null,
-			ScalarsTests.FLOATS
+			ScalarsWriterTest.FLOATS
 		};
 		for (float[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveFloatArray);
@@ -102,7 +102,7 @@ public class ScalarArraysTest {
 	public void testPrimitiveDoubleArray() throws Exception {
 		double[][] values = {
 			null,
-			ScalarsTests.DOUBLES
+			ScalarsWriterTest.DOUBLES
 		};
 		for (double[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveDoubleArray);
@@ -115,7 +115,7 @@ public class ScalarArraysTest {
 	public void testBoxedBooleanArray() throws Exception {
 		Boolean[][] values = {
 			null,
-			ScalarsTests.BOXED_BOOLEANS
+			ScalarsWriterTest.BOXED_BOOLEANS
 		};
 		for (Boolean[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedBooleanArray);
@@ -128,7 +128,7 @@ public class ScalarArraysTest {
 	public void testBoxedByteArray() throws Exception {
 		Byte[][] values = {
 			null,
-			ScalarsTests.BOXED_BYTES
+			ScalarsWriterTest.BOXED_BYTES
 		};
 		for (Byte[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedByteArray);
@@ -141,7 +141,7 @@ public class ScalarArraysTest {
 	public void testBoxedShortArray() throws Exception {
 		Short[][] values = {
 			null,
-			ScalarsTests.BOXED_SHORTS
+			ScalarsWriterTest.BOXED_SHORTS
 		};
 		for (Short[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedShortArray);
@@ -154,7 +154,7 @@ public class ScalarArraysTest {
 	public void testBoxedIntArray() throws Exception {
 		Integer[][] values = {
 			null,
-			ScalarsTests.INTEGERS
+			ScalarsWriterTest.INTEGERS
 		};
 		for (Integer[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedIntArray);
@@ -167,7 +167,7 @@ public class ScalarArraysTest {
 	public void testBoxedLongArray() throws Exception {
 		Long[][] values = {
 			null,
-			ScalarsTests.BOXED_LONGS
+			ScalarsWriterTest.BOXED_LONGS
 		};
 		for (Long[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedLongArray);
@@ -180,7 +180,7 @@ public class ScalarArraysTest {
 	public void testBoxedCharArray() throws Exception {
 		Character[][] values = {
 			null,
-			ScalarsTests.CHARACTERS
+			ScalarsWriterTest.CHARACTERS
 		};
 		for (Character[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedCharArray);
@@ -193,7 +193,7 @@ public class ScalarArraysTest {
 	public void testBoxedFloatArray() throws Exception {
 		Float[][] values = {
 			null,
-			ScalarsTests.BOXED_FLOATS
+			ScalarsWriterTest.BOXED_FLOATS
 		};
 		for (Float[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedFloatArray);
@@ -206,7 +206,7 @@ public class ScalarArraysTest {
 	public void testBoxedDoubleArray() throws Exception {
 		Double[][] values = {
 			null,
-			ScalarsTests.BOXED_DOUBLES
+			ScalarsWriterTest.BOXED_DOUBLES
 		};
 		for (Double[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedDoubleArray);
@@ -219,7 +219,7 @@ public class ScalarArraysTest {
 	public void testStringArray() throws Exception {
 		String[][] values = {
 			null,
-			ScalarsTests.STRINGS
+			ScalarsWriterTest.STRINGS
 		};
 		for (String[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringArray);

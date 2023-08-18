@@ -1,17 +1,15 @@
 package org.tillerino.scruse.processor;
 
 import com.google.auto.service.AutoService;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import org.tillerino.scruse.annotations.JsonConfig;
+import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
-import org.tillerino.scruse.processor.apis.AbstractWriterCodeGenerator;
-import org.tillerino.scruse.processor.apis.GsonJsonWriterCodeGenerator;
-import org.tillerino.scruse.processor.apis.JacksonJsonGeneratorCodeGenerator;
-import org.tillerino.scruse.processor.apis.JacksonJsonNodeCodeGenerator;
+import org.tillerino.scruse.processor.apis.GsonJsonWriterWriterGenerator;
+import org.tillerino.scruse.processor.apis.JacksonJsonGeneratorWriterGenerator;
+import org.tillerino.scruse.processor.apis.JacksonJsonNodeWriterGenerator;
+import org.tillerino.scruse.processor.apis.JacksonJsonParserReaderGenerator;
 
 import javax.annotation.processing.*;
 import javax.lang.model.element.*;
@@ -24,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import static javax.tools.Diagnostic.Kind.ERROR;
 
@@ -53,7 +52,7 @@ public class ScruseProcessor extends AbstractProcessor {
 		if (!roundEnv.processingOver()) {
 			collectElements(roundEnv);
 		} else {
-			generateCode(roundEnv);
+			generateCode();
 		}
 		return false;
 	}
@@ -61,7 +60,6 @@ public class ScruseProcessor extends AbstractProcessor {
 	private void collectElements(RoundEnvironment roundEnv) {
 		roundEnv.getElementsAnnotatedWith(JsonConfig.class).forEach(element -> {
 			TypeElement type = (TypeElement) element;
-			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = blueprint(type, true);
 			for (AnnotationMirror annotation : type.getAnnotationMirrors()) {
 				if (FullyQualifiedClassName.of((TypeElement) annotation.getAnnotationType().asElement()).importName().equals(JsonConfig.class.getName())) {
@@ -76,17 +74,23 @@ public class ScruseProcessor extends AbstractProcessor {
 		roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
-			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(new ScruseMethod(FullyQualifiedClassName.of(type), method.getSimpleName().toString(), method));
+			blueprint.methods().add(new ScruseMethod(FullyQualifiedClassName.of(type), method.getSimpleName().toString(), method, ScruseMethod.Type.OUTPUT));
+		});
+		roundEnv.getElementsAnnotatedWith(JsonInput.class).forEach(element -> {
+			ExecutableElement method = (ExecutableElement) element;
+			TypeElement type = (TypeElement) method.getEnclosingElement();
+			ScruseBlueprint blueprint = blueprint(type, true);
+			blueprint.methods().add(new ScruseMethod(FullyQualifiedClassName.of(type), method.getSimpleName().toString(), method, ScruseMethod.Type.INPUT));
 		});
 	}
 
-	private void generateCode(RoundEnvironment roundEnv) {
+	private void generateCode() {
 		for (ScruseBlueprint blueprint : blueprints.values()) {
 			if (blueprint.toBeGenerated().get()) {
 				try {
-					generateCode(blueprint, roundEnv);
+					mapStructSetup(processingEnv, blueprint.typeElement());
+					generateCode(blueprint);
 				} catch (IOException e) {
 					e.printStackTrace();
 					processingEnv.getMessager().printMessage(ERROR, e.getMessage());
@@ -95,10 +99,10 @@ public class ScruseProcessor extends AbstractProcessor {
 		}
 	}
 
-	private void generateCode(ScruseBlueprint blueprint, RoundEnvironment roundEnv) throws IOException {
+	private void generateCode(ScruseBlueprint blueprint) throws IOException {
 		TypeSpec.Builder classBuilder = TypeSpec.classBuilder(blueprint.className().nameInCompilationUnit() + "Impl")
 			.addModifiers(Modifier.PUBLIC)
-			.addSuperinterface(blueprint.typeMirror());
+			.addSuperinterface(blueprint.typeElement().asType());
 		for (ScruseMethod method : blueprint.methods()) {
 			if (!method.methodElement().getModifiers().contains(Modifier.ABSTRACT)) {
 				// method is implemented by user and can be used by us
@@ -114,25 +118,13 @@ public class ScruseProcessor extends AbstractProcessor {
 				logError("Type parameters not yet supported", method.methodElement());
 				continue;
 			}
-			AbstractWriterCodeGenerator<?> codeGenerator = null;
-			if (method.methodElement().getParameters().size() == 1) {
-				if (method.methodElement().getReturnType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
-					codeGenerator = new JacksonJsonNodeCodeGenerator(utils, method.methodElement());
-				}
-			} else if (method.methodElement().getParameters().size() == 2 && method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
-				VariableElement generatorVariable = method.methodElement().getParameters().get(1);
-				if (generatorVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonGenerator")) {
-					codeGenerator = new JacksonJsonGeneratorCodeGenerator(utils, method.methodElement());
-				} else if (generatorVariable.asType().toString().equals("com.google.gson.stream.JsonWriter")) {
-					codeGenerator = new GsonJsonWriterCodeGenerator(utils, method.methodElement());
-				}
-			}
+			Supplier<CodeBlock.Builder> codeGenerator = determineCodeGenerator(method);
 			if (codeGenerator == null) {
-				logError("Signature unknown. Please see @JsonOutput for hints.", method.methodElement());
+				logError("Signature unknown. Please see @JsonOutput/@JsonInput for hints.", method.methodElement());
 				continue;
 			}
 			try {
-				methodBuilder.addCode(codeGenerator.build().build());
+				methodBuilder.addCode(codeGenerator.get().build());
 				classBuilder.addMethod(methodBuilder.build());
 			} catch (Exception e) {
 				logError(e.getMessage(), method.methodElement());
@@ -145,13 +137,49 @@ public class ScruseProcessor extends AbstractProcessor {
 		}
 	}
 
+	private Supplier<CodeBlock.Builder> determineCodeGenerator(ScruseMethod method) {
+		if (method.type() == ScruseMethod.Type.OUTPUT) {
+			return determineOutputCodeGenerator(method);
+		}
+		return determineInputCodeGenerator(method);
+	}
+
+	private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(ScruseMethod method) {
+		if (method.methodElement().getParameters().size() == 1) {
+			if (method.methodElement().getReturnType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
+				return new JacksonJsonNodeWriterGenerator(utils, method.methodElement())::build;
+			}
+		} else if (method.methodElement().getParameters().size() == 2 && method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
+			VariableElement generatorVariable = method.methodElement().getParameters().get(1);
+			if (generatorVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonGenerator")) {
+				return new JacksonJsonGeneratorWriterGenerator(utils, method.methodElement())::build;
+			} else if (generatorVariable.asType().toString().equals("com.google.gson.stream.JsonWriter")) {
+				return new GsonJsonWriterWriterGenerator(utils, method.methodElement())::build;
+			}
+		}
+		return null;
+	}
+
+	private Supplier<CodeBlock.Builder> determineInputCodeGenerator(ScruseMethod method) {
+		if (method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
+			return null;
+		}
+		if (method.methodElement().getParameters().size() == 1) {
+			VariableElement parserVariable = method.methodElement().getParameters().get(0);
+			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
+				return new JacksonJsonParserReaderGenerator(utils, method.methodElement())::build;
+			}
+		}
+		return null;
+	}
+
 	private void logError(String msg, Element element) {
 		processingEnv.getMessager().printMessage(ERROR, msg, element);
 	}
 
 	ScruseBlueprint blueprint(TypeElement element, boolean toBeGenerated) {
 		ScruseBlueprint blueprint = blueprints.computeIfAbsent(FullyQualifiedClassName.of(element),
-			name -> new ScruseBlueprint(new AtomicBoolean(toBeGenerated), name, element.asType(), new ArrayList<>(), new ArrayList<>()));
+			name -> new ScruseBlueprint(new AtomicBoolean(toBeGenerated), name, element, new ArrayList<>(), new ArrayList<>()));
 		if (toBeGenerated) {
 			blueprint.toBeGenerated().set(true);
 		}
