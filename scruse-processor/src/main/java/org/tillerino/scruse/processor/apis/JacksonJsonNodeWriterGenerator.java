@@ -16,7 +16,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	private final ClassName objectNode = ClassName.get("com.fasterxml.jackson.databind.node", "ObjectNode");
 
 	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0)), CodeBlock.builder(), Mode.ROOT, null);
+		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
 	}
 
 	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, JacksonJsonNodeWriterGenerator parent) {

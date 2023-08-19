@@ -12,7 +12,7 @@
   <dependencies>
     <dependency>
       <groupId>org.tillerino.scruse</groupId>
-      <artifactId>scruse-annotations</artifactId>
+      <artifactId>scruse-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

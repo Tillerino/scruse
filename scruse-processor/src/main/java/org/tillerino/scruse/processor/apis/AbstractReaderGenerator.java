@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
+import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -14,44 +15,54 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
-	protected AbstractReaderGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, SELF parent) {
-		super(utils, type, key, code, mode, parent);
+	protected final LHS lhs;
+	protected AbstractReaderGenerator(AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs) {
+		super(utils, type, code, parent, propertyName);
+		this.lhs = lhs;
 	}
 
 	public CodeBlock.Builder build() {
+		return build(Case.IF, Token.NEXT_TOKEN);
+	}
+
+	public CodeBlock.Builder build(Case casey, Token token) {
 		if (type.isPrimitive()) {
-			readPrimitive(true, type.getTypeMirror());
+			readPrimitive(casey, token, type.getTypeMirror());
 		} else {
-			startNullCase(true);
-			if (mode == Mode.ROOT) {
+			startNullCase(casey, token);
+			if (lhs instanceof LHS.Return) {
 				code.addStatement("return null");
+			} else if (lhs instanceof LHS.Variable v) {
+				code.addStatement("$L = null", v.name());
+			} else if (lhs instanceof LHS.Array a) {
+				code.addStatement("$L[$L++] = null", a.arrayName(), a.indexName());
 			} else {
-				code.addStatement("$L = null", key.varName());
+				throw new AssertionError(lhs);
 			}
 			readNullCheckedObject();
 		}
 		return code;
 	}
 
-	protected void readPrimitive(boolean firstCase, TypeMirror type) {
+	protected void readPrimitive(Case casey, Token token, TypeMirror type) {
 		String typeName;
 		switch (type.getKind()) {
 			case BOOLEAN -> {
-				startBooleanCase(firstCase);
+				startBooleanCase(casey, token);
 				typeName = "boolean";
 			}
 			case BYTE, SHORT, INT, LONG -> {
-				startNumberCase(firstCase);
+				startNumberCase(casey, token);
 				typeName = "number";
 			}
 			case FLOAT, DOUBLE -> {
-				startStringCase(firstCase);
+				startStringCase(casey, token);
 				readNumberFromString(type);
-				startNumberCase(false);
+				startNumberCase(Case.ELSE_IF, Token.CURRENT_TOKEN);
 				typeName = "number";
 			}
 			case CHAR -> {
-				startStringCase(firstCase);
+				startStringCase(casey, token);
 				typeName = "string";
 			}
 			default -> throw new AssertionError(type.getKind());
@@ -67,14 +78,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	private void readCharFromString() {
-		SELF nested = nest(utils.commonTypes.string, new Key(null, key.varName() + "$string", null, null), Mode.IN_OBJECT);
-		code.addStatement("$T $L", nested.type.getTypeMirror(), nested.varName());
-		nested.readString();
-		code.beginControlFlow("if ($L.length() == 1)", nested.varName());
-		if (mode == Mode.ROOT) {
-			code.addStatement("return $L.charAt(0)", nested.varName());
-		} else {
-			code.addStatement("$L = $L.charAt(0)", varName(), nested.varName());
+		String stringVar = readStringInstead();
+		code.beginControlFlow("if ($L.length() == 1)", stringVar);
+		if (lhs instanceof LHS.Return) {
+			code.addStatement("return $L.charAt(0)", stringVar);
+		} else if (lhs instanceof LHS.Variable v) {
+			code.addStatement("$L = $L.charAt(0)", v.name(), stringVar);
 		}
 		code.nextControlFlow("else");
 		code.addStatement("throw new $T()", IOException.class);
@@ -82,61 +91,88 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	private void readNumberFromString(TypeMirror type) {
-		SELF nested = nest(utils.commonTypes.string, new Key(null, key.varName() + "$string", null, null), Mode.IN_OBJECT);
-		code.addStatement("$T $L", nested.type.getTypeMirror(), nested.varName());
-		nested.readString();
+		String stringVar = readStringInstead();
 		BiConsumer<String, String> print = (t, v) -> {
-			if (mode == Mode.ROOT) {
+			if (lhs instanceof LHS.Return) {
 				code.addStatement("return $L.$L", StringUtils.capitalize(t), v);
+			} else if (lhs instanceof LHS.Variable vv) {
+				code.addStatement("$L = $L.$L", vv.name(), StringUtils.capitalize(t), v);
+			} else if (lhs instanceof LHS.Array a) {
+				code.addStatement("$L[$L++] = $L.$L", a.arrayName(), a.indexName(), StringUtils.capitalize(t), v);
 			} else {
-				code.addStatement("$L = $L.$L", varName(), t, v);
+				throw new AssertionError(lhs);
 			}
 		};
-		code.beginControlFlow("if ($L.equals($S))", nested.varName(), "NaN");
+		code.beginControlFlow("if ($L.equals($S))", stringVar, "NaN");
 		print.accept(type.toString(), "NaN");
-		code.nextControlFlow("if ($L.equals($S))", nested.varName(), "Infinity");
+		code.nextControlFlow("else if ($L.equals($S))", stringVar, "Infinity");
 		print.accept(type.toString(), "POSITIVE_INFINITY");
-		code.nextControlFlow("if ($L.equals($S))", nested.varName(), "-Infinity");
+		code.nextControlFlow("else if ($L.equals($S))", stringVar, "-Infinity");
 		print.accept(type.toString(), "NEGATIVE_INFINITY");
 		code.nextControlFlow("else");
 		code.addStatement("throw new $T()", IOException.class);
 		code.endControlFlow();
 	}
 
+	private String readStringInstead() {
+		String stringVar = "string$" + (stackDepth() + 1);
+		SELF nested = nest(utils.commonTypes.string, null, new LHS.Variable(stringVar));
+		code.addStatement("$T $L", nested.type.getTypeMirror(), stringVar);
+		nested.readString(StringKind.STRING);
+		return stringVar;
+	}
+
 	private void readNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			readPrimitive(false, utils.types.unboxedType(type.getTypeMirror()));
+			readPrimitive(Case.ELSE_IF, Token.CURRENT_TOKEN, utils.types.unboxedType(type.getTypeMirror()));
+		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
+			readString(Case.ELSE_IF, Token.CURRENT_TOKEN, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (type.isArrayType()) {
-			readArray();
+			readArray(Case.ELSE_IF, Token.CURRENT_TOKEN);
 		} else if (type.isIterableType()) {
-			readCollection();
-		} else if (type.isString()) {
-			readString(false);
+			readCollection(Case.ELSE_IF, Token.CURRENT_TOKEN);
 		} else {
-			readObject();
+			readObject(Case.ELSE_IF, Token.CURRENT_TOKEN);
 		}
 	}
 
-	private void readArray() {
-		startArrayCase(false);
+	private void readArray(Case casey, Token token) {
+		startArrayCase(casey, token);
 		{
 			Type componentType = type.getComponentType();
-			code.addStatement("$L = new $T[1024]", key.varName(), componentType.asRawType().getTypeMirror());
-			String len = key.varName() + "$len";
+			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedCharacter)) {
+				throw new AssertionError("Please provide a custom reader for " + type);
+			}
+			TypeMirror rawComponentType = componentType.asRawType().getTypeMirror();
+			String varName;
+			if (lhs instanceof LHS.Return) {
+				varName = "array$" + stackDepth();
+				code.addStatement("$T[] $L = new $T[1024]", rawComponentType, varName, rawComponentType);
+			} else if (lhs instanceof LHS.Variable v) {
+				varName = v.name();
+				code.addStatement("$L = new $T[1024]", varName, rawComponentType);
+			} else {
+				throw new AssertionError(lhs);
+			}
+			String len = "len$" + stackDepth();
 			code.addStatement("int $L = 0", len);
 			iterateOverElements();
 			{
-				code.beginControlFlow("if ($L == $L.length)", len, key.varName());
-				code.addStatement("$L = $T.copyOf($L, $L.length * 2)", key.varName(), java.util.Arrays.class, key.varName(), key.varName());
+				code.beginControlFlow("if ($L == $L.length)", len, varName);
+				code.addStatement("$L = $T.copyOf($L, $L.length * 2)", varName, java.util.Arrays.class, varName, varName);
 				code.endControlFlow();
 
-				SELF nested = nestIntoArray(componentType.getTypeMirror(), StringUtils.uncapitalize(componentType.getName()));
-				code.addStatement("$T $L", nested.type.getTypeMirror(), nested.varName());
-				nested.build();
-				code.addStatement("$L[$L++] = $L", varName(), len, nested.varName());
+				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Array(varName, len));
+				nested.build(Case.IF, Token.CURRENT_TOKEN);
 			}
 			code.endControlFlow();
-			code.addStatement("$L = $T.copyOf($L, $L)", key.varName(), java.util.Arrays.class, key.varName(), len);
+			if (lhs instanceof LHS.Return) {
+				code.addStatement("return $T.copyOf($L, $L)", java.util.Arrays.class, varName, len);
+			} else if (lhs instanceof LHS.Variable v) {
+				code.addStatement("$L = $T.copyOf($L, $L)", v.name(), java.util.Arrays.class, varName, len);
+			} else {
+				throw new AssertionError(lhs);
+			}
 		}
 		code.nextControlFlow("else");
 		{
@@ -145,19 +181,30 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		code.endControlFlow();
 	}
 
-	private void readCollection() {
-		startArrayCase(false);
+	private void readCollection(Case casey, Token token) {
+		startArrayCase(casey, token);
 		{
+
 			Type componentType = type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
 			TypeMirror collectionType = determineCollectionType();
 
-			code.addStatement("$L = new $T<>()", varName(), collectionType);
+			String varName;
+			if (lhs instanceof LHS.Return) {
+				varName = "collection" + stackDepth();
+				code.addStatement("$T $L = new $T<>()", type.getTypeMirror(), varName, collectionType);
+			} else if (lhs instanceof LHS.Variable v) {
+				varName = v.name();
+				code.addStatement("$L = new $T<>()", varName, collectionType);
+			} else {
+				throw new AssertionError(lhs);
+			}
 			iterateOverElements();
 			{
-				SELF nested = nestIntoArray(componentType.getTypeMirror(), StringUtils.uncapitalize(componentType.getName()));
-				code.addStatement("$T $L", nested.type.getTypeMirror(), nested.varName());
+				String elemName = "elem$" + (stackDepth() + 1);
+				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Variable(elemName));
+				code.addStatement("$T $L", nested.type.getTypeMirror(), varName);
 				nested.build();
-				code.addStatement("$L.add($L)", varName(), nested.varName());
+				code.addStatement("$L.add($L)", varName, elemName);
 			}
 			code.endControlFlow();
 		}
@@ -180,18 +227,20 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		}
 	}
 
-	private void readObject() {
-		startObjectCase(false);
+	private void readObject(Case casey, Token token) {
+		startObjectCase(casey, token);
 		if (type.isRecord()) {
 			for (Element component : type.getRecordComponents()) {
-				SELF nest = nestIntoObject(component.asType(), component.getSimpleName().toString());
-				code.addStatement("$T $L = $L", component.asType(), nest.varName(), nest.type.getNull());
+				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
+				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
+				code.addStatement("$T $L = $L", component.asType(), varName, nest.type.getNull());
 			}
 			iterateOverFields();
 			boolean first = true;
 			for (Element component : type.getRecordComponents()) {
-				SELF nest = nestIntoObject(component.asType(), component.getSimpleName().toString());
-				nest.startFieldCase(first, component.getSimpleName().toString());
+				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
+				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
+				nest.startFieldCase(Case.IF, Token.CURRENT_TOKEN, component.getSimpleName().toString());
 				nest.build();
 				first = false;
 			}
@@ -200,42 +249,67 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.endControlFlow();
 			}
 			code.endControlFlow();
-			code.addStatement("return new $T($L)", type.getTypeMirror(), type.getRecordComponents().stream().map(c -> nestIntoObject(c.asType(), c.getSimpleName().toString()).varName()).collect(Collectors.joining(", ")));
+			code.addStatement("return new $T($L)", type.getTypeMirror(), type.getRecordComponents().stream().map(c -> c.getSimpleName().toString() + "$" + (stackDepth() + 1)).collect(Collectors.joining(", ")));
 		}
 		code.nextControlFlow("else");
 		throwUnexpected("object");
 		code.endControlFlow();
 	}
 
-	private void readString(boolean firstCase) {
-		startStringCase(firstCase);
-		readString();
+	private void readString(Case casey, Token token, StringKind stringKind) {
+		startStringCase(casey, token);
+		readString(stringKind);
 		code.nextControlFlow("else");
 		throwUnexpected("string");
 		code.endControlFlow();
 	}
 
-	protected abstract void startFieldCase(boolean b, String string);
+	protected abstract void startFieldCase(Case casey, Token token, String string);
 
-	protected abstract void startStringCase(boolean firstCase);
+	protected abstract void startStringCase(Case casey, Token token);
 
-	protected abstract void startNumberCase(boolean firstCase);
+	protected abstract void startNumberCase(Case casey, Token token);
 
-	protected abstract void startObjectCase(boolean firstCase);
+	protected abstract void startObjectCase(Case casey, Token token);
 
-	protected abstract void startArrayCase(boolean firstCase);
+	protected abstract void startArrayCase(Case casey, Token token);
 
-	protected abstract void startBooleanCase(boolean firstCase);
+	protected abstract void startBooleanCase(Case casey, Token token);
 
-	protected abstract void startNullCase(boolean firstCase);
+	protected abstract void startNullCase(Case casey, Token token);
 
 	protected abstract void readPrimitive(TypeMirror type);
 
-	protected abstract void readString();
+	protected abstract void readString(StringKind stringKind);
 
 	protected abstract void iterateOverFields();
 
 	protected abstract void iterateOverElements();
 
 	protected abstract void throwUnexpected(String expected);
+
+	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs);
+
+	sealed interface LHS {
+		record Return() implements LHS {}
+		record Variable(String name) implements LHS {}
+		record Array(String arrayName, String indexName) implements LHS {}
+	}
+
+	enum Case {
+		IF,
+		ELSE_IF,
+		;
+		CodeBlock.Builder controlFlow(CodeBlock.Builder code, String s, Object... args) {
+			return switch (this) {
+				case IF -> code.beginControlFlow("if (" + s + ")", args);
+				case ELSE_IF -> code.nextControlFlow("else if (" + s + ")", args);
+			};
+		}
+	}
+
+	enum Token {
+		NEXT_TOKEN,
+		CURRENT_TOKEN,
+	}
 }

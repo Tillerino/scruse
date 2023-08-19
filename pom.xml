@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>scruse-annotations</module>
+    <module>scruse-core</module>
     <module>scruse-processor</module>
     <module>scruse-tests</module>
   </modules>

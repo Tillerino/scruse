@@ -12,9 +12,13 @@ import javax.lang.model.type.TypeMirror;
 import java.util.Map;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
+	protected final Key key;
+	protected final Mode mode;
 
 	public AbstractWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, SELF parent) {
-		super(utils, type, key, code, mode, parent);
+		super(utils, type, code, parent, key.propertyName());
+		this.key = key;
+		this.mode = mode;
 	}
 
 	public CodeBlock.Builder build() {
@@ -39,9 +43,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	protected void writeNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
 			writePrimitive(utils.types.unboxedType(type.getTypeMirror()));
-		} else if (type.isString() || isArrayOf(type, TypeKind.CHAR)) {
+		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			writeString(type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
-		} else if (isArrayOf(type, TypeKind.BYTE)) {
+		} else if (AnnotationProcessorUtils.isArrayOf(type, TypeKind.BYTE)) {
 			writeBinary(BinaryKind.BYTE_ARRAY);
 		} else if (type.isIterableType()) {
 			writeIterable();
@@ -50,10 +54,6 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		} else {
 			writeObjectAsMap();
 		}
-	}
-
-	private static boolean isArrayOf(Type type, TypeKind kind) {
-		return type.isArrayType() && type.getComponentType().getTypeMirror().getKind() == kind;
 	}
 
 	protected abstract void writeNull();
@@ -133,8 +133,29 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		endObject();
 	}
 
+	String varName() {
+		if (mode == Mode.ROOT) {
+			// in this case, the name is determined by the method parameter
+			return key.varName();
+		}
+		return key.varName() + "$" + stackDepth();
+	}
+
 	protected abstract void startObject();
 
 	protected abstract void endObject();
 
+	SELF nestIntoObject(TypeMirror type, String propertyName) {
+		return nest(type, new Key(propertyName, propertyName, "$S", propertyName), Mode.IN_OBJECT);
+	}
+
+	SELF nestIntoArray(TypeMirror type, String elemName) {
+		return nest(type, new Key("element", elemName, null, null), Mode.IN_ARRAY);
+	}
+
+	SELF nestIntoMap(TypeMirror type, String keyVariable, String valueVariable) {
+		return nest(type, new Key("value", valueVariable, "$L", keyVariable), Mode.IN_OBJECT);
+	}
+
+	protected abstract SELF nest(TypeMirror type, Key nestedKey, Mode mode);
 }

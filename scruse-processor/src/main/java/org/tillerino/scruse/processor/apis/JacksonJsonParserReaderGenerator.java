@@ -4,6 +4,7 @@ import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
+import javax.annotation.Nullable;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -14,76 +15,48 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	private final VariableElement parserVariable;
 
 	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getReturnType()), AbstractWriterGenerator.Key.root(method.getParameters().get(0)), CodeBlock.builder(), AbstractWriterGenerator.Mode.ROOT, null);
+		super(utils, utils.tf.getType(method.getReturnType()), null, CodeBlock.builder(), null, new LHS.Return());
 		parserVariable = method.getParameters().get(0);
 	}
 
-	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, Type type, AbstractWriterGenerator.Key key, CodeBlock.Builder code, VariableElement parserVariable, AbstractWriterGenerator.Mode mode, JacksonJsonParserReaderGenerator parent) {
-		super(utils, type, key, code, mode, parent);
+	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, JacksonJsonParserReaderGenerator parent) {
+		super(utils, type, propertyName, code, parent, lhs);
 		this.parserVariable = parserVariable;
 	}
 
 	@Override
-	protected void startFieldCase(boolean firstCase, String string) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken() == $T.FIELD_NAME && $S.equals($L.currentName()))", parserVariable.getSimpleName(), jsonToken(), string, parserVariable.getSimpleName());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken() == $T.FIELD_NAME && $S.equals($L.currentName()))", parserVariable.getSimpleName(), jsonToken(), string, parserVariable.getSimpleName());
-		}
+	protected void startFieldCase(Case casey, Token token, String string) {
+		casey.controlFlow(code, "$L.$L() == $T.FIELD_NAME && $S.equals($L.currentName()))", parserVariable.getSimpleName(), token(token), jsonToken(), string, parserVariable.getSimpleName());
 	}
 
 	@Override
-	protected void startStringCase(boolean firstCase) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken() == $T.VALUE_STRING)", parserVariable.getSimpleName(), jsonToken());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken() == $T.VALUE_STRING)", parserVariable.getSimpleName(), jsonToken());
-		}
+	protected void startStringCase(Case casey, Token token) {
+		casey.controlFlow(code, "$L.$L() == $T.VALUE_STRING", parserVariable.getSimpleName(), token(token), jsonToken());
 	}
 
 	@Override
-	protected void startNumberCase(boolean firstCase) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken().isNumeric())", parserVariable.getSimpleName());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken().isNumeric())", parserVariable.getSimpleName());
-		}
+	protected void startNumberCase(Case casey, Token token) {
+		casey.controlFlow(code, "$L.$L().isNumeric()", parserVariable.getSimpleName(), token(token));
 	}
 
 	@Override
-	protected void startObjectCase(boolean firstCase) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken() == $T.START_OBJECT)", parserVariable.getSimpleName(), jsonToken());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken() == $T.START_OBJECT)", parserVariable.getSimpleName(), jsonToken());
-		}
+	protected void startObjectCase(Case casey, Token token) {
+		casey.controlFlow(code, "$L.$L() == $T.START_OBJECT", parserVariable.getSimpleName(), token(token), jsonToken());
 	}
 
 	@Override
-	protected void startArrayCase(boolean firstCase) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken() == $T.START_ARRAY)", parserVariable.getSimpleName(), jsonToken());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken() == $T.START_ARRAY)", parserVariable.getSimpleName(), jsonToken());
-		}
+	protected void startArrayCase(Case casey, Token token) {
+		casey.controlFlow(code, "$L.$L() == $T.START_ARRAY", parserVariable.getSimpleName(), token(token), jsonToken());
 	}
 
 	@Override
-	protected void startBooleanCase(boolean firstCase) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken().isBoolean())", parserVariable.getSimpleName());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken().isBoolean())", parserVariable.getSimpleName());
-		}
+	protected void startBooleanCase(Case casey, Token token) {
+		casey.controlFlow(code, "$L.$L().isBoolean()", parserVariable.getSimpleName(), token(token));
 	}
 
 	@Override
-	protected void startNullCase(boolean firstCase) {
-		if (firstCase) {
-			code.beginControlFlow("if ($L.nextToken() == $T.VALUE_NULL)", parserVariable.getSimpleName(), jsonToken());
-		} else {
-			code.nextControlFlow("else if ($L.currentToken() == $T.VALUE_NULL)", parserVariable.getSimpleName(), jsonToken());
-		}
+	protected void startNullCase(Case casey, Token token) {
+		casey.controlFlow(code, "$L.$L() == $T.VALUE_NULL", parserVariable.getSimpleName(), token(token), jsonToken());
 	}
 
 	private TypeElement jsonToken() {
@@ -102,19 +75,31 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			case DOUBLE -> "getDoubleValue";
 			default -> throw new AssertionError(type.getKind());
 		};
-		if (mode == AbstractWriterGenerator.Mode.ROOT) {
+		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $L.$L()", parserVariable.getSimpleName(), readMethod);
+		} else if (lhs instanceof LHS.Variable v) {
+			code.addStatement("$L = $L.$L()", v.name(), parserVariable.getSimpleName(), readMethod);
+		} else if (lhs instanceof LHS.Array a) {
+			code.addStatement("$L[$L++] = $L.$L()", a.arrayName(), a.indexName(), parserVariable.getSimpleName(), readMethod);
 		} else {
-			code.addStatement("$L = $L.$L()", varName(), parserVariable.getSimpleName(), readMethod);
+			throw new AssertionError(lhs);
 		}
 	}
 
 	@Override
-	protected void readString() {
-		if (mode == AbstractWriterGenerator.Mode.ROOT) {
-			code.addStatement("return $L.getText()", parserVariable.getSimpleName());
+	protected void readString(StringKind stringKind) {
+		String conversion = switch (stringKind) {
+			case STRING -> "";
+			case CHAR_ARRAY -> ".toCharArray()";
+		};
+		if (lhs instanceof LHS.Return) {
+			code.addStatement("return $L.getText()$L", parserVariable.getSimpleName(), conversion);
+		} else if (lhs instanceof LHS.Variable v) {
+			code.addStatement("$L = $L.getText()$L", v.name(), parserVariable.getSimpleName(), conversion);
+		} else if (lhs instanceof LHS.Array a) {
+			code.addStatement("$L[$L++] = $L.getText()$L", a.arrayName(), a.indexName(), parserVariable.getSimpleName(), conversion);
 		} else {
-			code.addStatement("$L = $L.getText()", varName(), parserVariable.getSimpleName());
+			throw new AssertionError(lhs);
 		}
 	}
 
@@ -139,7 +124,14 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected JacksonJsonParserReaderGenerator nest(TypeMirror type, Key nestedKey, Mode mode) {
-		return new JacksonJsonParserReaderGenerator(utils, utils.tf.getType(type), nestedKey, code, parserVariable, mode, this);
+	protected JacksonJsonParserReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs) {
+		return new JacksonJsonParserReaderGenerator(utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this);
+	}
+
+	private String token(Token token) {
+		return switch (token) {
+			case NEXT_TOKEN -> "nextToken";
+			case CURRENT_TOKEN -> "currentToken";
+		};
 	}
 }

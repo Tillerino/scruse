@@ -12,6 +12,7 @@ import org.tillerino.scruse.processor.apis.JacksonJsonNodeWriterGenerator;
 import org.tillerino.scruse.processor.apis.JacksonJsonParserReaderGenerator;
 
 import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.tools.JavaFileObject;
@@ -31,7 +32,7 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 	"org.tillerino.scruse.annotations.JsonInput",
 	"org.tillerino.scruse.annotations.JsonConfig",
 })
-@SupportedSourceVersion(javax.lang.model.SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class ScruseProcessor extends AbstractProcessor {
 	Map<FullyQualifiedClassName, ScruseBlueprint> blueprints = new LinkedHashMap<>();

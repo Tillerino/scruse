@@ -17,8 +17,8 @@ import java.util.function.Function;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
-public class OutputUtils {
-	public static String withJacksonJsonGenerator(FailableConsumer<JsonGenerator, IOException> output) throws IOException {
+class OutputUtils {
+	static String withJacksonJsonGenerator(FailableConsumer<JsonGenerator, IOException> output) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		JsonGenerator generator = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 		output.accept(generator);
@@ -26,7 +26,7 @@ public class OutputUtils {
 		return out.toString(StandardCharsets.UTF_8);
 	}
 
-	public static String withGsonJsonWriter(FailableConsumer<JsonWriter, IOException> output) throws IOException {
+	static String withGsonJsonWriter(FailableConsumer<JsonWriter, IOException> output) throws IOException {
 		StringWriter out = new StringWriter();
 		JsonWriter generator = new JsonWriter(out);
 		output.accept(generator);
@@ -34,19 +34,19 @@ public class OutputUtils {
 		return out.toString();
 	}
 
-	public static <T> void assertThatJacksonJsonGeneratorIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
+	static <T> void assertThatJacksonJsonGeneratorIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withJacksonJsonGenerator(generator -> output.accept(obj, generator));
 		assertThatJson(ours).isEqualTo(databind);
 	}
 
-	public static <T> void assertThatJacksonJsonNodeIsEqualToDatabind(T obj, Function<T, JsonNode> output) throws IOException {
+	static <T> void assertThatJacksonJsonNodeIsEqualToDatabind(T obj, Function<T, JsonNode> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = output.apply(obj).toString();
 		assertThatJson(ours).isEqualTo(databind);
 	}
 
-	public static <T> void assertThatGsonJsonWriterIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
+	static <T> void assertThatGsonJsonWriterIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withGsonJsonWriter(generator -> output.accept(obj, generator));
 		assertThatJson(ours).isEqualTo(databind);

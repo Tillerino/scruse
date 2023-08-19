@@ -9,76 +9,76 @@ import java.io.IOException;
 
 public interface ScalarArraysWriter {
 	@JsonOutput
-	void writePrimitiveBooleanArray(boolean[] input, JsonGenerator generator) throws IOException;
+	void writeBooleanArray(boolean[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveBooleanArray(boolean[] input, JsonWriter generator) throws IOException;
+	void writeBooleanArray(boolean[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveBooleanArray(boolean[] input);
+	JsonNode writeBooleanArray(boolean[] input);
 
 	@JsonOutput
-	void writePrimitiveByteArray(byte[] input, JsonGenerator generator) throws IOException;
+	void writeByteArray(byte[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveByteArray(byte[] input, JsonWriter generator) throws IOException;
+	void writeByteArray(byte[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveByteArray(byte[] input);
+	JsonNode writeByteArray(byte[] input);
 
 	@JsonOutput
-	void writePrimitiveShortArray(short[] input, JsonGenerator generator) throws IOException;
+	void writeShortArray(short[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveShortArray(short[] input, JsonWriter generator) throws IOException;
+	void writeShortArray(short[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveShortArray(short[] input);
+	JsonNode writeShortArray(short[] input);
 
 	@JsonOutput
-	void writePrimitiveIntArray(int[] input, JsonGenerator generator) throws IOException;
+	void writeIntArray(int[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveIntArray(int[] input, JsonWriter generator) throws IOException;
+	void writeIntArray(int[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveIntArray(int[] input);
+	JsonNode writeIntArray(int[] input);
 
 	@JsonOutput
-	void writePrimitiveLongArray(long[] input, JsonGenerator generator) throws IOException;
+	void writeLongArray(long[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveLongArray(long[] input, JsonWriter generator) throws IOException;
+	void writeLongArray(long[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveLongArray(long[] input);
+	JsonNode writeLongArray(long[] input);
 
 	@JsonOutput
-	void writePrimitiveCharArray(char[] input, JsonGenerator generator) throws IOException;
+	void writeCharArray(char[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveCharArray(char[] input, JsonWriter generator) throws IOException;
+	void writeCharArray(char[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveCharArray(char[] input);
+	JsonNode writeCharArray(char[] input);
 
 	@JsonOutput
-	void writePrimitiveFloatArray(float[] input, JsonGenerator generator) throws IOException;
+	void writeFloatArray(float[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveFloatArray(float[] input, JsonWriter generator) throws IOException;
+	void writeFloatArray(float[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveFloatArray(float[] input);
+	JsonNode writeFloatArray(float[] input);
 
 	@JsonOutput
-	void writePrimitiveDoubleArray(double[] input, JsonGenerator generator) throws IOException;
+	void writeDoubleArray(double[] input, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writePrimitiveDoubleArray(double[] input, JsonWriter generator) throws IOException;
+	void writeDoubleArray(double[] input, JsonWriter generator) throws IOException;
 
 	@JsonOutput
-	JsonNode writePrimitiveDoubleArray(double[] input);
+	JsonNode writeDoubleArray(double[] input);
 
 	@JsonOutput
 	void writeBoxedBooleanArray(Boolean[] input, JsonGenerator generator) throws IOException;

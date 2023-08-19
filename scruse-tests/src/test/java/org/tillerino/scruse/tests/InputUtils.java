@@ -11,14 +11,14 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InputUtils {
-	public static void withJacksonJsonParser(String json, FailableConsumer<JsonParser, IOException> consumer) throws Exception {
+class InputUtils {
+	static void withJacksonJsonParser(String json, FailableConsumer<JsonParser, IOException> consumer) throws Exception {
 		try (JsonParser parser = new JsonFactory().createParser(json)) {
 			consumer.accept(parser);
 		}
 	}
 
-	public static <T> void assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws Exception {
+	static <T> void assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws Exception {
 		withJacksonJsonParser(json, parser -> {
 			T ours = consumer.apply(parser);
 			T databind = new ObjectMapper().readValue(json, typeRef);

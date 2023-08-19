@@ -21,7 +21,7 @@ public record SimpleRecord(int intField, String stringField, int[] ints, Map<Str
 		@JsonOutput
 		JsonNode write(SimpleRecord object);
 
-		@JsonInput
-		SimpleRecord read(JsonParser node) throws IOException;
+		// @JsonInput
+		// SimpleRecord read(JsonParser node) throws IOException;
 	}
 }

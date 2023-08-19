@@ -7,10 +7,10 @@ import java.util.List;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class ScalarListsWriterTest {
+class ScalarListsWriterTest {
 	ScalarListsWriter impl = new ScalarListsWriterImpl();
 	@Test
-	public void testBoxedBooleanList() throws Exception {
+	void testBoxedBooleanList() throws Exception {
 		List<List<Boolean>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.BOXED_BOOLEANS)
@@ -23,7 +23,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedByteList() throws Exception {
+	void testBoxedByteList() throws Exception {
 		List<List<Byte>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.BOXED_BYTES)
@@ -36,7 +36,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedShortList() throws Exception {
+	void testBoxedShortList() throws Exception {
 		List<List<Short>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.BOXED_SHORTS)
@@ -49,7 +49,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedIntList() throws Exception {
+	void testBoxedIntList() throws Exception {
 		List<List<Integer>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.INTEGERS)
@@ -62,7 +62,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedLongList() throws Exception {
+	void testBoxedLongList() throws Exception {
 		List<List<Long>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.BOXED_LONGS)
@@ -75,7 +75,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedCharList() throws Exception {
+	void testBoxedCharList() throws Exception {
 		List<List<Character>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.CHARACTERS)
@@ -88,7 +88,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedFloatList() throws Exception {
+	void testBoxedFloatList() throws Exception {
 		List<List<Float>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.BOXED_FLOATS)
@@ -101,7 +101,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testBoxedDoubleList() throws Exception {
+	void testBoxedDoubleList() throws Exception {
 		List<List<Double>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.BOXED_DOUBLES)
@@ -114,7 +114,7 @@ public class ScalarListsWriterTest {
 	}
 
 	@Test
-	public void testStringList() throws Exception {
+	void testStringList() throws Exception {
 		List<List<String>> values = Arrays.asList(
 			null,
 			Arrays.asList(ScalarsWriterTest.STRINGS)

@@ -3,11 +3,11 @@ package org.tillerino.scruse.tests;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
-public class ScalarsReaderTest {
+class ScalarsReaderTest {
 	ScalarsReaderImpl impl = new ScalarsReaderImpl();
 
 	@Test
-	public void primitiveBoolean() throws Exception {
+	void testBoolean() throws Exception {
 		TypeReference<Boolean> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -20,7 +20,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveByte() throws Exception {
+	void testByte() throws Exception {
 		TypeReference<Byte> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -36,7 +36,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveShort() throws Exception {
+	void testShort() throws Exception {
 		TypeReference<Short> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -52,7 +52,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveInt() throws Exception {
+	void testInt() throws Exception {
 		TypeReference<Integer> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -68,7 +68,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveLong() throws Exception {
+	void testLong() throws Exception {
 		TypeReference<Long> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -84,7 +84,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveChar() throws Exception {
+	void testChar() throws Exception {
 		TypeReference<Character> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -101,7 +101,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveFloat() throws Exception {
+	void testFloat() throws Exception {
 		TypeReference<Float> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -122,7 +122,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void primitiveDouble() throws Exception {
+	void testDouble() throws Exception {
 		TypeReference<Double> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -143,7 +143,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedBoolean() throws Exception {
+	void testBoxedBoolean() throws Exception {
 		TypeReference<Boolean> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -157,7 +157,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedByte() throws Exception {
+	void testBoxedByte() throws Exception {
 		TypeReference<Byte> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -174,7 +174,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedShort() throws Exception {
+	void testBoxedShort() throws Exception {
 		TypeReference<Short> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -191,7 +191,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedInteger() throws Exception {
+	void testBoxedInteger() throws Exception {
 		TypeReference<Integer> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -208,7 +208,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedLong() throws Exception {
+	void testBoxedLong() throws Exception {
 		TypeReference<Long> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -225,7 +225,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedCharacter() throws Exception {
+	void testBoxedCharacter() throws Exception {
 		TypeReference<Character> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -243,7 +243,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedFloat() throws Exception {
+	void testBoxedFloat() throws Exception {
 		TypeReference<Float> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -265,7 +265,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void boxedDouble() throws Exception {
+	void testBoxedDouble() throws Exception {
 		TypeReference<Double> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -287,7 +287,7 @@ public class ScalarsReaderTest {
 	}
 
 	@Test
-	public void string() throws Exception {
+	void testString() throws Exception {
 		TypeReference<String> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {

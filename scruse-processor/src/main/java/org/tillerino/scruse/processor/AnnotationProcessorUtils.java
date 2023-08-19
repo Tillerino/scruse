@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.mapstruct.ap.internal.gem.ReportingPolicyGem;
+import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.common.TypeFactory;
 import org.mapstruct.ap.internal.option.Options;
 import org.mapstruct.ap.internal.processor.DefaultModelElementProcessorContext;
@@ -12,6 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleAnnotationValueVisitor14;
@@ -49,6 +51,10 @@ public class AnnotationProcessorUtils {
 				false), rc, Map.of(),
 			typeElement);
 		tf = new TypeFactory(dmepc.getElementUtils(), dmepc.getTypeUtils(), dmepc.getMessager(), rc, Map.of(), false);
+	}
+
+	public static boolean isArrayOf(Type type, TypeKind kind) {
+		return type.isArrayType() && type.getComponentType().getTypeMirror().getKind() == kind;
 	}
 
 	public ArrayList<TypeElement> getTypeElementsFromAnnotationValue(AnnotationValue value) {

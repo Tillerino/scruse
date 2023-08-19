@@ -4,115 +4,115 @@ import org.junit.jupiter.api.Test;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class ScalarArraysWriterTest {
+class ScalarArraysWriterTest {
 	ScalarArraysWriter impl = new ScalarArraysWriterImpl();
 
 	@Test
-	public void testPrimitiveBooleanArray() throws Exception {
+	void testBooleanArray() throws Exception {
 		boolean[][] values = {
 			null,
 			ScalarsWriterTest.BOOLEANS
 		};
 		for (boolean[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveBooleanArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveBooleanArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveBooleanArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBooleanArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBooleanArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBooleanArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveByteArray() throws Exception {
+	void testByteArray() throws Exception {
 		byte[][] values = {
 			null,
 			ScalarsWriterTest.BYTES
 		};
 		for (byte[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveByteArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveByteArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveByteArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeByteArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeByteArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeByteArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveShortArray() throws Exception {
+	void testShortArray() throws Exception {
 		short[][] values = {
 			null,
 			ScalarsWriterTest.SHORTS
 		};
 		for (short[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveShortArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveShortArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveShortArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeShortArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeShortArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeShortArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveIntArray() throws Exception {
+	void testIntArray() throws Exception {
 		int[][] values = {
 			null,
 			ScalarsWriterTest.INTS
 		};
 		for (int[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveIntArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveIntArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveIntArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeIntArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeIntArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeIntArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveLongArray() throws Exception {
+	void testLongArray() throws Exception {
 		long[][] values = {
 			null,
 			ScalarsWriterTest.LONGS
 		};
 		for (long[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveLongArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveLongArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveLongArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeLongArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeLongArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeLongArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveCharArray() throws Exception {
+	void testCharArray() throws Exception {
 		char[][] values = {
 			null,
 			ScalarsWriterTest.CHARS
 		};
 		for (char[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveCharArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveCharArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveCharArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeCharArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeCharArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeCharArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveFloatArray() throws Exception {
+	void testFloatArray() throws Exception {
 		float[][] values = {
 			null,
 			ScalarsWriterTest.FLOATS
 		};
 		for (float[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveFloatArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveFloatArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveFloatArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeFloatArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeFloatArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeFloatArray);
 		}
 	}
 
 	@Test
-	public void testPrimitiveDoubleArray() throws Exception {
+	void testDoubleArray() throws Exception {
 		double[][] values = {
 			null,
 			ScalarsWriterTest.DOUBLES
 		};
 		for (double[] object : values) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writePrimitiveDoubleArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writePrimitiveDoubleArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writePrimitiveDoubleArray);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeDoubleArray);
+			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeDoubleArray);
+			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeDoubleArray);
 		}
 	}
 
 	@Test
-	public void testBoxedBooleanArray() throws Exception {
+	void testBoxedBooleanArray() throws Exception {
 		Boolean[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_BOOLEANS
@@ -125,7 +125,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedByteArray() throws Exception {
+	void testBoxedByteArray() throws Exception {
 		Byte[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_BYTES
@@ -138,7 +138,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedShortArray() throws Exception {
+	void testBoxedShortArray() throws Exception {
 		Short[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_SHORTS
@@ -151,7 +151,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedIntArray() throws Exception {
+	void testBoxedIntArray() throws Exception {
 		Integer[][] values = {
 			null,
 			ScalarsWriterTest.INTEGERS
@@ -164,7 +164,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedLongArray() throws Exception {
+	void testBoxedLongArray() throws Exception {
 		Long[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_LONGS
@@ -177,7 +177,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedCharArray() throws Exception {
+	void testBoxedCharArray() throws Exception {
 		Character[][] values = {
 			null,
 			ScalarsWriterTest.CHARACTERS
@@ -190,7 +190,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedFloatArray() throws Exception {
+	void testBoxedFloatArray() throws Exception {
 		Float[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_FLOATS
@@ -203,7 +203,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testBoxedDoubleArray() throws Exception {
+	void testBoxedDoubleArray() throws Exception {
 		Double[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_DOUBLES
@@ -216,7 +216,7 @@ public class ScalarArraysWriterTest {
 	}
 
 	@Test
-	public void testStringArray() throws Exception {
+	void testStringArray() throws Exception {
 		String[][] values = {
 			null,
 			ScalarsWriterTest.STRINGS

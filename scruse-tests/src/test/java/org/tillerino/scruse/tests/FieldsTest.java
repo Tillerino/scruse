@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
-public class FieldsTest {
+class FieldsTest {
 
 	@Test
 	void scalarFields() throws IOException {

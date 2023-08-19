@@ -14,7 +14,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 	private final VariableElement generatorVariable;
 
 	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0)), CodeBlock.builder(), Mode.ROOT, null);
+		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
 		this.generatorVariable = method.getParameters().get(1);
 	}
 

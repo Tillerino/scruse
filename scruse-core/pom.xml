@@ -7,7 +7,7 @@
         <artifactId>scruse-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>scruse-annotations</artifactId>
+    <artifactId>scruse-core</artifactId>
 
     <properties>
         <java.version>8</java.version>
