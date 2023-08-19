@@ -295,4 +295,20 @@ class ScalarArraysReaderTest {
 			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedDoubleArray, typeRef);
 		}
 	}
+
+	@Test
+	void testStringArray() throws Exception {
+		TypeReference<String[]> typeRef = new TypeReference<>() {
+		};
+		String[] jsons = {
+			"null",
+			"[]",
+			"[null]",
+			"[\"abc\"]",
+			"[\"abc\",\"def\",null]",
+		};
+		for (String json : jsons) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readStringArray, typeRef);
+		}
+	}
 }

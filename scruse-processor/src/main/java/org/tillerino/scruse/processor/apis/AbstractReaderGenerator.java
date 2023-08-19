@@ -36,6 +36,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.addStatement("$L = null", v.name());
 			} else if (lhs instanceof LHS.Array a) {
 				code.addStatement("$L[$L++] = null", a.arrayName(), a.indexName());
+			} else if (lhs instanceof LHS.Collection c) {
+				code.addStatement("$L.add(null)", c.name());
 			} else {
 				throw new AssertionError(lhs);
 			}
@@ -84,6 +86,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			code.addStatement("return $L.charAt(0)", stringVar);
 		} else if (lhs instanceof LHS.Variable v) {
 			code.addStatement("$L = $L.charAt(0)", v.name(), stringVar);
+		} else if (lhs instanceof LHS.Collection c) {
+			code.addStatement("$L.add($L.charAt(0))", c.name(), stringVar);
+		} else {
+			throw new AssertionError(lhs);
 		}
 		code.nextControlFlow("else");
 		code.addStatement("throw new $T()", IOException.class);
@@ -99,6 +105,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.addStatement("$L = $L.$L", vv.name(), StringUtils.capitalize(t), v);
 			} else if (lhs instanceof LHS.Array a) {
 				code.addStatement("$L[$L++] = $L.$L", a.arrayName(), a.indexName(), StringUtils.capitalize(t), v);
+			} else if (lhs instanceof LHS.Collection c) {
+				code.addStatement("$L.add($L.$L)", c.name(), StringUtils.capitalize(t), v);
 			} else {
 				throw new AssertionError(lhs);
 			}
@@ -190,7 +198,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 			String varName;
 			if (lhs instanceof LHS.Return) {
-				varName = "collection" + stackDepth();
+				varName = "collection$" + stackDepth();
 				code.addStatement("$T $L = new $T<>()", type.getTypeMirror(), varName, collectionType);
 			} else if (lhs instanceof LHS.Variable v) {
 				varName = v.name();
@@ -200,13 +208,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			}
 			iterateOverElements();
 			{
-				String elemName = "elem$" + (stackDepth() + 1);
-				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Variable(elemName));
-				code.addStatement("$T $L", nested.type.getTypeMirror(), varName);
-				nested.build();
-				code.addStatement("$L.add($L)", varName, elemName);
+				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Collection(varName));
+				nested.build(Case.IF, Token.CURRENT_TOKEN);
 			}
 			code.endControlFlow();
+			if (lhs instanceof LHS.Return) {
+				code.addStatement("return $L", varName);
+			}
 		}
 		code.nextControlFlow("else");
 		{
@@ -294,6 +302,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		record Return() implements LHS {}
 		record Variable(String name) implements LHS {}
 		record Array(String arrayName, String indexName) implements LHS {}
+		record Collection(String name) implements LHS {}
 	}
 
 	enum Case {

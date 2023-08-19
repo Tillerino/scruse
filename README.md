@@ -61,8 +61,8 @@ Its intended for two contexts:
 - [x] Serialize record components, getters, fields
 
 - [x] Deserialize all eight primitive types raw and boxed
-- [ ] Deserialize String (includes char[])
-- [ ] Deserialize Arrays, Lists (generalized as Iterables)
+- [x] Deserialize String (includes char[])
+- [x] Deserialize Arrays, Lists (generalized as Iterables)
 - [ ] Deserialize byte[]
 - [ ] Deserialize Maps
 - [ ] Deserialize record components, getters, fields

@@ -81,6 +81,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			code.addStatement("$L = $L.$L()", v.name(), parserVariable.getSimpleName(), readMethod);
 		} else if (lhs instanceof LHS.Array a) {
 			code.addStatement("$L[$L++] = $L.$L()", a.arrayName(), a.indexName(), parserVariable.getSimpleName(), readMethod);
+		} else if (lhs instanceof LHS.Collection c) {
+			code.addStatement("$L.add($L.$L())", c.name(), parserVariable.getSimpleName(), readMethod);
 		} else {
 			throw new AssertionError(lhs);
 		}
@@ -98,6 +100,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			code.addStatement("$L = $L.getText()$L", v.name(), parserVariable.getSimpleName(), conversion);
 		} else if (lhs instanceof LHS.Array a) {
 			code.addStatement("$L[$L++] = $L.getText()$L", a.arrayName(), a.indexName(), parserVariable.getSimpleName(), conversion);
+		} else if (lhs instanceof LHS.Collection c) {
+			code.addStatement("$L.add($L.getText()$L)", c.name(), parserVariable.getSimpleName(), conversion);
 		} else {
 			throw new AssertionError(lhs);
 		}

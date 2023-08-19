@@ -12,17 +12,18 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InputUtils {
-	static void withJacksonJsonParser(String json, FailableConsumer<JsonParser, IOException> consumer) throws Exception {
+	static <T> T withJacksonJsonParser(String json, FailableFunction<JsonParser, T, IOException> consumer) throws Exception {
 		try (JsonParser parser = new JsonFactory().createParser(json)) {
-			consumer.accept(parser);
+			return consumer.apply(parser);
 		}
 	}
 
-	static <T> void assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws Exception {
-		withJacksonJsonParser(json, parser -> {
+	static <T> T assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws Exception {
+		return withJacksonJsonParser(json, parser -> {
 			T ours = consumer.apply(parser);
 			T databind = new ObjectMapper().readValue(json, typeRef);
 			assertThat(ours).isEqualTo(databind);
+			return ours;
 		});
 	}
 }
