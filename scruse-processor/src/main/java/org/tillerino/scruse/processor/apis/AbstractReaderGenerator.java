@@ -22,14 +22,15 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	public CodeBlock.Builder build() {
-		return build(Case.IF, Token.NEXT_TOKEN);
+		initializeParser();
+		return build(Case.IF);
 	}
 
-	public CodeBlock.Builder build(Case casey, Token token) {
+	public CodeBlock.Builder build(Case casey) {
 		if (type.isPrimitive()) {
-			readPrimitive(casey, token, type.getTypeMirror());
+			readPrimitive(casey, type.getTypeMirror());
 		} else {
-			startNullCase(casey, token);
+			startNullCase(casey);
 			if (lhs instanceof LHS.Return) {
 				code.addStatement("return null");
 			} else if (lhs instanceof LHS.Variable v) {
@@ -46,25 +47,25 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		return code;
 	}
 
-	protected void readPrimitive(Case casey, Token token, TypeMirror type) {
+	protected void readPrimitive(Case casey, TypeMirror type) {
 		String typeName;
 		switch (type.getKind()) {
 			case BOOLEAN -> {
-				startBooleanCase(casey, token);
+				startBooleanCase(casey);
 				typeName = "boolean";
 			}
 			case BYTE, SHORT, INT, LONG -> {
-				startNumberCase(casey, token);
+				startNumberCase(casey);
 				typeName = "number";
 			}
 			case FLOAT, DOUBLE -> {
-				startStringCase(casey, token);
+				startStringCase(casey);
 				readNumberFromString(type);
-				startNumberCase(Case.ELSE_IF, Token.CURRENT_TOKEN);
+				startNumberCase(Case.ELSE_IF);
 				typeName = "number";
 			}
 			case CHAR -> {
-				startStringCase(casey, token);
+				startStringCase(casey);
 				typeName = "string";
 			}
 			default -> throw new AssertionError(type.getKind());
@@ -132,20 +133,20 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			readPrimitive(Case.ELSE_IF, Token.CURRENT_TOKEN, utils.types.unboxedType(type.getTypeMirror()));
+			readPrimitive(Case.ELSE_IF, utils.types.unboxedType(type.getTypeMirror()));
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
-			readString(Case.ELSE_IF, Token.CURRENT_TOKEN, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
+			readString(Case.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (type.isArrayType()) {
-			readArray(Case.ELSE_IF, Token.CURRENT_TOKEN);
+			readArray(Case.ELSE_IF);
 		} else if (type.isIterableType()) {
-			readCollection(Case.ELSE_IF, Token.CURRENT_TOKEN);
+			readCollection(Case.ELSE_IF);
 		} else {
-			readObject(Case.ELSE_IF, Token.CURRENT_TOKEN);
+			readObject(Case.ELSE_IF);
 		}
 	}
 
-	private void readArray(Case casey, Token token) {
-		startArrayCase(casey, token);
+	private void readArray(Case casey) {
+		startArrayCase(casey);
 		{
 			Type componentType = type.getComponentType();
 			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedCharacter)) {
@@ -171,7 +172,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.endControlFlow();
 
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Array(varName, len));
-				nested.build(Case.IF, Token.CURRENT_TOKEN);
+				nested.build(Case.IF);
 			}
 			code.endControlFlow();
 			if (lhs instanceof LHS.Return) {
@@ -189,8 +190,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		code.endControlFlow();
 	}
 
-	private void readCollection(Case casey, Token token) {
-		startArrayCase(casey, token);
+	private void readCollection(Case casey) {
+		startArrayCase(casey);
 		{
 
 			Type componentType = type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
@@ -209,7 +210,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			iterateOverElements();
 			{
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Collection(varName));
-				nested.build(Case.IF, Token.CURRENT_TOKEN);
+				nested.build(Case.IF);
 			}
 			code.endControlFlow();
 			if (lhs instanceof LHS.Return) {
@@ -235,8 +236,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		}
 	}
 
-	private void readObject(Case casey, Token token) {
-		startObjectCase(casey, token);
+	private void readObject(Case casey) {
+		startObjectCase(casey);
 		if (type.isRecord()) {
 			for (Element component : type.getRecordComponents()) {
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
@@ -248,7 +249,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			for (Element component : type.getRecordComponents()) {
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
 				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
-				nest.startFieldCase(Case.IF, Token.CURRENT_TOKEN, component.getSimpleName().toString());
+				nest.startFieldCase(Case.IF, component.getSimpleName().toString());
 				nest.build();
 				first = false;
 			}
@@ -264,27 +265,29 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		code.endControlFlow();
 	}
 
-	private void readString(Case casey, Token token, StringKind stringKind) {
-		startStringCase(casey, token);
+	private void readString(Case casey, StringKind stringKind) {
+		startStringCase(casey);
 		readString(stringKind);
 		code.nextControlFlow("else");
 		throwUnexpected("string");
 		code.endControlFlow();
 	}
 
-	protected abstract void startFieldCase(Case casey, Token token, String string);
+	protected abstract void initializeParser();
 
-	protected abstract void startStringCase(Case casey, Token token);
+	protected abstract void startFieldCase(Case casey, String string);
 
-	protected abstract void startNumberCase(Case casey, Token token);
+	protected abstract void startStringCase(Case casey);
 
-	protected abstract void startObjectCase(Case casey, Token token);
+	protected abstract void startNumberCase(Case casey);
 
-	protected abstract void startArrayCase(Case casey, Token token);
+	protected abstract void startObjectCase(Case casey);
 
-	protected abstract void startBooleanCase(Case casey, Token token);
+	protected abstract void startArrayCase(Case casey);
 
-	protected abstract void startNullCase(Case casey, Token token);
+	protected abstract void startBooleanCase(Case casey);
+
+	protected abstract void startNullCase(Case casey);
 
 	protected abstract void readPrimitive(TypeMirror type);
 
