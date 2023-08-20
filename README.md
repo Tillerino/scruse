@@ -63,7 +63,7 @@ Its intended for two contexts:
 - [x] Deserialize all eight primitive types raw and boxed
 - [x] Deserialize String (includes char[])
 - [x] Deserialize Arrays, Lists (generalized as Iterables)
-- [ ] Deserialize byte[]
+- [x] Deserialize byte[]
 - [ ] Deserialize Maps
 - [ ] Deserialize record components, getters, fields
 

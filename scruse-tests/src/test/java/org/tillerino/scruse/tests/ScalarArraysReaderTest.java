@@ -36,6 +36,8 @@ class ScalarArraysReaderTest {
 			"[127]",
 			"[-128]",
 			"[1,0,-1,127,-128]",
+			"\"\"",
+			"\"MTIzNA==\"",
 		};
 		for (String json : jsons) {
 			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readByteArray, typeRef);

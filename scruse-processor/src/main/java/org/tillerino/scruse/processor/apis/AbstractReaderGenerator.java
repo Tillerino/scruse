@@ -146,9 +146,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	private void readArray(Branch branch) {
+		Type componentType = type.getComponentType();
 		startArrayCase(branch);
 		{
-			Type componentType = type.getComponentType();
 			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedCharacter)) {
 				throw new AssertionError("Please provide a custom reader for " + type);
 			}
@@ -179,6 +179,21 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.addStatement("return $T.copyOf($L, $L)", java.util.Arrays.class, varName, len);
 			} else if (lhs instanceof LHS.Variable v) {
 				code.addStatement("$L = $T.copyOf($L, $L)", v.name(), java.util.Arrays.class, varName, len);
+			} else {
+				throw new AssertionError(lhs);
+			}
+		}
+		if (componentType.getTypeMirror().getKind() == TypeKind.BYTE) {
+			startStringCase(Branch.ELSE_IF);
+			String stringVar = readStringInstead();
+			if (lhs instanceof LHS.Return) {
+				code.addStatement("return $T.getDecoder().decode($L)", Base64.class, stringVar);
+			} else if (lhs instanceof LHS.Variable v) {
+				code.addStatement("$L = $T.getDecoder().decode($L)", v.name(), Base64.class, stringVar);
+			} else if (lhs instanceof LHS.Array a) {
+				code.addStatement("$L[$L++] = $T.getDecoder().decode($L)", a.arrayName(), a.indexName(), Base64.class, stringVar);
+			} else if (lhs instanceof LHS.Collection c) {
+				code.addStatement("$L.add($T.getDecoder().decode($L))", c.name(), Base64.class, stringVar);
 			} else {
 				throw new AssertionError(lhs);
 			}
