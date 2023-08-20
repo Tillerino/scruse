@@ -77,4 +77,40 @@ class ScalarFieldsTest {
 			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::read, typeRef);
 		}
 	}
+
+	@Test
+	void scalarFieldsClassInput() throws IOException {
+		TypeReference<ScalarFieldsClass> typeRef = new TypeReference<>() {
+		};
+
+		ScalarFieldsClass.Input impl = new ScalarFieldsClass$InputImpl();
+
+		String[] jsons = {
+			"null",
+			"{}",
+			"{\"bo\":false,\"by\":1,\"s\":2,\"i\":3,\"l\":4,\"c\":\"c\",\"f\":\"NaN\",\"d\":\"NaN\",\"bbo\":null,\"bby\":null,\"ss\":null,\"ii\":null,\"ll\":null,\"cc\":null,\"ff\":null,\"dd\":null,\"str\":null}",
+			"{\"bo\":false,\"by\":1,\"s\":2,\"i\":3,\"l\":4,\"c\":\"c\",\"f\":4.0,\"d\":5.0,\"bbo\":false,\"bby\":1,\"ss\":2,\"ii\":3,\"ll\":4,\"cc\":\"c\",\"ff\":4.0,\"dd\":5.0,\"str\":\"six\"}"
+		};
+		for (String json : jsons) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::read, typeRef);
+		}
+	}
+
+	@Test
+	void scalarAccessorsClassInput() throws IOException {
+		TypeReference<ScalarAccessorsClass> typeRef = new TypeReference<>() {
+		};
+
+		ScalarAccessorsClass.Input impl = new ScalarAccessorsClass$InputImpl();
+
+		String[] jsons = {
+			"null",
+			"{}",
+			"{\"bo\":false,\"by\":1,\"s\":2,\"i\":3,\"l\":4,\"c\":\"c\",\"f\":\"NaN\",\"d\":\"NaN\",\"bbo\":null,\"bby\":null,\"ss\":null,\"ii\":null,\"ll\":null,\"cc\":null,\"ff\":null,\"dd\":null,\"str\":null}",
+			"{\"bo\":false,\"by\":1,\"s\":2,\"i\":3,\"l\":4,\"c\":\"c\",\"f\":4.0,\"d\":5.0,\"bbo\":false,\"bby\":1,\"ss\":2,\"ii\":3,\"ll\":4,\"cc\":\"c\",\"ff\":4.0,\"dd\":5.0,\"str\":\"six\"}"
+		};
+		for (String json : jsons) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::read, typeRef);
+		}
+	}
 }

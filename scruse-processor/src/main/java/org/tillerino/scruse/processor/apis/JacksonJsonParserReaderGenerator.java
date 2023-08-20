@@ -102,6 +102,12 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 		} else if (lhs instanceof LHS.Map m) {
 			code.addStatement("$L.put($L, $L.$L())", m.mapVar(), m.keyVar(), parserVariable.getSimpleName(), readMethod);
 			advance();
+		} else if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.$L = $L.$L()", f.objectVar(), f.fieldName(), parserVariable.getSimpleName(), readMethod);
+			advance();
+		} else if (lhs instanceof LHS.Setter s) {
+			code.addStatement("$L.$L($L.$L())", s.objectVar(), s.methodName(), parserVariable.getSimpleName(), readMethod);
+			advance();
 		} else {
 			throw new AssertionError(lhs);
 		}
@@ -129,6 +135,12 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			advance();
 		} else if (lhs instanceof LHS.Map m) {
 			code.addStatement("$L.put($L, $L.getText()$L)", m.mapVar(), m.keyVar(), parserVariable.getSimpleName(), conversion);
+			advance();
+		} else if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.$L = $L.getText()$L", f.objectVar(), f.fieldName(), parserVariable.getSimpleName(), conversion);
+			advance();
+		} else if (lhs instanceof LHS.Setter s) {
+			code.addStatement("$L.$L($L.getText()$L)", s.objectVar(), s.methodName(), parserVariable.getSimpleName(), conversion);
 			advance();
 		} else {
 			throw new AssertionError(lhs);

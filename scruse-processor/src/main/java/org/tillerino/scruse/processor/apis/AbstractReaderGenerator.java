@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
@@ -81,6 +82,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			code.addStatement("$L.add($L.charAt(0))", c.variable(), stringVar);
 		} else if (lhs instanceof LHS.Map m) {
 			code.addStatement("$L.put($L, $L.charAt(0))", m.mapVar(), m.keyVar(), stringVar);
+		} else if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.$L = $L.charAt(0)", f.objectVar(), f.fieldName(), stringVar);
+		} else if (lhs instanceof LHS.Setter s) {
+			code.addStatement("$L.$L($L.charAt(0))", s.objectVar(), s.methodName(), stringVar);
 		} else {
 			throw new AssertionError(lhs);
 		}
@@ -102,6 +107,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.addStatement("$L.add($L.$L)", c.variable(), StringUtils.capitalize(t), v);
 			} else if (lhs instanceof LHS.Map m) {
 				code.addStatement("$L.put($L, $L.$L)", m.mapVar(), m.keyVar(), StringUtils.capitalize(t), v);
+			} else if (lhs instanceof LHS.Field f) {
+				code.addStatement("$L.$L = $L.$L", f.objectVar(), f.fieldName(), StringUtils.capitalize(t), v);
+			} else if (lhs instanceof LHS.Setter s) {
+				code.addStatement("$L.$L($L.$L)", s.objectVar(), s.methodName(), StringUtils.capitalize(t), v);
 			} else {
 				throw new AssertionError(lhs);
 			}
@@ -136,6 +145,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			code.addStatement("$L.add(null)", c.variable());
 		} else if (lhs instanceof LHS.Map m) {
 			code.addStatement("$L.put($L, null)", m.mapVar(), m.keyVar());
+		} else if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.$L = null", f.objectVar(), f.fieldName());
+		} else if (lhs instanceof LHS.Setter s) {
+			code.addStatement("$L.$L(null)", s.objectVar(), s.methodName());
 		} else {
 			throw new AssertionError(lhs);
 		}
@@ -239,13 +252,17 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				nested.build(Branch.IF);
 			}
 			code.endControlFlow();
-			if (lhs instanceof LHS.Return) {
-				code.addStatement("return $L", varName);
-			}
+			assignVarToLhs(varName);
 		}
 		code.nextControlFlow("else");
 		throwUnexpected("array");
 		code.endControlFlow();
+	}
+
+	private void assignVarToLhs(String varName) {
+		if (lhs instanceof LHS.Return) {
+			code.addStatement("return $L", varName);
+		}
 	}
 
 	private TypeMirror determineCollectionType() {
@@ -296,9 +313,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			}
 			code.endControlFlow();
 
-			if (lhs instanceof LHS.Return) {
-				code.addStatement("return $L", varName);
-			}
+			assignVarToLhs(varName);
 		}
 		code.nextControlFlow("else");
 		throwUnexpected("object");
@@ -315,21 +330,20 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readObject(Branch branch) {
 		startObjectCase(branch);
-		if (type.isRecord()) {
-			for (Element component : type.getRecordComponents()) {
-				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
-				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
-				code.addStatement("$T $L = $L", component.asType(), varName, nest.type.getNull());
+		{
+			List<SELF> properties = findProperties();
+			for (SELF nest : properties) {
+				if (nest.lhs instanceof LHS.Variable v) {
+					code.addStatement("$T $L = $L", nest.type.getTypeMirror(), v.name, nest.type.getNull());
+				}
 			}
 			iterateOverFields();
 			startFieldCase(Branch.IF);
 			String fieldVar = "field$" + stackDepth();
 			readFieldName(fieldVar);
 			Branch fieldBranch = Branch.IF;
-			for (Element component : type.getRecordComponents()) {
-				fieldBranch.controlFlow(code, "$L.equals($S)", fieldVar, component.getSimpleName().toString());
-				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
-				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
+			for (SELF nest : properties) {
+				fieldBranch.controlFlow(code, "$L.equals($S)", fieldVar, nest.property);
 				nest.build(Branch.IF);
 				fieldBranch = Branch.ELSE_IF;
 			}
@@ -341,11 +355,39 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			throwUnexpected("field name");
 			code.endControlFlow();
 			code.endControlFlow(); // ends the loop
-			code.addStatement("return new $T($L)", type.getTypeMirror(), type.getRecordComponents().stream().map(c -> c.getSimpleName().toString() + "$" + (stackDepth() + 1)).collect(Collectors.joining(", ")));
+			if (type.isRecord()) {
+				code.addStatement("return new $T($L)", type.getTypeMirror(), type.getRecordComponents().stream().map(c -> c.getSimpleName().toString() + "$" + (stackDepth() + 1)).collect(Collectors.joining(", ")));
+			} else {
+				assignVarToLhs("object$" + stackDepth());
+			}
 		}
 		code.nextControlFlow("else");
 		throwUnexpected("object");
 		code.endControlFlow();
+	}
+
+	private List<SELF> findProperties() {
+		List<SELF> nested = new ArrayList<>();
+		if (type.isRecord()) {
+			for (Element component : type.getRecordComponents()) {
+				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
+				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
+				nested.add(nest);
+			}
+		} else {
+			String objectVar = "object$" + stackDepth();
+			code.addStatement("$T $L = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
+			type.getPropertyWriteAccessors(CollectionMappingStrategyGem.SETTER_PREFERRED).forEach((p, a) -> {
+				LHS lhs = switch (a.getAccessorType()) {
+					case FIELD -> new LHS.Field(objectVar, a.getElement().getSimpleName().toString());
+					case SETTER -> new LHS.Setter(objectVar, a.getElement().getSimpleName().toString());
+					default -> throw new AssertionError(a.getAccessorType());
+				};
+				SELF nest = nest(a.getAccessedType(), p, lhs);
+				nested.add(nest);
+			});
+		}
+		return nested;
 	}
 
 	protected abstract void initializeParser();
@@ -384,6 +426,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		record Array(String arrayVar, String indexVar) implements LHS {}
 		record Collection(String variable) implements LHS {}
 		record Map(String mapVar, String keyVar) implements LHS {}
+		record Field(String objectVar, String fieldName) implements LHS {}
+		record Setter(String objectVar, String methodName) implements LHS {}
 	}
 
 	enum Branch {
