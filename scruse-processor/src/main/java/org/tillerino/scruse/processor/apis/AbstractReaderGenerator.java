@@ -23,14 +23,14 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	public CodeBlock.Builder build() {
 		initializeParser();
-		return build(Case.IF);
+		return build(Branch.IF);
 	}
 
-	public CodeBlock.Builder build(Case casey) {
+	public CodeBlock.Builder build(Branch branch) {
 		if (type.isPrimitive()) {
-			readPrimitive(casey, type.getTypeMirror());
+			readPrimitive(branch, type.getTypeMirror());
 		} else {
-			startNullCase(casey);
+			startNullCase(branch);
 			if (lhs instanceof LHS.Return) {
 				code.addStatement("return null");
 			} else if (lhs instanceof LHS.Variable v) {
@@ -47,25 +47,25 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		return code;
 	}
 
-	protected void readPrimitive(Case casey, TypeMirror type) {
+	protected void readPrimitive(Branch branch, TypeMirror type) {
 		String typeName;
 		switch (type.getKind()) {
 			case BOOLEAN -> {
-				startBooleanCase(casey);
+				startBooleanCase(branch);
 				typeName = "boolean";
 			}
 			case BYTE, SHORT, INT, LONG -> {
-				startNumberCase(casey);
+				startNumberCase(branch);
 				typeName = "number";
 			}
 			case FLOAT, DOUBLE -> {
-				startStringCase(casey);
+				startStringCase(branch);
 				readNumberFromString(type);
-				startNumberCase(Case.ELSE_IF);
+				startNumberCase(Branch.ELSE_IF);
 				typeName = "number";
 			}
 			case CHAR -> {
-				startStringCase(casey);
+				startStringCase(branch);
 				typeName = "string";
 			}
 			default -> throw new AssertionError(type.getKind());
@@ -133,20 +133,20 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			readPrimitive(Case.ELSE_IF, utils.types.unboxedType(type.getTypeMirror()));
+			readPrimitive(Branch.ELSE_IF, utils.types.unboxedType(type.getTypeMirror()));
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
-			readString(Case.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
+			readString(Branch.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (type.isArrayType()) {
-			readArray(Case.ELSE_IF);
+			readArray(Branch.ELSE_IF);
 		} else if (type.isIterableType()) {
-			readCollection(Case.ELSE_IF);
+			readCollection(Branch.ELSE_IF);
 		} else {
-			readObject(Case.ELSE_IF);
+			readObject(Branch.ELSE_IF);
 		}
 	}
 
-	private void readArray(Case casey) {
-		startArrayCase(casey);
+	private void readArray(Branch branch) {
+		startArrayCase(branch);
 		{
 			Type componentType = type.getComponentType();
 			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedCharacter)) {
@@ -172,7 +172,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.endControlFlow();
 
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Array(varName, len));
-				nested.build(Case.IF);
+				nested.build(Branch.IF);
 			}
 			code.endControlFlow();
 			if (lhs instanceof LHS.Return) {
@@ -190,8 +190,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		code.endControlFlow();
 	}
 
-	private void readCollection(Case casey) {
-		startArrayCase(casey);
+	private void readCollection(Branch branch) {
+		startArrayCase(branch);
 		{
 
 			Type componentType = type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
@@ -210,7 +210,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			iterateOverElements();
 			{
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Collection(varName));
-				nested.build(Case.IF);
+				nested.build(Branch.IF);
 			}
 			code.endControlFlow();
 			if (lhs instanceof LHS.Return) {
@@ -236,8 +236,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		}
 	}
 
-	private void readObject(Case casey) {
-		startObjectCase(casey);
+	private void readObject(Branch branch) {
+		startObjectCase(branch);
 		if (type.isRecord()) {
 			for (Element component : type.getRecordComponents()) {
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
@@ -249,7 +249,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			for (Element component : type.getRecordComponents()) {
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
 				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
-				nest.startFieldCase(Case.IF, component.getSimpleName().toString());
+				nest.startFieldCase(Branch.IF, component.getSimpleName().toString());
 				nest.build();
 				first = false;
 			}
@@ -265,8 +265,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		code.endControlFlow();
 	}
 
-	private void readString(Case casey, StringKind stringKind) {
-		startStringCase(casey);
+	private void readString(Branch branch, StringKind stringKind) {
+		startStringCase(branch);
 		readString(stringKind);
 		code.nextControlFlow("else");
 		throwUnexpected("string");
@@ -275,19 +275,19 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void initializeParser();
 
-	protected abstract void startFieldCase(Case casey, String string);
+	protected abstract void startFieldCase(Branch branch, String string);
 
-	protected abstract void startStringCase(Case casey);
+	protected abstract void startStringCase(Branch branch);
 
-	protected abstract void startNumberCase(Case casey);
+	protected abstract void startNumberCase(Branch branch);
 
-	protected abstract void startObjectCase(Case casey);
+	protected abstract void startObjectCase(Branch branch);
 
-	protected abstract void startArrayCase(Case casey);
+	protected abstract void startArrayCase(Branch branch);
 
-	protected abstract void startBooleanCase(Case casey);
+	protected abstract void startBooleanCase(Branch branch);
 
-	protected abstract void startNullCase(Case casey);
+	protected abstract void startNullCase(Branch branch);
 
 	protected abstract void readPrimitive(TypeMirror type);
 
@@ -308,7 +308,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		record Collection(String name) implements LHS {}
 	}
 
-	enum Case {
+	enum Branch {
 		IF,
 		ELSE_IF,
 		;

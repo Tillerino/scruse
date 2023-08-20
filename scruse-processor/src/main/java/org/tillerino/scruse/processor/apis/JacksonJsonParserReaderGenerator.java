@@ -25,36 +25,36 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void startFieldCase(Case casey, String string) {
-		casey.controlFlow(code, "$L.currentToken() == $T.FIELD_NAME && $S.equals($L.currentName()))", parserVariable.getSimpleName(), jsonToken(), string, parserVariable.getSimpleName());
+	protected void startFieldCase(Branch branch, String string) {
+		branch.controlFlow(code, "$L.currentToken() == $T.FIELD_NAME && $S.equals($L.currentName()))", parserVariable.getSimpleName(), jsonToken(), string, parserVariable.getSimpleName());
 		advance();
 	}
 
 	@Override
-	protected void startStringCase(Case casey) {
-		casey.controlFlow(code, "$L.currentToken() == $T.VALUE_STRING", parserVariable.getSimpleName(), jsonToken());
+	protected void startStringCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken() == $T.VALUE_STRING", parserVariable.getSimpleName(), jsonToken());
 	}
 
 	@Override
-	protected void startNumberCase(Case casey) {
-		casey.controlFlow(code, "$L.currentToken().isNumeric()", parserVariable.getSimpleName());
+	protected void startNumberCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken().isNumeric()", parserVariable.getSimpleName());
 	}
 
 	@Override
-	protected void startObjectCase(Case casey) {
-		casey.controlFlow(code, "$L.currentToken() == $T.START_OBJECT", parserVariable.getSimpleName(), jsonToken());
+	protected void startObjectCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken() == $T.START_OBJECT", parserVariable.getSimpleName(), jsonToken());
 		advance();
 	}
 
 	@Override
-	protected void startArrayCase(Case casey) {
-		casey.controlFlow(code, "$L.currentToken() == $T.START_ARRAY", parserVariable.getSimpleName(), jsonToken());
+	protected void startArrayCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken() == $T.START_ARRAY", parserVariable.getSimpleName(), jsonToken());
 		advance();
 	}
 
 	@Override
-	protected void startBooleanCase(Case casey) {
-		casey.controlFlow(code, "$L.currentToken().isBoolean()", parserVariable.getSimpleName());
+	protected void startBooleanCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken().isBoolean()", parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -65,8 +65,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void startNullCase(Case casey) {
-		casey.controlFlow(code, "$L.currentToken() == $T.VALUE_NULL", parserVariable.getSimpleName(), jsonToken());
+	protected void startNullCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken() == $T.VALUE_NULL", parserVariable.getSimpleName(), jsonToken());
 		advance();
 	}
 
