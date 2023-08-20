@@ -58,6 +58,11 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
+	protected void startFieldCase(Branch branch) {
+		branch.controlFlow(code, "$L.currentToken() == $T.FIELD_NAME", parserVariable.getSimpleName(), jsonToken());
+	}
+
+	@Override
 	protected void initializeParser() {
 		code.beginControlFlow("if (!$L.hasCurrentToken())", parserVariable.getSimpleName());
 		advance();
@@ -95,10 +100,13 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			code.addStatement("$L = $L.$L()", v.name(), parserVariable.getSimpleName(), readMethod);
 			advance();
 		} else if (lhs instanceof LHS.Array a) {
-			code.addStatement("$L[$L++] = $L.$L()", a.arrayName(), a.indexName(), parserVariable.getSimpleName(), readMethod);
+			code.addStatement("$L[$L++] = $L.$L()", a.arrayVar(), a.indexVar(), parserVariable.getSimpleName(), readMethod);
 			advance();
 		} else if (lhs instanceof LHS.Collection c) {
-			code.addStatement("$L.add($L.$L())", c.name(), parserVariable.getSimpleName(), readMethod);
+			code.addStatement("$L.add($L.$L())", c.variable(), parserVariable.getSimpleName(), readMethod);
+			advance();
+		} else if (lhs instanceof LHS.Map m) {
+			code.addStatement("$L.put($L, $L.$L())", m.mapVar(), m.keyVar(), parserVariable.getSimpleName(), readMethod);
 			advance();
 		} else {
 			throw new AssertionError(lhs);
@@ -120,10 +128,13 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			code.addStatement("$L = $L.getText()$L", v.name(), parserVariable.getSimpleName(), conversion);
 			advance();
 		} else if (lhs instanceof LHS.Array a) {
-			code.addStatement("$L[$L++] = $L.getText()$L", a.arrayName(), a.indexName(), parserVariable.getSimpleName(), conversion);
+			code.addStatement("$L[$L++] = $L.getText()$L", a.arrayVar(), a.indexVar(), parserVariable.getSimpleName(), conversion);
 			advance();
 		} else if (lhs instanceof LHS.Collection c) {
-			code.addStatement("$L.add($L.getText()$L)", c.name(), parserVariable.getSimpleName(), conversion);
+			code.addStatement("$L.add($L.getText()$L)", c.variable(), parserVariable.getSimpleName(), conversion);
+			advance();
+		} else if (lhs instanceof LHS.Map m) {
+			code.addStatement("$L.put($L, $L.getText()$L)", m.mapVar(), m.keyVar(), parserVariable.getSimpleName(), conversion);
 			advance();
 		} else {
 			throw new AssertionError(lhs);
@@ -134,6 +145,12 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	protected void iterateOverFields() {
 		// we immediately skip the END_OBJECT token once we encounter it
 		code.beginControlFlow("while ($L.currentToken() != $T.END_OBJECT || $L.nextToken() == null && false)", parserVariable.getSimpleName(), jsonToken(), parserVariable.getSimpleName());
+	}
+
+	@Override
+	protected void readFieldName(String propertyName) {
+		code.addStatement("String $L = $L.currentName()", propertyName, parserVariable.getSimpleName());
+		advance();
 	}
 
 	@Override

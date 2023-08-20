@@ -64,8 +64,8 @@ Its intended for two contexts:
 - [x] Deserialize String (includes char[])
 - [x] Deserialize Arrays, Lists (generalized as Iterables)
 - [x] Deserialize byte[]
-- [ ] Deserialize Maps
-- [ ] Deserialize record components, getters, fields
+- [x] Deserialize Maps
+- [ ] Deserialize record components, setters, fields
 
 - [ ] Delegate to other readers/writers
 - [ ] enums
