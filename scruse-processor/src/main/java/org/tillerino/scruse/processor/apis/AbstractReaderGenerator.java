@@ -322,19 +322,25 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.addStatement("$T $L = $L", component.asType(), varName, nest.type.getNull());
 			}
 			iterateOverFields();
-			boolean first = true;
+			startFieldCase(Branch.IF);
+			String fieldVar = "field$" + stackDepth();
+			readFieldName(fieldVar);
+			Branch fieldBranch = Branch.IF;
 			for (Element component : type.getRecordComponents()) {
+				fieldBranch.controlFlow(code, "$L.equals($S)", fieldVar, component.getSimpleName().toString());
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
 				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
-				nest.startFieldCase(Branch.IF, component.getSimpleName().toString());
 				nest.build(Branch.IF);
-				first = false;
+				fieldBranch = Branch.ELSE_IF;
 			}
 			// unknown fields are ignored for now
-			if (!first) {
-				code.endControlFlow();
+			if (fieldBranch == Branch.ELSE_IF) {
+				code.endControlFlow(); // ends the last field
 			}
+			code.nextControlFlow("else");
+			throwUnexpected("field name");
 			code.endControlFlow();
+			code.endControlFlow(); // ends the loop
 			code.addStatement("return new $T($L)", type.getTypeMirror(), type.getRecordComponents().stream().map(c -> c.getSimpleName().toString() + "$" + (stackDepth() + 1)).collect(Collectors.joining(", ")));
 		}
 		code.nextControlFlow("else");
@@ -345,8 +351,6 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	protected abstract void initializeParser();
 
 	protected abstract void startFieldCase(Branch branch);
-
-	protected abstract void startFieldCase(Branch branch, String string);
 
 	protected abstract void startStringCase(Branch branch);
 

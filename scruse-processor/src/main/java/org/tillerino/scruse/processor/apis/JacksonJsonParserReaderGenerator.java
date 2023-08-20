@@ -25,12 +25,6 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void startFieldCase(Branch branch, String string) {
-		branch.controlFlow(code, "$L.currentToken() == $T.FIELD_NAME && $S.equals($L.currentName()))", parserVariable.getSimpleName(), jsonToken(), string, parserVariable.getSimpleName());
-		advance();
-	}
-
-	@Override
 	protected void startStringCase(Branch branch) {
 		branch.controlFlow(code, "$L.currentToken() == $T.VALUE_STRING", parserVariable.getSimpleName(), jsonToken());
 	}

@@ -1,8 +1,10 @@
 package org.tillerino.scruse.tests;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.stream.JsonWriter;
+import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 
 import java.io.IOException;
@@ -15,5 +17,10 @@ public record ScalarFieldsRecord(boolean bo, byte by, short s, int i, long l, ch
 		void write(ScalarFieldsRecord record, JsonWriter generator) throws IOException;
 		@JsonOutput
 		JsonNode write(ScalarFieldsRecord record);
+	}
+
+	interface Input {
+		@JsonInput
+		ScalarFieldsRecord read(JsonParser parser) throws IOException;
 	}
 }

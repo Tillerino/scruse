@@ -3,6 +3,7 @@ package org.tillerino.scruse.tests;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,7 +15,7 @@ class ScalarMapsReaderTest {
 	ScalarMapsReader impl = new ScalarMapsReaderImpl();
 
 	@Test
-	void readStringBooleanMap() throws Exception {
+	void readStringBooleanMap() throws IOException {
 		TypeReference<Map<String, Boolean>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -34,7 +35,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringByteMap() throws Exception {
+	void readStringByteMap() throws IOException {
 		TypeReference<Map<String, Byte>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -54,7 +55,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringShortMap() throws Exception {
+	void readStringShortMap() throws IOException {
 		TypeReference<Map<String, Short>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -74,7 +75,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringIntMap() throws Exception {
+	void readStringIntMap() throws IOException {
 		TypeReference<Map<String, Integer>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -94,7 +95,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringLongMap() throws Exception {
+	void readStringLongMap() throws IOException {
 		TypeReference<Map<String, Long>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -114,7 +115,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringCharMap() throws Exception {
+	void readStringCharMap() throws IOException {
 		TypeReference<Map<String, Character>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -134,7 +135,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringFloatMap() throws Exception {
+	void readStringFloatMap() throws IOException {
 		TypeReference<Map<String, Float>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -154,7 +155,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringDoubleMap() throws Exception {
+	void readStringDoubleMap() throws IOException {
 		TypeReference<Map<String, Double>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -174,7 +175,7 @@ class ScalarMapsReaderTest {
 	}
 
 	@Test
-	void readStringStringMap() throws Exception {
+	void readStringStringMap() throws IOException {
 		TypeReference<Map<String, String>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {

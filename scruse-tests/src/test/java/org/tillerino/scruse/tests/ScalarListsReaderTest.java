@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ class ScalarListsReaderTest {
 	ScalarListsReader impl = new ScalarListsReaderImpl();
 
 	@Test
-	void testBooleanList() throws Exception {
+	void testBooleanList() throws IOException {
 		TypeReference<List<Boolean>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -33,7 +34,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testByteList() throws Exception {
+	void testByteList() throws IOException {
 		TypeReference<List<Byte>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -53,7 +54,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testShortList() throws Exception {
+	void testShortList() throws IOException {
 		TypeReference<List<Short>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -73,7 +74,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testIntegerList() throws Exception {
+	void testIntegerList() throws IOException {
 		TypeReference<List<Integer>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -93,7 +94,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testLongList() throws Exception {
+	void testLongList() throws IOException {
 		TypeReference<List<Long>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -113,7 +114,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testFloatList() throws Exception {
+	void testFloatList() throws IOException {
 		TypeReference<List<Float>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -133,7 +134,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testDoubleList() throws Exception {
+	void testDoubleList() throws IOException {
 		TypeReference<List<Double>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -153,7 +154,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testCharacterList() throws Exception {
+	void testCharacterList() throws IOException {
 		TypeReference<List<Character>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -173,7 +174,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testStringList() throws Exception {
+	void testStringList() throws IOException {
 		TypeReference<List<String>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {

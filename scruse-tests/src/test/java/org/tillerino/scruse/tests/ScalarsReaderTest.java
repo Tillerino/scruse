@@ -3,11 +3,13 @@ package org.tillerino.scruse.tests;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 class ScalarsReaderTest {
 	ScalarsReaderImpl impl = new ScalarsReaderImpl();
 
 	@Test
-	void testBoolean() throws Exception {
+	void testBoolean() throws IOException {
 		TypeReference<Boolean> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -20,7 +22,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testByte() throws Exception {
+	void testByte() throws IOException {
 		TypeReference<Byte> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -36,7 +38,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testShort() throws Exception {
+	void testShort() throws IOException {
 		TypeReference<Short> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -52,7 +54,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testInt() throws Exception {
+	void testInt() throws IOException {
 		TypeReference<Integer> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -68,7 +70,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testLong() throws Exception {
+	void testLong() throws IOException {
 		TypeReference<Long> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -84,7 +86,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testChar() throws Exception {
+	void testChar() throws IOException {
 		TypeReference<Character> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -101,7 +103,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testFloat() throws Exception {
+	void testFloat() throws IOException {
 		TypeReference<Float> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -122,7 +124,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testDouble() throws Exception {
+	void testDouble() throws IOException {
 		TypeReference<Double> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -143,7 +145,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedBoolean() throws Exception {
+	void testBoxedBoolean() throws IOException {
 		TypeReference<Boolean> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -157,7 +159,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedByte() throws Exception {
+	void testBoxedByte() throws IOException {
 		TypeReference<Byte> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -174,7 +176,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedShort() throws Exception {
+	void testBoxedShort() throws IOException {
 		TypeReference<Short> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -191,7 +193,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedInteger() throws Exception {
+	void testBoxedInteger() throws IOException {
 		TypeReference<Integer> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -208,7 +210,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedLong() throws Exception {
+	void testBoxedLong() throws IOException {
 		TypeReference<Long> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -225,7 +227,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedCharacter() throws Exception {
+	void testBoxedCharacter() throws IOException {
 		TypeReference<Character> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -243,7 +245,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedFloat() throws Exception {
+	void testBoxedFloat() throws IOException {
 		TypeReference<Float> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -265,7 +267,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedDouble() throws Exception {
+	void testBoxedDouble() throws IOException {
 		TypeReference<Double> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -287,7 +289,7 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testString() throws Exception {
+	void testString() throws IOException {
 		TypeReference<String> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {

@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 class ScalarArraysReaderTest {
 	ScalarArraysReaderImpl impl = new ScalarArraysReaderImpl();
 
 	@Test
-	void testBooleanArray() throws Exception {
+	void testBooleanArray() throws IOException {
 		TypeReference<boolean[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -24,7 +26,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testByteArray() throws Exception {
+	void testByteArray() throws IOException {
 		TypeReference<byte[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -45,7 +47,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testCharArray() throws Exception {
+	void testCharArray() throws IOException {
 		TypeReference<char[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -58,7 +60,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testShortArray() throws Exception {
+	void testShortArray() throws IOException {
 		TypeReference<short[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -77,7 +79,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testIntArray() throws Exception {
+	void testIntArray() throws IOException {
 		TypeReference<int[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -96,7 +98,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testLongArray() throws Exception {
+	void testLongArray() throws IOException {
 		TypeReference<long[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -115,7 +117,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testFloatArray() throws Exception {
+	void testFloatArray() throws IOException {
 		TypeReference<float[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -134,7 +136,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testDoubleArray() throws Exception {
+	void testDoubleArray() throws IOException {
 		TypeReference<double[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -153,7 +155,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedBooleanArray() throws Exception {
+	void testBoxedBooleanArray() throws IOException {
 		TypeReference<Boolean[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -170,7 +172,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedByteArray() throws Exception {
+	void testBoxedByteArray() throws IOException {
 		TypeReference<Byte[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -199,7 +201,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedShortArray() throws Exception {
+	void testBoxedShortArray() throws IOException {
 		TypeReference<Short[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -219,7 +221,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedIntArray() throws Exception {
+	void testBoxedIntArray() throws IOException {
 		TypeReference<Integer[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -239,7 +241,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedLongArray() throws Exception {
+	void testBoxedLongArray() throws IOException {
 		TypeReference<Long[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -259,7 +261,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedFloatArray() throws Exception {
+	void testBoxedFloatArray() throws IOException {
 		TypeReference<Float[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -279,7 +281,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testBoxedDoubleArray() throws Exception {
+	void testBoxedDoubleArray() throws IOException {
 		TypeReference<Double[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -299,7 +301,7 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
-	void testStringArray() throws Exception {
+	void testStringArray() throws IOException {
 		TypeReference<String[]> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {

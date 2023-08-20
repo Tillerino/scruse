@@ -2,13 +2,15 @@ package org.tillerino.scruse.tests;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.tillerino.scruse.tests.OutputUtils.*;
 
 class ScalarArraysWriterTest {
 	ScalarArraysWriter impl = new ScalarArraysWriterImpl();
 
 	@Test
-	void testBooleanArray() throws Exception {
+	void testBooleanArray() throws IOException {
 		boolean[][] values = {
 			null,
 			ScalarsWriterTest.BOOLEANS
@@ -21,7 +23,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testByteArray() throws Exception {
+	void testByteArray() throws IOException {
 		byte[][] values = {
 			null,
 			ScalarsWriterTest.BYTES
@@ -34,7 +36,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testShortArray() throws Exception {
+	void testShortArray() throws IOException {
 		short[][] values = {
 			null,
 			ScalarsWriterTest.SHORTS
@@ -47,7 +49,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testIntArray() throws Exception {
+	void testIntArray() throws IOException {
 		int[][] values = {
 			null,
 			ScalarsWriterTest.INTS
@@ -60,7 +62,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testLongArray() throws Exception {
+	void testLongArray() throws IOException {
 		long[][] values = {
 			null,
 			ScalarsWriterTest.LONGS
@@ -73,7 +75,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testCharArray() throws Exception {
+	void testCharArray() throws IOException {
 		char[][] values = {
 			null,
 			ScalarsWriterTest.CHARS
@@ -86,7 +88,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testFloatArray() throws Exception {
+	void testFloatArray() throws IOException {
 		float[][] values = {
 			null,
 			ScalarsWriterTest.FLOATS
@@ -99,7 +101,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testDoubleArray() throws Exception {
+	void testDoubleArray() throws IOException {
 		double[][] values = {
 			null,
 			ScalarsWriterTest.DOUBLES
@@ -112,7 +114,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedBooleanArray() throws Exception {
+	void testBoxedBooleanArray() throws IOException {
 		Boolean[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_BOOLEANS
@@ -125,7 +127,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedByteArray() throws Exception {
+	void testBoxedByteArray() throws IOException {
 		Byte[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_BYTES
@@ -138,7 +140,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedShortArray() throws Exception {
+	void testBoxedShortArray() throws IOException {
 		Short[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_SHORTS
@@ -151,7 +153,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedIntArray() throws Exception {
+	void testBoxedIntArray() throws IOException {
 		Integer[][] values = {
 			null,
 			ScalarsWriterTest.INTEGERS
@@ -164,7 +166,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedLongArray() throws Exception {
+	void testBoxedLongArray() throws IOException {
 		Long[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_LONGS
@@ -177,7 +179,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedCharArray() throws Exception {
+	void testBoxedCharArray() throws IOException {
 		Character[][] values = {
 			null,
 			ScalarsWriterTest.CHARACTERS
@@ -190,7 +192,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedFloatArray() throws Exception {
+	void testBoxedFloatArray() throws IOException {
 		Float[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_FLOATS
@@ -203,7 +205,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testBoxedDoubleArray() throws Exception {
+	void testBoxedDoubleArray() throws IOException {
 		Double[][] values = {
 			null,
 			ScalarsWriterTest.BOXED_DOUBLES
@@ -216,7 +218,7 @@ class ScalarArraysWriterTest {
 	}
 
 	@Test
-	void testStringArray() throws Exception {
+	void testStringArray() throws IOException {
 		String[][] values = {
 			null,
 			ScalarsWriterTest.STRINGS

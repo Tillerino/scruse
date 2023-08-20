@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ class ScalarMapsWriterTest {
 	ScalarMapsWriter impl = new ScalarMapsWriterImpl();
 
 	@Test
-	void testStringBooleanMap() throws Exception {
+	void testStringBooleanMap() throws IOException {
 		List<Map<String, Boolean>> values = Arrays.asList(
 			null,
 			map(),
@@ -27,7 +28,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringByteMap() throws Exception {
+	void testStringByteMap() throws IOException {
 		List<Map<String, Byte>> values = Arrays.asList(
 			null,
 			map(),
@@ -41,7 +42,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringShortMap() throws Exception {
+	void testStringShortMap() throws IOException {
 		List<Map<String, Short>> values = Arrays.asList(
 			null,
 			map(),
@@ -55,7 +56,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringIntMap() throws Exception {
+	void testStringIntMap() throws IOException {
 		List<Map<String, Integer>> values = Arrays.asList(
 			null,
 			map(),
@@ -69,7 +70,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringLongMap() throws Exception {
+	void testStringLongMap() throws IOException {
 		List<Map<String, Long>> values = Arrays.asList(
 			null,
 			map(),
@@ -83,7 +84,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringCharMap() throws Exception {
+	void testStringCharMap() throws IOException {
 		List<Map<String, Character>> values = Arrays.asList(
 			null,
 			map(),
@@ -97,7 +98,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringFloatMap() throws Exception {
+	void testStringFloatMap() throws IOException {
 		List<Map<String, Float>> values = Arrays.asList(
 			null,
 			map(),
@@ -111,7 +112,7 @@ class ScalarMapsWriterTest {
 	}
 
 	@Test
-	void testStringDoubleMap() throws Exception {
+	void testStringDoubleMap() throws IOException {
 		List<Map<String, Double>> values = Arrays.asList(
 			null,
 			map(),
@@ -125,7 +126,7 @@ class ScalarMapsWriterTest {
 	}
 	
 	@Test
-	void testStringStringMap() throws Exception {
+	void testStringStringMap() throws IOException {
 		List<Map<String, String>> values = Arrays.asList(
 			null,
 			map(),

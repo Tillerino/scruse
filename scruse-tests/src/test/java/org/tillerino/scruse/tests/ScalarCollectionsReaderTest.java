@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,7 +15,7 @@ class ScalarCollectionsReaderTest {
 	ScalarCollectionsReader impl = new ScalarCollectionsReaderImpl();
 
 	@Test
-	void testBooleanSet() throws Exception {
+	void testBooleanSet() throws IOException {
 		TypeReference<Set<Boolean>> typeRef = new TypeReference<>() {
 		};
 		String[] jsons = {
@@ -34,7 +35,7 @@ class ScalarCollectionsReaderTest {
 	}
 
 	@Test
-	void testBooleanTreeSet() throws Exception {
+	void testBooleanTreeSet() throws IOException {
 		TypeReference<TreeSet<Boolean>> typeRef = new TypeReference<>() {
 		};
 		// cannot contain null

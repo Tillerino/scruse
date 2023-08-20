@@ -37,6 +37,7 @@ class OutputUtils {
 	static <T> void assertThatJacksonJsonGeneratorIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withJacksonJsonGenerator(generator -> output.accept(obj, generator));
+		System.out.println(ours);
 		assertThatJson(ours).isEqualTo(databind);
 	}
 
