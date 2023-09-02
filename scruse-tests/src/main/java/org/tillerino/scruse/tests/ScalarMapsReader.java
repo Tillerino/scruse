@@ -6,7 +6,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 import java.io.IOException;
 import java.util.Map;
 
-public interface ScalarMapsReader {
+interface ScalarMapsReader {
 	@JsonInput
 	Map<String, Boolean> readStringBooleanMap(JsonParser parser) throws IOException;
 

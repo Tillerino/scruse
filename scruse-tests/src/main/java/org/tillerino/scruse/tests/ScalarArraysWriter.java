@@ -7,7 +7,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 
 import java.io.IOException;
 
-public interface ScalarArraysWriter {
+interface ScalarArraysWriter {
 	@JsonOutput
 	void writeBooleanArray(boolean[] input, JsonGenerator generator) throws IOException;
 

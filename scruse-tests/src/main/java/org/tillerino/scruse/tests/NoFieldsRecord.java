@@ -5,7 +5,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 
 import java.io.IOException;
 
-public record NoFieldsRecord() {
+record NoFieldsRecord() {
 	interface Input {
 		@JsonInput
 		NoFieldsRecord read(JsonParser parser) throws IOException;

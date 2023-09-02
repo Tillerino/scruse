@@ -5,7 +5,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 
 import java.io.IOException;
 
-public interface ScalarsReader {
+interface ScalarsReader {
 	@JsonInput
 	boolean readBoolean(JsonParser parser) throws IOException;
 	@JsonInput

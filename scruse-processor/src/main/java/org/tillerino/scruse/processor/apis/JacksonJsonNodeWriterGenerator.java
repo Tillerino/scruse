@@ -120,7 +120,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 		} else if(mode == Mode.IN_ARRAY) {
 			code.addStatement("$T $L = $L.addObject()", objectNode, nodeName(), parent.nodeName());
 		} else if(mode == Mode.IN_OBJECT) {
-			code.addStatement("$T $L = $L.putObject(" + key.keyDollar() + ")", objectNode, nodeName(), parent.nodeName(), key.keyDollar());
+			code.addStatement("$T $L = $L.putObject(" + key.keyDollar() + ")", objectNode, nodeName(), parent.nodeName(), key.keyValue());
 		} else {
 			throw new IllegalStateException("Unknown mode " + mode);
 		}

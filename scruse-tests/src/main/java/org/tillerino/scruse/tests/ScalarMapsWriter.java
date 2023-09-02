@@ -8,7 +8,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 import java.io.IOException;
 import java.util.Map;
 
-public interface ScalarMapsWriter {
+interface ScalarMapsWriter {
 	@JsonOutput
 	void writeStringBooleanMap(Map<String, Boolean> map, JsonGenerator generator) throws IOException;
 

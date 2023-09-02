@@ -8,7 +8,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 import java.io.IOException;
 import java.util.List;
 
-public interface ScalarListsWriter {
+interface ScalarListsWriter {
 
 	@JsonOutput
 	void writeBoxedBooleanList(List<Boolean> input, JsonGenerator generator) throws IOException;

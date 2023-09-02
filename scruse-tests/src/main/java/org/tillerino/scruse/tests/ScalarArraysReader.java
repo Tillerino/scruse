@@ -5,7 +5,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 
 import java.io.IOException;
 
-public interface ScalarArraysReader {
+interface ScalarArraysReader {
 	@JsonInput
 	boolean[] readBooleanArray(JsonParser parser) throws IOException;
 

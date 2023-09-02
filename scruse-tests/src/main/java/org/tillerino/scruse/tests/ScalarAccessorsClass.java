@@ -11,7 +11,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 import java.io.IOException;
 
 @EqualsAndHashCode
-public class ScalarAccessorsClass {
+class ScalarAccessorsClass {
 	private boolean bo;
 	private byte by;
 	private short s;

@@ -10,7 +10,7 @@ import java.util.TreeSet;
 /**
  * All scalar component types are tested in {@link ScalarListsReader}, we test other collections with the Boolean component type here.
  */
-public interface ScalarCollectionsReader {
+interface ScalarCollectionsReader {
 	@JsonInput
 	Set<Boolean> readBooleanSet(JsonParser parser) throws IOException;
 

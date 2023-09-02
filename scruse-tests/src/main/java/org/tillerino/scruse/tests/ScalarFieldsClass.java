@@ -9,10 +9,9 @@ import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @EqualsAndHashCode
-public class ScalarFieldsClass {
+class ScalarFieldsClass {
 	public boolean bo;
 	public byte by;
 	public short s;
