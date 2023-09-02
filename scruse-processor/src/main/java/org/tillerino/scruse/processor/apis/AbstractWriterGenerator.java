@@ -2,15 +2,12 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.mapstruct.ap.internal.util.accessor.ReadAccessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
@@ -142,22 +139,6 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	protected abstract void endObject();
 
 	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs);
-
-	protected static Object[] flatten(Object... all) {
-		List<Object> aggregator = new ArrayList<>();
-		collectInto(all, aggregator);
-		return aggregator.toArray();
-	}
-
-	private static void collectInto(Object o, List<Object> aggregator) {
-		if (o instanceof Object[]) {
-			for (Object o2 : (Object[]) o) {
-				collectInto(o2, aggregator);
-			}
-		} else {
-			aggregator.add(o);
-		}
-	}
 
 	sealed interface LHS {
 		record Return() implements LHS { }

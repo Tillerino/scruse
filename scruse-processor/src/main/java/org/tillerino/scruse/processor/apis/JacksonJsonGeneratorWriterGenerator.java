@@ -2,7 +2,6 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.mapstruct.ap.internal.util.accessor.ReadAccessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
 import javax.lang.model.element.ExecutableElement;

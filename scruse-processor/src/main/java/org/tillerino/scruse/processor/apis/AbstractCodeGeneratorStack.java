@@ -5,7 +5,8 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
 import javax.annotation.Nullable;
-import javax.lang.model.type.TypeMirror;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
 	protected final AnnotationProcessorUtils utils;
@@ -42,6 +43,22 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 
 	protected String propertyName() {
 		return property != null ? property : parent != null ? parent.propertyName() : "root";
+	}
+
+	protected static Object[] flatten(Object... all) {
+		List<Object> aggregator = new ArrayList<>();
+		collectInto(all, aggregator);
+		return aggregator.toArray();
+	}
+
+	private static void collectInto(Object o, List<Object> aggregator) {
+		if (o instanceof Object[]) {
+			for (Object o2 : (Object[]) o) {
+				collectInto(o2, aggregator);
+			}
+		} else {
+			aggregator.add(o);
+		}
 	}
 
 	enum StringKind {

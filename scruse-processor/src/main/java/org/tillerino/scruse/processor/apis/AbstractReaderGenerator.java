@@ -1,7 +1,6 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
@@ -353,17 +352,17 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			if (this instanceof Return) {
 				code.addStatement("return " + string, args);
 			} else if (this instanceof Variable v) {
-				code.addStatement("$L = " + string, ArrayUtils.addAll(new Object[] { v.name() }, args));
+				code.addStatement("$L = " + string, flatten(v.name(), args));
 			} else if (this instanceof Array a) {
-				code.addStatement("$L[$L++] = " + string, ArrayUtils.addAll(new Object[] { a.arrayVar(), a.indexVar() }, args));
+				code.addStatement("$L[$L++] = " + string, flatten(a.arrayVar(), a.indexVar(), args));
 			} else if (this instanceof Collection c) {
-				code.addStatement("$L.add(" + string + ")", ArrayUtils.addAll(new Object[] { c.variable() }, args));
+				code.addStatement("$L.add(" + string + ")", flatten(c.variable(), args));
 			} else if (this instanceof Map m) {
-				code.addStatement("$L.put($L, " + string + ")", ArrayUtils.addAll(new Object[] { m.mapVar(), m.keyVar() }, args));
+				code.addStatement("$L.put($L, " + string + ")", flatten(m.mapVar(), m.keyVar(), args));
 			} else if (this instanceof Field f) {
-				code.addStatement("$L.$L = " + string, ArrayUtils.addAll(new Object[] { f.objectVar(), f.fieldName() }, args));
+				code.addStatement("$L.$L = " + string, flatten(f.objectVar(), f.fieldName(), args));
 			} else if (this instanceof Setter s) {
-				code.addStatement("$L.$L(" + string + ")", ArrayUtils.addAll(new Object[] { s.objectVar(), s.methodName() }, args));
+				code.addStatement("$L.$L(" + string + ")", flatten(s.objectVar(), s.methodName(), args));
 			} else {
 				throw new AssertionError(this);
 			}
