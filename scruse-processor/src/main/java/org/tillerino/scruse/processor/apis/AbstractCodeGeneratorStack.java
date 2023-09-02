@@ -23,12 +23,6 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 		this.property = property;
 	}
 
-	enum Mode {
-		ROOT,
-		IN_OBJECT,
-		IN_ARRAY
-	}
-
 	int stackDepth() {
 		return parent != null ? 1 + parent.stackDepth() : 1;
 	}
@@ -46,6 +40,10 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 		return new StringBuilder(property);
 	}
 
+	protected String propertyName() {
+		return property != null ? property : parent != null ? parent.propertyName() : "root";
+	}
+
 	enum StringKind {
 		STRING,
 		CHAR_ARRAY
@@ -53,21 +51,6 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 
 	enum BinaryKind {
 		BYTE_ARRAY
-	}
-
-	/**
-	 * If {@link Mode#IN_OBJECT}, describes the key of the current value.
-	 *
-	 * @param propertyName For error message traces. Either the property name or can be something like "element", or "value".
-	 *                     This is also used as prefix for the variable name.
-	 * @param varName      The variable name to use for the current value.
-	 * @param keyDollar    $S or $L: how to retrieve the key value.
-	 * @param keyValue     What to use put in keyDollar.
-	 */
-	protected record Key(@Nullable String propertyName, String varName, String keyDollar, String keyValue) {
-		static Key root(String variable) {
-			return new Key(null, variable, null, null);
-		}
 	}
 }
 

@@ -14,19 +14,19 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 	private final VariableElement generatorVariable;
 
 	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
+		super(utils, method);
 		this.generatorVariable = method.getParameters().get(1);
 	}
 
-	protected JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, VariableElement generatorVariable, Mode mode, JacksonJsonGeneratorWriterGenerator parent) {
-		super(utils, type, key, code, mode, parent);
+	protected JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement generatorVariable, JacksonJsonGeneratorWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
+		super(utils, type, code, parent, lhs, propertyName, rhs);
 		this.generatorVariable = generatorVariable;
 	}
 
 	@Override
 	protected void writeNull() {
-		if (mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.writeNullField(" + key.keyDollar() + ")", generatorVariable.getSimpleName(), key.keyValue());
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.writeNullField(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
 		} else {
 			code.addStatement("$L.writeNull()", generatorVariable.getSimpleName());
 		}
@@ -34,51 +34,52 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
 	@Override
 	protected void writeString(StringKind stringKind) {
-		if (mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.writeFieldName(" + key.keyDollar() + ")", generatorVariable.getSimpleName(), key.keyValue());
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
 		}
 		switch (stringKind) {
-			case STRING -> code.addStatement("$L.writeString($L)", generatorVariable.getSimpleName(), varName());
+			case STRING -> code.addStatement("$L.writeString(" + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), rhs.args()));
 			case CHAR_ARRAY ->
-				code.addStatement("$L.writeString($L, 0, $L.length)", generatorVariable.getSimpleName(), varName(), varName());
+				code.addStatement("$L.writeString(" + rhs.format() + ", 0, " + rhs.format() + ".length)", flatten(generatorVariable.getSimpleName(), rhs.args(), rhs.args()));
 		}
 	}
 
 	@Override
 	protected void writeBinary(BinaryKind binaryKind) {
-		if (mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.writeFieldName(" + key.keyDollar() + ")", generatorVariable.getSimpleName(), key.keyValue());
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
 		}
 		switch (binaryKind) {
-			case BYTE_ARRAY -> code.addStatement("$L.writeBinary($L)", generatorVariable.getSimpleName(), varName());
+			case BYTE_ARRAY ->
+				code.addStatement("$L.writeBinary(" + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), rhs.args()));
 		}
 	}
 
 	@Override
 	public void writePrimitive(TypeMirror typeMirror) {
-		if (mode == Mode.IN_OBJECT) {
+		if (lhs instanceof LHS.Field f) {
 			if (typeMirror.getKind() == TypeKind.BOOLEAN) {
-				code.addStatement("$L.writeBooleanField(" + key.keyDollar() + ", $L)", generatorVariable.getSimpleName(), key.keyValue(), varName());
+				code.addStatement("$L.writeBooleanField(" + f.format() + ", " + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), f.args(), rhs.args()));
 			} else if (typeMirror.getKind() == TypeKind.CHAR) {
-				code.addStatement("$L.writeStringField(" + key.keyDollar() + ", String.valueOf($L))", generatorVariable.getSimpleName(), key.keyValue(), varName());
+				code.addStatement("$L.writeStringField(" + f.format() + ", String.valueOf(" + rhs.format() + "))", flatten(generatorVariable.getSimpleName(), f.args(), rhs.args()));
 			} else {
-				code.addStatement("$L.writeNumberField(" + key.keyDollar() + ", $L)", generatorVariable.getSimpleName(), key.keyValue(), varName());
+				code.addStatement("$L.writeNumberField(" + f.format() + ", " + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), f.args(), rhs.args()));
 			}
 		} else {
 			if (typeMirror.getKind() == TypeKind.BOOLEAN) {
-				code.addStatement("$L.writeBoolean($L)", generatorVariable.getSimpleName(), varName());
+				code.addStatement("$L.writeBoolean(" + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), rhs.args()));
 			} else if (typeMirror.getKind() == TypeKind.CHAR) {
-				code.addStatement("$L.writeString(String.valueOf($L))", generatorVariable.getSimpleName(), varName());
+				code.addStatement("$L.writeString(String.valueOf(" + rhs.format() + "))", flatten(generatorVariable.getSimpleName(), rhs.args()));
 			} else {
-				code.addStatement("$L.writeNumber($L)", generatorVariable.getSimpleName(), varName());
+				code.addStatement("$L.writeNumber(" + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), rhs.args()));
 			}
 		}
 	}
 
 	@Override
 	protected void startArray() {
-		if (mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.writeFieldName(" + key.keyDollar() + ")", generatorVariable.getSimpleName(), key.keyValue());
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
 		}
 		code.addStatement("$L.writeStartArray()", generatorVariable.getSimpleName());
 	}
@@ -90,8 +91,8 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
 	@Override
 	protected void startObject() {
-		if (mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.writeFieldName(" + key.keyDollar() + ")", generatorVariable.getSimpleName(), key.keyValue());
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
 		}
 		code.addStatement("$L.writeStartObject()", generatorVariable.getSimpleName());
 	}
@@ -102,23 +103,8 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 	}
 
 	@Override
-	protected boolean writePrimitiveField(String propertyName, ReadAccessor accessor) {
-		if (accessor.getAccessedType().getKind() == TypeKind.BOOLEAN) {
-			code.addStatement("$L.writeBooleanField($S, $L.$L)", generatorVariable.getSimpleName(),
-				propertyName, varName(), accessor.getReadValueSource());
-		} else if (accessor.getAccessedType().getKind() == TypeKind.CHAR) {
-			code.addStatement("$L.writeStringField($S, String.valueOf($L.$L))", generatorVariable.getSimpleName(),
-				propertyName, varName(), accessor.getReadValueSource());
-		} else {
-			code.addStatement("$L.writeNumberField($S, $L.$L)", generatorVariable.getSimpleName(),
-				propertyName, varName(), accessor.getReadValueSource());
-		}
-		return true;
-	}
-
-	@Override
-	protected JacksonJsonGeneratorWriterGenerator nest(TypeMirror type, Key key, Mode mode) {
-		return new JacksonJsonGeneratorWriterGenerator(utils, utils.tf.getType(type), key, code, generatorVariable, mode, this);
+	protected JacksonJsonGeneratorWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
+		return new JacksonJsonGeneratorWriterGenerator(utils, utils.tf.getType(type), code, generatorVariable, this, lhs, rhs, propertyName);
 	}
 
 }

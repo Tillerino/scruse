@@ -15,12 +15,12 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 	private final VariableElement writerVariable;
 
 	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
+		super(utils, method);
 		this.writerVariable = method.getParameters().get(1);
 	}
 
-	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, VariableElement writerVariable, Mode mode, GsonJsonWriterWriterGenerator parent) {
-		super(utils, type, key, code, mode, parent);
+	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement writerVariable, GsonJsonWriterWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
+		super(utils, type, code, parent, lhs, propertyName, rhs);
 		this.writerVariable = writerVariable;
 	}
 
@@ -34,15 +34,15 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 	protected void writeString(StringKind stringKind) {
 		addFieldNameIfNeeded();
 		switch (stringKind) {
-			case STRING -> code.addStatement("$L.value($L)", writerVariable.getSimpleName(), varName());
-			case CHAR_ARRAY -> code.addStatement("$L.value(new String($L))", writerVariable.getSimpleName(), varName());
+			case STRING -> code.addStatement("$L.value(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
+			case CHAR_ARRAY -> code.addStatement("$L.value(new String(" + rhs.format() + "))", flatten(writerVariable.getSimpleName(), rhs.args()));
 		}
 	}
 
 	@Override
 	protected void writeBinary(BinaryKind binaryKind) {
 		switch (binaryKind) {
-			case BYTE_ARRAY -> code.addStatement("$L.value($T.getEncoder().encodeToString($L))", writerVariable.getSimpleName(), Base64.class, varName());
+			case BYTE_ARRAY -> code.addStatement("$L.value($T.getEncoder().encodeToString(" + rhs.format() + "))", flatten(writerVariable.getSimpleName(), Base64.class, rhs.args()));
 		}
 	}
 
@@ -51,15 +51,15 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 		addFieldNameIfNeeded();
 		TypeKind kind = typeMirror.getKind();
 		if (kind == TypeKind.CHAR) {
-			code.addStatement("$L.value(String.valueOf($L))", writerVariable.getSimpleName(), varName());
+			code.addStatement("$L.value(String.valueOf(" + rhs.format() + "))", flatten(writerVariable.getSimpleName(), rhs.args()));
 		} else if (kind == TypeKind.FLOAT || kind == TypeKind.DOUBLE) {
-			code.beginControlFlow("if ($T.isFinite($L))", kind == TypeKind.FLOAT ? Float.class : Double.class, varName())
-				.addStatement("$L.value($L)", writerVariable.getSimpleName(), varName())
+			code.beginControlFlow("if ($T.isFinite(" + rhs.format() + "))", flatten(kind == TypeKind.FLOAT ? Float.class : Double.class, rhs.args()))
+				.addStatement("$L.value(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()))
 				.nextControlFlow("else")
-				.addStatement("$L.value(String.valueOf($L))", writerVariable.getSimpleName(), varName())
+				.addStatement("$L.value(String.valueOf(" + rhs.format() + "))", flatten(writerVariable.getSimpleName(), rhs.args()))
 				.endControlFlow();
 		} else {
-			code.addStatement("$L.value($L)", writerVariable.getSimpleName(), varName());
+			code.addStatement("$L.value(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
 		}
 	}
 
@@ -75,22 +75,6 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 	}
 
 	@Override
-	protected boolean writePrimitiveField(String propertyName, ReadAccessor accessor) {
-		TypeKind kind = accessor.getAccessedType().getKind();
-		if(kind == TypeKind.FLOAT || kind == TypeKind.DOUBLE) {
-			return false;
-		}
-
-		code.addStatement("$L.name($S)", writerVariable.getSimpleName(), propertyName);
-		if (kind == TypeKind.CHAR) {
-			code.addStatement("$L.value(String.valueOf($L.$L))", writerVariable.getSimpleName(), varName(), accessor.getReadValueSource());
-		} else {
-			code.addStatement("$L.value($L.$L)", writerVariable.getSimpleName(), varName(), accessor.getReadValueSource());
-		}
-		return true;
-	}
-
-	@Override
 	protected void startObject() {
 		addFieldNameIfNeeded();
 		code.addStatement("$L.beginObject()", writerVariable.getSimpleName());
@@ -102,13 +86,13 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 	}
 
 	@Override
-	protected GsonJsonWriterWriterGenerator nest(TypeMirror type, Key key, Mode mode) {
-		return new GsonJsonWriterWriterGenerator(utils, utils.tf.getType(type), key, code, writerVariable, mode, this);
+	protected GsonJsonWriterWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
+		return new GsonJsonWriterWriterGenerator(utils, utils.tf.getType(type), code, writerVariable, this, lhs, rhs, propertyName);
 	}
 
 	private void addFieldNameIfNeeded() {
-		if (mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.name(" + key.keyDollar() + ")", writerVariable.getSimpleName(), key.keyValue());
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.name(" + f.format() + ")", flatten(writerVariable.getSimpleName(), f.args()));
 		}
 	}
 }

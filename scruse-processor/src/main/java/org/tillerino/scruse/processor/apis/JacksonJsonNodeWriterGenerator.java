@@ -3,7 +3,6 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.mapstruct.ap.internal.util.accessor.ReadAccessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
 import javax.lang.model.element.ExecutableElement;
@@ -15,130 +14,125 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	private final ClassName arrayNode = ClassName.get("com.fasterxml.jackson.databind.node", "ArrayNode");
 	private final ClassName objectNode = ClassName.get("com.fasterxml.jackson.databind.node", "ObjectNode");
 
+	// MUTABLE!!! Created with startObject or startArray
+	private String nodeName = null;
+
 	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, utils.tf.getType(method.getParameters().get(0).asType()), Key.root(method.getParameters().get(0).getSimpleName().toString()), CodeBlock.builder(), Mode.ROOT, null);
+		super(utils, method);
 	}
 
-	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, JacksonJsonNodeWriterGenerator parent) {
-		super(utils, type, key, code, mode, parent);
+	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, JacksonJsonNodeWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
+		super(utils, type, code, parent, lhs, propertyName, rhs);
 	}
 
 	@Override
 	protected void writeNull() {
-		if (mode == Mode.ROOT) {
+		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $T.instance.nullNode()", jsonNodeFactory);
-		} else if(mode == Mode.IN_ARRAY) {
+		} else if(lhs instanceof LHS.Array) {
 			code.addStatement("$L.addNull()", parent.nodeName());
-		} else if(mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.putNull(" + key.keyDollar() + ")", parent.nodeName(), key.keyValue());
+		} else if(lhs instanceof LHS.Field f) {
+			code.addStatement("$L.putNull(" + f.format() + ")", flatten(parent.nodeName(), f.args()));
 		} else {
-			throw new IllegalStateException("Unknown mode " + mode);
+			throw new IllegalStateException("Unknown lhs " + lhs);
 		}
 	}
 
 	@Override
 	protected void writeString(StringKind stringKind) {
-		if (mode == Mode.ROOT) {
+		if (lhs instanceof LHS.Return) {
 			switch (stringKind) {
-				case STRING -> code.addStatement("return $T.instance.textNode($L)", jsonNodeFactory, varName());
-				case CHAR_ARRAY -> code.addStatement("return $T.instance.textNode(new String($L))", jsonNodeFactory, varName());
+				case STRING -> code.addStatement("return $T.instance.textNode(" + rhs.format() + ")", flatten(jsonNodeFactory, rhs.args()));
+				case CHAR_ARRAY -> code.addStatement("return $T.instance.textNode(new String(" + rhs.format() + "))", flatten(jsonNodeFactory, rhs.args()));
 			}
-		} else if(mode == Mode.IN_ARRAY) {
-			code.addStatement("$L.add($L)", parent.nodeName(), varName());
-		} else if(mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.put(" + key.keyDollar() + ", $L)", parent.nodeName(), key.keyValue(), varName());
+		} else if(lhs instanceof LHS.Array) {
+			code.addStatement("$L.add(" + rhs.format() + ")", flatten(parent.nodeName(), rhs.args()));
+		} else if(lhs instanceof LHS.Field f) {
+			code.addStatement("$L.put(" + f.format() + ", " + rhs.format() + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
 		} else {
-			throw new IllegalStateException("Unknown mode " + mode);
+			throw new IllegalStateException("Unknown lhs " + lhs);
 		}
 	}
 
 	@Override
 	protected void writeBinary(BinaryKind binaryKind) {
-		if (mode == Mode.ROOT) {
-			code.addStatement("return $T.instance.binaryNode($L)", jsonNodeFactory, varName());
-		} else if(mode == Mode.IN_ARRAY) {
-			code.addStatement("$L.add($L)", parent.nodeName(), varName());
-		} else if(mode == Mode.IN_OBJECT) {
-			code.addStatement("$L.put(" + key.keyDollar() + ", $L)", parent.nodeName(), key.keyValue(), varName());
+		if (lhs instanceof LHS.Return) {
+			code.addStatement("return $T.instance.binaryNode(" + rhs.format() + ")", flatten(jsonNodeFactory, rhs.args()));
+		} else if(lhs instanceof LHS.Array) {
+			code.addStatement("$L.add(" + rhs.format() + ")", flatten(parent.nodeName(), rhs.args()));
+		} else if(lhs instanceof LHS.Field f) {
+			code.addStatement("$L.put(" + f.format() + ", " + rhs.format() + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
 		} else {
-			throw new IllegalStateException("Unknown mode " + mode);
+			throw new IllegalStateException("Unknown lhs " + lhs);
 		}
 	}
 
 	@Override
 	public void writePrimitive(TypeMirror typeMirror) {
-		String value = typeMirror.getKind() == TypeKind.CHAR ? "String.valueOf($L)" : "$L";
-		if (mode == Mode.ROOT) {
+		String value = typeMirror.getKind() == TypeKind.CHAR ? "String.valueOf(" + rhs.format() + ")" : rhs.format();
+		if (lhs instanceof LHS.Return) {
 			String suffix = switch (typeMirror.getKind()) {
 				case BOOLEAN -> "boolean";
 				case BYTE, SHORT, INT, LONG, FLOAT, DOUBLE -> "number";
 				case CHAR -> "text";
 				default -> throw new UnsupportedOperationException(stack() + " unsupported type " + typeMirror.getKind());
 			};
-			code.addStatement("return $T.instance.$LNode(" + value + ")", jsonNodeFactory, suffix, varName());
-		} else if(mode == Mode.IN_ARRAY) {
-			code.addStatement("$L.add(" + value + ")", parent.nodeName(), varName());
-		} else {
-			code.addStatement("$L.put(" + key.keyDollar() + ", " + value + ")", parent.nodeName(), key.keyValue(), varName());
+			code.addStatement("return $T.instance.$LNode(" + value + ")", flatten(jsonNodeFactory, suffix, rhs.args()));
+		} else if(lhs instanceof LHS.Array) {
+			code.addStatement("$L.add(" + value + ")", flatten(parent.nodeName(), rhs.args()));
+		} else if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.put(" + f.format() + ", " + value + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
 		}
 	}
 
 	@Override
 	protected void startArray() {
-		if (mode == Mode.ROOT) {
+		nodeName = propertyName() + "$" + stackDepth() + "$node";
+		if (lhs instanceof LHS.Return) {
 			code.addStatement("$T $L = $T.instance.arrayNode()", arrayNode, nodeName(), jsonNodeFactory);
-		} else if(mode == Mode.IN_ARRAY) {
+		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$T $L = $L.addArray()", arrayNode, nodeName(), parent.nodeName());
-		} else if(mode == Mode.IN_OBJECT) {
-			code.addStatement("$T $L = $L.putArray(" + key.keyDollar() + ")", arrayNode, nodeName(), parent.nodeName(), key.keyValue());
+		} else if(lhs instanceof LHS.Field f) {
+			code.addStatement("$T $L = $L.putArray(" + f.format() + ")", flatten(arrayNode, nodeName(), parent.nodeName(), f.args()));
 		} else {
-			throw new IllegalStateException("Unknown mode " + mode);
+			throw new IllegalStateException("Unknown lhs " + lhs);
 		}
 	}
 
 	@Override
 	protected void endArray() {
-		if (mode == Mode.ROOT) {
+		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $L", nodeName());
 		}
 	}
 
 	@Override
-	protected boolean writePrimitiveField(String propertyName, ReadAccessor accessor) {
-		if (accessor.getAccessedType().getKind() == TypeKind.CHAR) {
-			code.addStatement("$L.put($S, String.valueOf($L.$L))", nodeName(), propertyName, varName(), accessor.getReadValueSource());
-		} else {
-			code.addStatement("$L.put($S, $L.$L)", nodeName(), propertyName, varName(), accessor.getReadValueSource());
-		}
-		return true;
-	}
-
-	@Override
 	protected void startObject() {
-		if (mode == Mode.ROOT) {
+		nodeName = propertyName() + "$" + stackDepth() + "$node";
+		if (lhs instanceof LHS.Return) {
 			code.addStatement("$T $L = $T.instance.objectNode()", objectNode, nodeName(), jsonNodeFactory);
-		} else if(mode == Mode.IN_ARRAY) {
+		} else if(lhs instanceof LHS.Array) {
 			code.addStatement("$T $L = $L.addObject()", objectNode, nodeName(), parent.nodeName());
-		} else if(mode == Mode.IN_OBJECT) {
-			code.addStatement("$T $L = $L.putObject(" + key.keyDollar() + ")", objectNode, nodeName(), parent.nodeName(), key.keyValue());
+		} else if(lhs instanceof LHS.Field f) {
+			code.addStatement("$T $L = $L.putObject(" + f.format() + ")", flatten(objectNode, nodeName(), parent.nodeName(), f.args()));
 		} else {
-			throw new IllegalStateException("Unknown mode " + mode);
+			throw new IllegalStateException("Unknown lhs " + lhs);
 		}
 	}
 
 	@Override
 	protected void endObject() {
-		if (mode == Mode.ROOT) {
+		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $L", nodeName());
 		}
 	}
 
 	@Override
-	protected JacksonJsonNodeWriterGenerator nest(TypeMirror type, Key key, Mode mode) {
-		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), key, code, mode, this);
+	protected JacksonJsonNodeWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
+		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), code, this, lhs, rhs, propertyName);
 	}
 
 	String nodeName() {
-		return varName() + "$node";
+		return nodeName != null ? nodeName : parent.nodeName();
 	}
 }

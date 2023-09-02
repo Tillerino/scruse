@@ -1,31 +1,45 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
-import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.util.accessor.ReadAccessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
-	protected final Key key;
-	protected final Mode mode;
+	protected final LHS lhs;
 
-	public AbstractWriterGenerator(AnnotationProcessorUtils utils, Type type, Key key, CodeBlock.Builder code, Mode mode, SELF parent) {
-		super(utils, type, code, parent, key.propertyName());
-		this.key = key;
-		this.mode = mode;
+	protected final RHS rhs;
+
+	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, LHS lhs, String propertyName, RHS rhs) {
+		super(utils, type, code, parent, propertyName);
+		this.lhs = lhs;
+		this.rhs = rhs;
+	}
+
+	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
+		this(utils, utils.tf.getType(method.getParameters().get(0).asType()), CodeBlock.builder(), null, new LHS.Return(), null, new RHS.Variable(method.getParameters().get(0).getSimpleName().toString()));
 	}
 
 	public CodeBlock.Builder build() {
 		if (type.isPrimitive()) {
 			writePrimitive(type.getTypeMirror());
 		} else {
-			code.beginControlFlow("if ($L != null)", varName());
+			if (rhs instanceof RHS.Variable v) {
+				code.beginControlFlow("if ($L != null)", v.name());
+			} else {
+				RHS.Variable nest = new RHS.Variable(property + "$" + (stackDepth() + 1));
+				code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
+				nest(type.getTypeMirror(), lhs, null, nest).build();
+				return code;
+			}
 
 			writeNullCheckedObject();
 
@@ -38,7 +52,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	/**
 	 * If your implementation has specializations for some types, you can override this method.
-	 * At this point, the variable in {@link #varName()} is guaranteed to be non-null and has type {@link #type}.
+	 * At this point, {@link #rhs} is guaranteed to be non-null and has type {@link #type}.
 	 */
 	protected void writeNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
@@ -71,21 +85,15 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected abstract void endArray();
 
-	/**
-	 * Mode is always IN_OBJECT.
-	 *
-	 * @return false if it is not possible to write the field inline and instead a variable needs to be declared
-	 */
-	protected abstract boolean writePrimitiveField(String propertyName, ReadAccessor accessor);
-
 	protected void writeIterable() {
 		Type componentType = type.isArrayType()
 			? type.getComponentType()
 			: type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
 
-		SELF nested = nestIntoArray(componentType.getTypeMirror(), "elem");
+		RHS.Variable elemVar = new RHS.Variable("elem$" + (stackDepth() + 1));
+		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "elem", elemVar);
 		startArray();
-		code.beginControlFlow("for ($T $L : $L)", nested.type.getTypeMirror(), nested.varName(), varName());
+		code.beginControlFlow("for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
 		nested.build();
 		code.endControlFlow();
 		endArray();
@@ -95,16 +103,15 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		Type keyType = type.determineTypeArguments(Map.class).get(0);
 		Type valueType = type.determineTypeArguments(Map.class).get(1);
 
-		String entryVar = "entry$" + (stackDepth() + 1);
-		String keyVar = "key$" + (stackDepth() + 1);
-		String valueVar = "value$" + (stackDepth() + 1);
+		RHS.Variable entry = new RHS.Variable("entry$" + (stackDepth() + 1));
 
-		SELF valueNested = nestIntoMap(valueType.getTypeMirror(), keyVar, valueVar);
+		RHS.Accessor value = new RHS.Accessor(entry, "getValue()");
+		LHS.Field key = new LHS.Field("$L.getKey()", new Object[] { entry.name() });
+		SELF valueNested = nest(valueType.getTypeMirror(), key, "entry", value);
 
 		startObject();
-		code.beginControlFlow("for ($T<$T, $T> $L : $L.entrySet())", Map.Entry.class, keyType.getTypeMirror(), valueType.getTypeMirror(), entryVar, varName());
-		code.addStatement("$T $L = $L.getKey()", keyType.getTypeMirror(), keyVar, entryVar);
-		code.addStatement("$T $L = $L.getValue()", valueType.getTypeMirror(), valueNested.varName(), entryVar);
+		code.beginControlFlow("for ($T<$T, $T> $L : " + rhs.format() + ".entrySet())",
+			flatten(Map.Entry.class, keyType.getTypeMirror(), valueType.getTypeMirror(), entry.name(), rhs.args()));
 		valueNested.build();
 		code.endControlFlow();
 		endObject();
@@ -120,42 +127,70 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		code.add("\n");
 
 		type.getPropertyReadAccessors().forEach((propertyName, accessor) -> {
-			if (accessor.getAccessedType().getKind().isPrimitive() && writePrimitiveField(propertyName, accessor)) {
-				// field was written
-			} else {
-				SELF nested = nestIntoObject(accessor.getAccessedType(), propertyName);
-				code.addStatement("$T $L = $L.$L", accessor.getAccessedType(), nested.varName(), varName(), accessor.getReadValueSource());
-				nested.build();
-				code.add("\n");
-			}
+			LHS lhs = new LHS.Field("$S", new Object[] { propertyName });
+			RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource());
+			SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest);
+			nested.build();
+			code.add("\n");
 		});
 
 		endObject();
-	}
-
-	String varName() {
-		if (mode == Mode.ROOT) {
-			// in this case, the name is determined by the method parameter
-			return key.varName();
-		}
-		return key.varName() + "$" + stackDepth();
 	}
 
 	protected abstract void startObject();
 
 	protected abstract void endObject();
 
-	SELF nestIntoObject(TypeMirror type, String propertyName) {
-		return nest(type, new Key(propertyName, propertyName, "$S", propertyName), Mode.IN_OBJECT);
+	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs);
+
+	protected static Object[] flatten(Object... all) {
+		List<Object> aggregator = new ArrayList<>();
+		collectInto(all, aggregator);
+		return aggregator.toArray();
 	}
 
-	SELF nestIntoArray(TypeMirror type, String elemName) {
-		return nest(type, new Key("element", elemName, null, null), Mode.IN_ARRAY);
+	private static void collectInto(Object o, List<Object> aggregator) {
+		if (o instanceof Object[]) {
+			for (Object o2 : (Object[]) o) {
+				collectInto(o2, aggregator);
+			}
+		} else {
+			aggregator.add(o);
+		}
 	}
 
-	SELF nestIntoMap(TypeMirror type, String keyVariable, String valueVariable) {
-		return nest(type, new Key("value", valueVariable, "$L", keyVariable), Mode.IN_OBJECT);
+	sealed interface LHS {
+		record Return() implements LHS { }
+		record Array() implements LHS { }
+		record Field(String format, Object[] args) implements LHS { }
 	}
 
-	protected abstract SELF nest(TypeMirror type, Key nestedKey, Mode mode);
+	sealed interface RHS {
+		default String format() {
+			if (this instanceof Variable) {
+				return "$L";
+			}
+			else if (this instanceof Accessor a) {
+				return a.object().format() + ".$L";
+			}
+			else {
+				throw new IllegalArgumentException();
+			}
+		}
+
+		default Object[] args() {
+			if (this instanceof Variable v) {
+				return new Object[] { v.name() };
+			}
+			else if (this instanceof Accessor a) {
+				return new Object[] { a.object().args(), a.accessorLiteral() };
+			}
+			else {
+				throw new IllegalArgumentException();
+			}
+		}
+
+		record Variable(String name) implements RHS { }
+		record Accessor(RHS object, String accessorLiteral) implements RHS { }
+	}
 }
