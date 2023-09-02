@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.function.FailableFunction;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 
 import java.io.IOException;
 
@@ -22,6 +23,21 @@ class InputUtils {
 			T ours = consumer.apply(parser);
 			T databind = new ObjectMapper().readValue(json, typeRef);
 			assertThat(ours).isEqualTo(databind);
+			return ours;
+		});
+	}
+
+	static <T> T assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		return withJacksonJsonParser(json, parser -> {
+			T ours = consumer.apply(parser);
+			T databind = new ObjectMapper().readValue(json, typeRef);
+			assertThat(ours)
+				.usingRecursiveComparison(RecursiveComparisonConfiguration.builder()
+					.withStrictTypeChecking(true)
+					.withComparatorForType(Float::compare, Float.class)
+					.withComparatorForType(Double::compare, Double.class)
+					.build())
+				.isEqualTo(databind);
 			return ours;
 		});
 	}

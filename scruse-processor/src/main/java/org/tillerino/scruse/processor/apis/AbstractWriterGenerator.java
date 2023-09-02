@@ -83,7 +83,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			? type.getComponentType()
 			: type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
 
-		SELF nested = nestIntoArray(componentType.getTypeMirror(), StringUtils.uncapitalize(componentType.getName()));
+		SELF nested = nestIntoArray(componentType.getTypeMirror(), "elem");
 		startArray();
 		code.beginControlFlow("for ($T $L : $L)", nested.type.getTypeMirror(), nested.varName(), varName());
 		nested.build();

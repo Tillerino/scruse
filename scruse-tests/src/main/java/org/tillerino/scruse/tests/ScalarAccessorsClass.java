@@ -4,12 +4,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.stream.JsonWriter;
+import lombok.EqualsAndHashCode;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 
 import java.io.IOException;
-import java.util.Objects;
 
+@EqualsAndHashCode
 public class ScalarAccessorsClass {
 	private boolean bo;
 	private byte by;
@@ -188,32 +189,13 @@ public class ScalarAccessorsClass {
 		this.str = str;
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		ScalarAccessorsClass that = (ScalarAccessorsClass) o;
-		return bo == that.bo && by == that.by && s == that.s && i == that.i && l == that.l && c == that.c && Float.compare(that.f, f) == 0 && Double.compare(that.d, d) == 0 && Objects.equals(bbo, that.bbo) && Objects.equals(bby, that.bby) && Objects.equals(ss, that.ss) && Objects.equals(ii, that.ii) && Objects.equals(ll, that.ll) && Objects.equals(cc, that.cc) && Objects.equals(ff, that.ff) && Objects.equals(dd, that.dd) && Objects.equals(str, that.str);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(bo, by, s, i, l, c, f, d, bbo, bby, ss, ii, ll, cc, ff, dd, str);
-	}
-
-	interface Output {
+	interface Serde {
 		@JsonOutput
 		void write(ScalarAccessorsClass record, JsonGenerator generator) throws IOException;
 		@JsonOutput
 		void write(ScalarAccessorsClass record, JsonWriter generator) throws IOException;
 		@JsonOutput
 		JsonNode write(ScalarAccessorsClass record);
-
-		@JsonInput
-		ScalarAccessorsClass read(JsonParser node) throws IOException;
-	}
-
-	interface Input {
 		@JsonInput
 		ScalarAccessorsClass read(JsonParser parser) throws IOException;
 	}

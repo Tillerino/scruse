@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * All scalars are tested in {@link ScalarListsReader}, we test other collections with the Boolean component type here.
+ * All scalar component types are tested in {@link ScalarListsReader}, we test other collections with the Boolean component type here.
  */
 public interface ScalarCollectionsReader {
 	@JsonInput

@@ -6,6 +6,11 @@ Its intended for two contexts:
 1) Reflection is being avoided, e.g. when working with GraalVM native images or when static code analysis is important.
 2) A tiny footprint is required, i.e. jars like jackson-databind are too big.
 
+## Alternatives
+
+- Jackson
+- https://github.com/ngs-doo/dsl-json
+
 ## Compatibility
 
 ## Features

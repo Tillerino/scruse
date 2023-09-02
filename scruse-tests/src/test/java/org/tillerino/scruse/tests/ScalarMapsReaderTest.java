@@ -144,7 +144,7 @@ class ScalarMapsReaderTest {
 			"{\"a\": null}",
 			"{\"a\": 0.0}",
 			"{\"a\": 1.0}",
-			"{\"a\": 0.0, \"b\": null, \"c\": 2.0}",
+			"{\"a\": 0.0, \"b\": null, \"c\": 2.0, \"d\": \"NaN\", \"e\": \"Infinity\", \"f\": \"-Infinity\"}",
 		};
 		for (String json : jsons) {
 			Map<String, Float> list = InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readStringFloatMap, typeRef);
@@ -164,7 +164,7 @@ class ScalarMapsReaderTest {
 			"{\"a\": null}",
 			"{\"a\": 0.0}",
 			"{\"a\": 1.0}",
-			"{\"a\": 0.0, \"b\": null, \"c\": 2.0}",
+			"{\"a\": 0.0, \"b\": null, \"c\": 2.0, \"d\": \"NaN\", \"e\": \"Infinity\", \"f\": \"-Infinity\"}",
 		};
 		for (String json : jsons) {
 			Map<String, Double> list = InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readStringDoubleMap, typeRef);

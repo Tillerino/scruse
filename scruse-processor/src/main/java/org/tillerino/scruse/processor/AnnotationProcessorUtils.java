@@ -102,6 +102,7 @@ public class AnnotationProcessorUtils {
 		public final TypeMirror boxedFloat = elements.getTypeElement(Float.class.getName()).asType();
 		public final TypeMirror boxedDouble = elements.getTypeElement(Double.class.getName()).asType();
 		public final TypeMirror boxedCharacter = elements.getTypeElement(Character.class.getName()).asType();
+		public final TypeMirror object = elements.getTypeElement(Object.class.getName()).asType();
 
 		public final Set<String> boxedTypes = Set.of(
 			boxedBoolean.toString(),

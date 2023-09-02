@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +18,7 @@ class ScalarFieldsTest {
 			new ScalarFieldsRecord(false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null, null, null, null, null)
 		);
 
-		ScalarFieldsRecord.Output impl = new ScalarFieldsRecord$OutputImpl();
+		ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
 
 		for (ScalarFieldsRecord object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::write);
@@ -35,7 +34,7 @@ class ScalarFieldsTest {
 			new ScalarFieldsClass(false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null, null, null, null, null)
 		);
 
-		ScalarFieldsClass.Output impl = new ScalarFieldsClass$OutputImpl();
+		ScalarFieldsClass.Serde impl = new ScalarFieldsClass$SerdeImpl();
 
 		for (ScalarFieldsClass object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::write);
@@ -51,7 +50,7 @@ class ScalarFieldsTest {
 			new ScalarAccessorsClass(false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null, null, null, null, null)
 		);
 
-		ScalarAccessorsClass.Output impl = new ScalarAccessorsClass$OutputImpl();
+		ScalarAccessorsClass.Serde impl = new ScalarAccessorsClass$SerdeImpl();
 
 		for (ScalarAccessorsClass object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::write);
@@ -65,7 +64,7 @@ class ScalarFieldsTest {
 		TypeReference<ScalarFieldsRecord> typeRef = new TypeReference<>() {
 		};
 
-		ScalarFieldsRecord.Input impl = new ScalarFieldsRecord$InputImpl();
+		ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -83,7 +82,7 @@ class ScalarFieldsTest {
 		TypeReference<ScalarFieldsClass> typeRef = new TypeReference<>() {
 		};
 
-		ScalarFieldsClass.Input impl = new ScalarFieldsClass$InputImpl();
+		ScalarFieldsClass.Serde impl = new ScalarFieldsClass$SerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -101,7 +100,7 @@ class ScalarFieldsTest {
 		TypeReference<ScalarAccessorsClass> typeRef = new TypeReference<>() {
 		};
 
-		ScalarAccessorsClass.Input impl = new ScalarAccessorsClass$InputImpl();
+		ScalarAccessorsClass.Serde impl = new ScalarAccessorsClass$SerdeImpl();
 
 		String[] jsons = {
 			"null",

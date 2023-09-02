@@ -1,9 +1,11 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 
 import javax.annotation.Nullable;
@@ -12,7 +14,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
@@ -32,7 +33,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			readPrimitive(branch, type.getTypeMirror());
 		} else {
 			startNullCase(branch);
-			readNull();
+			lhs.assign(code, "null");
 			readNullCheckedObject();
 		}
 		return code;
@@ -74,21 +75,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	private void readCharFromString() {
 		String stringVar = readStringInstead();
 		code.beginControlFlow("if ($L.length() == 1)", stringVar);
-		if (lhs instanceof LHS.Return) {
-			code.addStatement("return $L.charAt(0)", stringVar);
-		} else if (lhs instanceof LHS.Variable v) {
-			code.addStatement("$L = $L.charAt(0)", v.name(), stringVar);
-		} else if (lhs instanceof LHS.Collection c) {
-			code.addStatement("$L.add($L.charAt(0))", c.variable(), stringVar);
-		} else if (lhs instanceof LHS.Map m) {
-			code.addStatement("$L.put($L, $L.charAt(0))", m.mapVar(), m.keyVar(), stringVar);
-		} else if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.$L = $L.charAt(0)", f.objectVar(), f.fieldName(), stringVar);
-		} else if (lhs instanceof LHS.Setter s) {
-			code.addStatement("$L.$L($L.charAt(0))", s.objectVar(), s.methodName(), stringVar);
-		} else {
-			throw new AssertionError(lhs);
-		}
+		lhs.assign(code, "$L.charAt(0)", stringVar);
 		code.nextControlFlow("else");
 		code.addStatement("throw new $T()", IOException.class);
 		code.endControlFlow();
@@ -96,31 +83,16 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readNumberFromString(TypeMirror type) {
 		String stringVar = readStringInstead();
-		BiConsumer<String, String> print = (t, v) -> {
-			if (lhs instanceof LHS.Return) {
-				code.addStatement("return $L.$L", StringUtils.capitalize(t), v);
-			} else if (lhs instanceof LHS.Variable vv) {
-				code.addStatement("$L = $L.$L", vv.name(), StringUtils.capitalize(t), v);
-			} else if (lhs instanceof LHS.Array a) {
-				code.addStatement("$L[$L++] = $L.$L", a.arrayVar(), a.indexVar(), StringUtils.capitalize(t), v);
-			} else if (lhs instanceof LHS.Collection c) {
-				code.addStatement("$L.add($L.$L)", c.variable(), StringUtils.capitalize(t), v);
-			} else if (lhs instanceof LHS.Map m) {
-				code.addStatement("$L.put($L, $L.$L)", m.mapVar(), m.keyVar(), StringUtils.capitalize(t), v);
-			} else if (lhs instanceof LHS.Field f) {
-				code.addStatement("$L.$L = $L.$L", f.objectVar(), f.fieldName(), StringUtils.capitalize(t), v);
-			} else if (lhs instanceof LHS.Setter s) {
-				code.addStatement("$L.$L($L.$L)", s.objectVar(), s.methodName(), StringUtils.capitalize(t), v);
-			} else {
-				throw new AssertionError(lhs);
-			}
-		};
+
 		code.beginControlFlow("if ($L.equals($S))", stringVar, "NaN");
-		print.accept(type.toString(), "NaN");
+		lhs.assign(code, "$L.NaN", StringUtils.capitalize(type.toString()));
+
 		code.nextControlFlow("else if ($L.equals($S))", stringVar, "Infinity");
-		print.accept(type.toString(), "POSITIVE_INFINITY");
+		lhs.assign(code, "$L.POSITIVE_INFINITY", StringUtils.capitalize(type.toString()));
+
 		code.nextControlFlow("else if ($L.equals($S))", stringVar, "-Infinity");
-		print.accept(type.toString(), "NEGATIVE_INFINITY");
+		lhs.assign(code, "$L.NEGATIVE_INFINITY", StringUtils.capitalize(type.toString()));
+
 		code.nextControlFlow("else");
 		code.addStatement("throw new $T()", IOException.class);
 		code.endControlFlow();
@@ -132,26 +104,6 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		code.addStatement("$T $L", nested.type.getTypeMirror(), stringVar);
 		nested.readString(StringKind.STRING);
 		return stringVar;
-	}
-
-	private void readNull() {
-		if (lhs instanceof LHS.Return) {
-			code.addStatement("return null");
-		} else if (lhs instanceof LHS.Variable v) {
-			code.addStatement("$L = null", v.name());
-		} else if (lhs instanceof LHS.Array a) {
-			code.addStatement("$L[$L++] = null", a.arrayVar(), a.indexVar());
-		} else if (lhs instanceof LHS.Collection c) {
-			code.addStatement("$L.add(null)", c.variable());
-		} else if (lhs instanceof LHS.Map m) {
-			code.addStatement("$L.put($L, null)", m.mapVar(), m.keyVar());
-		} else if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.$L = null", f.objectVar(), f.fieldName());
-		} else if (lhs instanceof LHS.Setter s) {
-			code.addStatement("$L.$L(null)", s.objectVar(), s.methodName());
-		} else {
-			throw new AssertionError(lhs);
-		}
 	}
 
 	private void readNullCheckedObject() {
@@ -186,50 +138,35 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				throw new AssertionError("Please provide a custom reader for " + type);
 			}
 			TypeMirror rawComponentType = componentType.asRawType().getTypeMirror();
+			TypeMirror rawRawComponentType = rawComponentType.getKind().isPrimitive() ? rawComponentType : utils.commonTypes.object;
 			String varName;
-			if (lhs instanceof LHS.Return) {
-				varName = "array$" + stackDepth();
-				code.addStatement("$T[] $L = new $T[1024]", rawComponentType, varName, rawComponentType);
-			} else if (lhs instanceof LHS.Variable v) {
-				varName = v.name();
-				code.addStatement("$L = new $T[1024]", varName, rawComponentType);
-			} else {
-				throw new AssertionError(lhs);
-			}
+			code.add("// Like ArrayList\n");
+			varName = "array$" + stackDepth();
+			code.addStatement("$T[] $L = $T.EMPTY_$L_ARRAY", rawRawComponentType, varName, EmptyArrays.class,
+				rawRawComponentType.getKind().isPrimitive() ? rawRawComponentType.toString().toUpperCase() : "OBJECT");
 			String len = "len$" + stackDepth();
 			code.addStatement("int $L = 0", len);
 			iterateOverElements();
 			{
 				code.beginControlFlow("if ($L == $L.length)", len, varName);
-				code.addStatement("$L = $T.copyOf($L, $L.length * 2)", varName, java.util.Arrays.class, varName, varName);
+				code.add("// simplified version of ArrayList growth\n");
+				code.addStatement("$L = $T.copyOf($L, $T.max(10, $L.length + ($L.length >> 1)))", varName, java.util.Arrays.class, varName, Math.class, varName, varName);
 				code.endControlFlow();
 
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Array(varName, len));
 				nested.build(Branch.IF);
 			}
 			code.endControlFlow();
-			if (lhs instanceof LHS.Return) {
-				code.addStatement("return $T.copyOf($L, $L)", java.util.Arrays.class, varName, len);
-			} else if (lhs instanceof LHS.Variable v) {
-				code.addStatement("$L = $T.copyOf($L, $L)", v.name(), java.util.Arrays.class, varName, len);
+			if (utils.types.isSameType(rawRawComponentType, rawComponentType)) {
+				lhs.assign(code, "$T.copyOf($L, $L)", java.util.Arrays.class, varName, len);
 			} else {
-				throw new AssertionError(lhs);
+				lhs.assign(code, "$T.copyOf($L, $L, $T[].class)", java.util.Arrays.class, varName, len, rawComponentType);
 			}
 		}
 		if (componentType.getTypeMirror().getKind() == TypeKind.BYTE) {
 			startStringCase(Branch.ELSE_IF);
 			String stringVar = readStringInstead();
-			if (lhs instanceof LHS.Return) {
-				code.addStatement("return $T.getDecoder().decode($L)", Base64.class, stringVar);
-			} else if (lhs instanceof LHS.Variable v) {
-				code.addStatement("$L = $T.getDecoder().decode($L)", v.name(), Base64.class, stringVar);
-			} else if (lhs instanceof LHS.Array a) {
-				code.addStatement("$L[$L++] = $T.getDecoder().decode($L)", a.arrayVar(), a.indexVar(), Base64.class, stringVar);
-			} else if (lhs instanceof LHS.Collection c) {
-				code.addStatement("$L.add($T.getDecoder().decode($L))", c.variable(), Base64.class, stringVar);
-			} else {
-				throw new AssertionError(lhs);
-			}
+			lhs.assign(code, "$T.getDecoder().decode($L)", Base64.class, stringVar);
 		}
 		code.nextControlFlow("else");
 		{
@@ -252,17 +189,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				nested.build(Branch.IF);
 			}
 			code.endControlFlow();
-			assignVarToLhs(varName);
+			lhs.assign(code, "$L", varName);
 		}
 		code.nextControlFlow("else");
 		throwUnexpected("array");
 		code.endControlFlow();
-	}
-
-	private void assignVarToLhs(String varName) {
-		if (lhs instanceof LHS.Return) {
-			code.addStatement("return $L", varName);
-		}
 	}
 
 	private TypeMirror determineCollectionType() {
@@ -279,14 +210,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private String instantiateContainer(TypeMirror collectionType) {
 		String varName;
-		if (lhs instanceof LHS.Return) {
-			varName = "container$" + stackDepth();
-			code.addStatement("$T $L = new $T<>()", type.getTypeMirror(), varName, collectionType);
-		} else if (lhs instanceof LHS.Variable v) {
+		if (lhs instanceof LHS.Variable v) {
 			varName = v.name();
 			code.addStatement("$L = new $T<>()", varName, collectionType);
 		} else {
-			throw new AssertionError(lhs);
+			varName = "container$" + stackDepth();
+			code.addStatement("$T $L = new $T<>()", type.getTypeMirror(), varName, collectionType);
 		}
 		return varName;
 	}
@@ -313,7 +242,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			}
 			code.endControlFlow();
 
-			assignVarToLhs(varName);
+			lhs.assign(code, "$L", varName);
 		}
 		code.nextControlFlow("else");
 		throwUnexpected("object");
@@ -356,9 +285,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			code.endControlFlow();
 			code.endControlFlow(); // ends the loop
 			if (type.isRecord()) {
-				code.addStatement("return new $T($L)", type.getTypeMirror(), type.getRecordComponents().stream().map(c -> c.getSimpleName().toString() + "$" + (stackDepth() + 1)).collect(Collectors.joining(", ")));
+				lhs.assign(code, "new $T($L)", type.getTypeMirror(), properties.stream().map(p -> ((LHS.Variable) p.lhs).name()).collect(Collectors.joining(", ")));
 			} else {
-				assignVarToLhs("object$" + stackDepth());
+				lhs.assign(code, "$L", "object$" + stackDepth());
 			}
 		}
 		code.nextControlFlow("else");
@@ -420,6 +349,25 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs);
 	sealed interface LHS {
+		default void assign(CodeBlock.Builder code, String string, Object... args) {
+			if (this instanceof Return) {
+				code.addStatement("return " + string, args);
+			} else if (this instanceof Variable v) {
+				code.addStatement("$L = " + string, ArrayUtils.addAll(new Object[] { v.name() }, args));
+			} else if (this instanceof Array a) {
+				code.addStatement("$L[$L++] = " + string, ArrayUtils.addAll(new Object[] { a.arrayVar(), a.indexVar() }, args));
+			} else if (this instanceof Collection c) {
+				code.addStatement("$L.add(" + string + ")", ArrayUtils.addAll(new Object[] { c.variable() }, args));
+			} else if (this instanceof Map m) {
+				code.addStatement("$L.put($L, " + string + ")", ArrayUtils.addAll(new Object[] { m.mapVar(), m.keyVar() }, args));
+			} else if (this instanceof Field f) {
+				code.addStatement("$L.$L = " + string, ArrayUtils.addAll(new Object[] { f.objectVar(), f.fieldName() }, args));
+			} else if (this instanceof Setter s) {
+				code.addStatement("$L.$L(" + string + ")", ArrayUtils.addAll(new Object[] { s.objectVar(), s.methodName() }, args));
+			} else {
+				throw new AssertionError(this);
+			}
+		}
 
 		record Return() implements LHS {}
 		record Variable(String name) implements LHS {}

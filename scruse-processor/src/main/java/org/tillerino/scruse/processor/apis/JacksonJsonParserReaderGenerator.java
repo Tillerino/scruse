@@ -90,26 +90,9 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			code.addStatement("$T $L = $L.$L()", type, tmp, parserVariable.getSimpleName(), readMethod);
 			advance();
 			code.addStatement("return $L", tmp);
-		} else if (lhs instanceof LHS.Variable v) {
-			code.addStatement("$L = $L.$L()", v.name(), parserVariable.getSimpleName(), readMethod);
-			advance();
-		} else if (lhs instanceof LHS.Array a) {
-			code.addStatement("$L[$L++] = $L.$L()", a.arrayVar(), a.indexVar(), parserVariable.getSimpleName(), readMethod);
-			advance();
-		} else if (lhs instanceof LHS.Collection c) {
-			code.addStatement("$L.add($L.$L())", c.variable(), parserVariable.getSimpleName(), readMethod);
-			advance();
-		} else if (lhs instanceof LHS.Map m) {
-			code.addStatement("$L.put($L, $L.$L())", m.mapVar(), m.keyVar(), parserVariable.getSimpleName(), readMethod);
-			advance();
-		} else if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.$L = $L.$L()", f.objectVar(), f.fieldName(), parserVariable.getSimpleName(), readMethod);
-			advance();
-		} else if (lhs instanceof LHS.Setter s) {
-			code.addStatement("$L.$L($L.$L())", s.objectVar(), s.methodName(), parserVariable.getSimpleName(), readMethod);
-			advance();
 		} else {
-			throw new AssertionError(lhs);
+			lhs.assign(code, "$L.$L()", parserVariable.getSimpleName(), readMethod);
+			advance();
 		}
 	}
 
@@ -124,26 +107,9 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			code.addStatement("$T $L = $L.getText()$L", stringKind == StringKind.STRING ? String.class : char[].class, tmp, parserVariable.getSimpleName(), conversion);
 			advance();
 			code.addStatement("return $L", tmp);
-		} else if (lhs instanceof LHS.Variable v) {
-			code.addStatement("$L = $L.getText()$L", v.name(), parserVariable.getSimpleName(), conversion);
-			advance();
-		} else if (lhs instanceof LHS.Array a) {
-			code.addStatement("$L[$L++] = $L.getText()$L", a.arrayVar(), a.indexVar(), parserVariable.getSimpleName(), conversion);
-			advance();
-		} else if (lhs instanceof LHS.Collection c) {
-			code.addStatement("$L.add($L.getText()$L)", c.variable(), parserVariable.getSimpleName(), conversion);
-			advance();
-		} else if (lhs instanceof LHS.Map m) {
-			code.addStatement("$L.put($L, $L.getText()$L)", m.mapVar(), m.keyVar(), parserVariable.getSimpleName(), conversion);
-			advance();
-		} else if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.$L = $L.getText()$L", f.objectVar(), f.fieldName(), parserVariable.getSimpleName(), conversion);
-			advance();
-		} else if (lhs instanceof LHS.Setter s) {
-			code.addStatement("$L.$L($L.getText()$L)", s.objectVar(), s.methodName(), parserVariable.getSimpleName(), conversion);
-			advance();
 		} else {
-			throw new AssertionError(lhs);
+			lhs.assign(code, "$L.getText()$L", parserVariable.getSimpleName(), conversion);
+			advance();
 		}
 	}
 
