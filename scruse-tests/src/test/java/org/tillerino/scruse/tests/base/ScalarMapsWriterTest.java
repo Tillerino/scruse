@@ -1,4 +1,4 @@
-package org.tillerino.scruse.tests;
+package org.tillerino.scruse.tests.base;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,13 +1,14 @@
-package org.tillerino.scruse.tests;
+package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.tests.InputUtils;
+import org.tillerino.scruse.tests.OutputUtils;
 
 import java.io.IOException;
 import java.util.List;

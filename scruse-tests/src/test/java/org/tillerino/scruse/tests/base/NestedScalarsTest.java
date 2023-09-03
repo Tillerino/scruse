@@ -1,4 +1,4 @@
-package org.tillerino.scruse.tests;
+package org.tillerino.scruse.tests.base;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.tillerino.scruse.tests.OutputUtils.*;
-import static org.tillerino.scruse.tests.ScalarMapsWriterTest.map;
+import static org.tillerino.scruse.tests.base.ScalarMapsWriterTest.map;
 
 class NestedScalarsTest {
 	NestedScalarsWriter impl = new NestedScalarsWriterImpl();

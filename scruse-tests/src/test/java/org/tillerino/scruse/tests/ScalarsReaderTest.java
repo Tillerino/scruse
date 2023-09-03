@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 class ScalarsReaderTest {
-	ScalarsReaderImpl impl = new ScalarsReaderImpl();
+	ScalarsReader impl = new ScalarsReaderImpl();
 
 	@Test
 	void testBoolean() throws IOException {

@@ -11,14 +11,14 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class InputUtils {
+public class InputUtils {
 	static <T> T withJacksonJsonParser(String json, FailableFunction<JsonParser, T, IOException> consumer) throws IOException {
 		try (JsonParser parser = new JsonFactory().createParser(json)) {
 			return consumer.apply(parser);
 		}
 	}
 
-	static <T> T assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+	public static <T> T assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
 		return withJacksonJsonParser(json, parser -> {
 			T ours = consumer.apply(parser);
 			T databind = new ObjectMapper().readValue(json, typeRef);
@@ -27,7 +27,7 @@ class InputUtils {
 		});
 	}
 
-	static <T> T assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+	public static <T> T assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
 		return withJacksonJsonParser(json, parser -> {
 			T ours = consumer.apply(parser);
 			T databind = new ObjectMapper().readValue(json, typeRef);

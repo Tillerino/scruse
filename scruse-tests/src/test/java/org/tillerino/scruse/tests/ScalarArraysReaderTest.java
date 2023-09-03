@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 class ScalarArraysReaderTest {
-	ScalarArraysReaderImpl impl = new ScalarArraysReaderImpl();
+	ScalarArraysReader impl = new ScalarArraysReaderImpl();
 
 	@Test
 	void testBooleanArray() throws IOException {
