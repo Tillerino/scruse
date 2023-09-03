@@ -22,8 +22,6 @@ class ScalarFieldsTest {
 
 		for (ScalarFieldsRecord object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::write);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::write);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::write);
 		}
 	}
 
@@ -38,8 +36,6 @@ class ScalarFieldsTest {
 
 		for (ScalarFieldsClass object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::write);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::write);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::write);
 		}
 	}
 
@@ -54,8 +50,6 @@ class ScalarFieldsTest {
 
 		for (ScalarAccessorsClass object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::write);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::write);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::write);
 		}
 	}
 

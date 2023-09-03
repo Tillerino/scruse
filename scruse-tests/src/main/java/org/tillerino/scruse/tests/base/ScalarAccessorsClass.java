@@ -2,8 +2,6 @@ package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.stream.JsonWriter;
 import lombok.EqualsAndHashCode;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
@@ -192,10 +190,6 @@ class ScalarAccessorsClass {
 	interface Serde {
 		@JsonOutput
 		void write(ScalarAccessorsClass record, JsonGenerator generator) throws IOException;
-		@JsonOutput
-		void write(ScalarAccessorsClass record, JsonWriter generator) throws IOException;
-		@JsonOutput
-		JsonNode write(ScalarAccessorsClass record);
 		@JsonInput
 		ScalarAccessorsClass read(JsonParser parser) throws IOException;
 	}

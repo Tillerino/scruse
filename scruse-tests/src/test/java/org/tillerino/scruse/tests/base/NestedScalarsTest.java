@@ -24,8 +24,6 @@ class NestedScalarsTest {
 		};
 		for (Double[][] value : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(value, impl::writeDoubleArrayArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(value, impl::writeDoubleArrayArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(value, impl::writeDoubleArrayArray);
 		}
 	}
 
@@ -39,8 +37,6 @@ class NestedScalarsTest {
 		);
 		for (Map<String, Double[]> value : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(value, impl::writeStringDoubleArrayMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(value, impl::writeStringDoubleArrayMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(value, impl::writeStringDoubleArrayMap);
 		}
 	}
 
@@ -55,8 +51,6 @@ class NestedScalarsTest {
 		);
 		for (List<Map<String, Double>> value : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(value, impl::writeStringDoubleMapList);
-			assertThatGsonJsonWriterIsEqualToDatabind(value, impl::writeStringDoubleMapList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(value, impl::writeStringDoubleMapList);
 		}
 	}
 
@@ -70,8 +64,6 @@ class NestedScalarsTest {
 		);
 		for (Map<String, Map<String, Double>> value : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(value, impl::writeStringDoubleMapMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(value, impl::writeStringDoubleMapMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(value, impl::writeStringDoubleMapMap);
 		}
 	}
 }

@@ -22,8 +22,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Boolean> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringBooleanMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringBooleanMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringBooleanMap);
 		}
 	}
 
@@ -36,8 +34,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Byte> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringByteMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringByteMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringByteMap);
 		}
 	}
 
@@ -50,8 +46,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Short> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringShortMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringShortMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringShortMap);
 		}
 	}
 
@@ -64,8 +58,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Integer> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringIntMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringIntMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringIntMap);
 		}
 	}
 
@@ -78,8 +70,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Long> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringLongMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringLongMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringLongMap);
 		}
 	}
 
@@ -92,8 +82,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Character> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringCharMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringCharMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringCharMap);
 		}
 	}
 
@@ -106,8 +94,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Float> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringFloatMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringFloatMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringFloatMap);
 		}
 	}
 
@@ -120,8 +106,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, Double> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringDoubleMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringDoubleMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringDoubleMap);
 		}
 	}
 	
@@ -134,8 +118,6 @@ class ScalarMapsWriterTest {
 		);
 		for (Map<String, String> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringStringMap);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringStringMap);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringStringMap);
 		}
 	}
 

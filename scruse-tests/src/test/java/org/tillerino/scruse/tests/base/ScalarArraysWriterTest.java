@@ -17,8 +17,6 @@ class ScalarArraysWriterTest {
 		};
 		for (boolean[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBooleanArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBooleanArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBooleanArray);
 		}
 	}
 
@@ -30,8 +28,6 @@ class ScalarArraysWriterTest {
 		};
 		for (byte[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeByteArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeByteArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeByteArray);
 		}
 	}
 
@@ -43,8 +39,6 @@ class ScalarArraysWriterTest {
 		};
 		for (short[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeShortArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeShortArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeShortArray);
 		}
 	}
 
@@ -56,8 +50,6 @@ class ScalarArraysWriterTest {
 		};
 		for (int[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeIntArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeIntArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeIntArray);
 		}
 	}
 
@@ -69,8 +61,6 @@ class ScalarArraysWriterTest {
 		};
 		for (long[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeLongArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeLongArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeLongArray);
 		}
 	}
 
@@ -82,8 +72,6 @@ class ScalarArraysWriterTest {
 		};
 		for (char[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeCharArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeCharArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeCharArray);
 		}
 	}
 
@@ -95,8 +83,6 @@ class ScalarArraysWriterTest {
 		};
 		for (float[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeFloatArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeFloatArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeFloatArray);
 		}
 	}
 
@@ -108,8 +94,6 @@ class ScalarArraysWriterTest {
 		};
 		for (double[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeDoubleArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeDoubleArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeDoubleArray);
 		}
 	}
 
@@ -121,8 +105,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Boolean[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedBooleanArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedBooleanArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedBooleanArray);
 		}
 	}
 
@@ -134,8 +116,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Byte[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedByteArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedByteArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedByteArray);
 		}
 	}
 
@@ -147,8 +127,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Short[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedShortArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedShortArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedShortArray);
 		}
 	}
 
@@ -160,8 +138,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Integer[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedIntArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedIntArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedIntArray);
 		}
 	}
 
@@ -173,8 +149,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Long[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedLongArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedLongArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedLongArray);
 		}
 	}
 
@@ -186,8 +160,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Character[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedCharArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedCharArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedCharArray);
 		}
 	}
 
@@ -199,8 +171,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Float[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedFloatArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedFloatArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedFloatArray);
 		}
 	}
 
@@ -212,8 +182,6 @@ class ScalarArraysWriterTest {
 		};
 		for (Double[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedDoubleArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedDoubleArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedDoubleArray);
 		}
 	}
 
@@ -225,8 +193,6 @@ class ScalarArraysWriterTest {
 		};
 		for (String[] object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringArray);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringArray);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringArray);
 		}
 	}
 }

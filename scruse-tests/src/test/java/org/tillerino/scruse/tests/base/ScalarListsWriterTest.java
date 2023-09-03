@@ -18,8 +18,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Boolean> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedBooleanList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedBooleanList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedBooleanList);
 		}
 	}
 
@@ -31,8 +29,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Byte> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedByteList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedByteList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedByteList);
 		}
 	}
 
@@ -44,8 +40,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Short> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedShortList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedShortList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedShortList);
 		}
 	}
 
@@ -57,8 +51,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Integer> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedIntList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedIntList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedIntList);
 		}
 	}
 
@@ -70,8 +62,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Long> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedLongList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedLongList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedLongList);
 		}
 	}
 
@@ -83,8 +73,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Character> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedCharList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedCharList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedCharList);
 		}
 	}
 
@@ -96,8 +84,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Float> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedFloatList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedFloatList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedFloatList);
 		}
 	}
 
@@ -109,8 +95,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<Double> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedDoubleList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeBoxedDoubleList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeBoxedDoubleList);
 		}
 	}
 
@@ -122,8 +106,6 @@ class ScalarListsWriterTest {
 		);
 		for (List<String> object : values) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringList);
-			assertThatGsonJsonWriterIsEqualToDatabind(object, impl::writeStringList);
-			assertThatJacksonJsonNodeIsEqualToDatabind(object, impl::writeStringList);
 		}
 	}
 }

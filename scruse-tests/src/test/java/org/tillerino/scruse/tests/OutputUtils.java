@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableConsumer;
+import org.apache.commons.lang3.function.FailableFunction;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class OutputUtils {
 		assertThatJson(ours).isEqualTo(databind);
 	}
 
-	public static <T> void assertThatJacksonJsonNodeIsEqualToDatabind(T obj, Function<T, JsonNode> output) throws IOException {
+	public static <T> void assertThatJacksonJsonNodeIsEqualToDatabind(T obj, FailableFunction<T, JsonNode, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = output.apply(obj).toString();
 		assertThatJson(ours).isEqualTo(databind);

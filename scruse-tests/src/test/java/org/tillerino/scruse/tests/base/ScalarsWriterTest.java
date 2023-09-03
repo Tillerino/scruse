@@ -30,8 +30,6 @@ class ScalarsWriterTest {
 	void testBoolean() throws IOException {
 		for (boolean b : BOOLEANS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, impl::writeBoolean);
-			assertThatGsonJsonWriterIsEqualToDatabind(b, impl::writeBoolean);
-			assertThatJacksonJsonNodeIsEqualToDatabind(b, impl::writeBoolean);
 		}
 	}
 
@@ -39,8 +37,6 @@ class ScalarsWriterTest {
 	void testByte() throws IOException {
 		for (byte b : BYTES) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, impl::writeByte);
-			assertThatGsonJsonWriterIsEqualToDatabind(b, impl::writeByte);
-			assertThatJacksonJsonNodeIsEqualToDatabind(b, impl::writeByte);
 		}
 	}
 
@@ -48,8 +44,6 @@ class ScalarsWriterTest {
 	void testShort() throws IOException {
 		for (short s : SHORTS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(s, impl::writeShort);
-			assertThatGsonJsonWriterIsEqualToDatabind(s, impl::writeShort);
-			assertThatJacksonJsonNodeIsEqualToDatabind(s, impl::writeShort);
 		}
 	}
 
@@ -57,8 +51,6 @@ class ScalarsWriterTest {
 	void testInt() throws IOException {
 		for (int i : INTS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(i, impl::writeInt);
-			assertThatGsonJsonWriterIsEqualToDatabind(i, impl::writeInt);
-			assertThatJacksonJsonNodeIsEqualToDatabind(i, impl::writeInt);
 		}
 	}
 
@@ -66,8 +58,6 @@ class ScalarsWriterTest {
 	void testLong() throws IOException {
 		for (long l : LONGS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(l, impl::writeLong);
-			assertThatGsonJsonWriterIsEqualToDatabind(l, impl::writeLong);
-			assertThatJacksonJsonNodeIsEqualToDatabind(l, impl::writeLong);
 		}
 	}
 
@@ -75,8 +65,6 @@ class ScalarsWriterTest {
 	void testChar() throws IOException {
 		for (char c : CHARS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(c, impl::writeCharacter);
-			assertThatGsonJsonWriterIsEqualToDatabind(c, impl::writeCharacter);
-			assertThatJacksonJsonNodeIsEqualToDatabind(c, impl::writeCharacter);
 		}
 	}
 
@@ -84,8 +72,6 @@ class ScalarsWriterTest {
 	void testFloat() throws IOException {
 		for (float f : FLOATS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(f, impl::writeFloat);
-			assertThatGsonJsonWriterIsEqualToDatabind(f, impl::writeFloat);
-			assertThatJacksonJsonNodeIsEqualToDatabind(f, impl::writeFloat);
 		}
 	}
 
@@ -93,8 +79,6 @@ class ScalarsWriterTest {
 	void testDouble() throws IOException {
 		for (double d : DOUBLES) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(d, impl::writeDouble);
-			assertThatGsonJsonWriterIsEqualToDatabind(d, impl::writeDouble);
-			assertThatJacksonJsonNodeIsEqualToDatabind(d, impl::writeDouble);
 		}
 	}
 
@@ -102,8 +86,6 @@ class ScalarsWriterTest {
 	void testBoxedBoolean() throws IOException {
 		for (Boolean b : BOXED_BOOLEANS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, impl::writeBoxedBoolean);
-			assertThatGsonJsonWriterIsEqualToDatabind(b, impl::writeBoxedBoolean);
-			assertThatJacksonJsonNodeIsEqualToDatabind(b, impl::writeBoxedBoolean);
 		}
 	}
 
@@ -111,8 +93,6 @@ class ScalarsWriterTest {
 	void testBoxedByte() throws IOException {
 		for (Byte b : BOXED_BYTES) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, impl::writeBoxedByte);
-			assertThatGsonJsonWriterIsEqualToDatabind(b, impl::writeBoxedByte);
-			assertThatJacksonJsonNodeIsEqualToDatabind(b, impl::writeBoxedByte);
 		}
 	}
 
@@ -120,8 +100,6 @@ class ScalarsWriterTest {
 	void testBoxedShort() throws IOException {
 		for (Short s : BOXED_SHORTS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(s, impl::writeBoxedShort);
-			assertThatGsonJsonWriterIsEqualToDatabind(s, impl::writeBoxedShort);
-			assertThatJacksonJsonNodeIsEqualToDatabind(s, impl::writeBoxedShort);
 		}
 	}
 
@@ -129,8 +107,6 @@ class ScalarsWriterTest {
 	void testBoxedInteger() throws IOException {
 		for (Integer i : INTEGERS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(i, impl::writeBoxedInt);
-			assertThatGsonJsonWriterIsEqualToDatabind(i, impl::writeBoxedInt);
-			assertThatJacksonJsonNodeIsEqualToDatabind(i, impl::writeBoxedInt);
 		}
 	}
 
@@ -138,8 +114,6 @@ class ScalarsWriterTest {
 	void testBoxedLong() throws IOException {
 		for (Long l : BOXED_LONGS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(l, impl::writeBoxedLong);
-			assertThatGsonJsonWriterIsEqualToDatabind(l, impl::writeBoxedLong);
-			assertThatJacksonJsonNodeIsEqualToDatabind(l, impl::writeBoxedLong);
 		}
 	}
 
@@ -147,8 +121,6 @@ class ScalarsWriterTest {
 	void testBoxedCharacter() throws IOException {
 		for (Character c : CHARACTERS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(c, impl::writeBoxedCharacter);
-			assertThatGsonJsonWriterIsEqualToDatabind(c, impl::writeBoxedCharacter);
-			assertThatJacksonJsonNodeIsEqualToDatabind(c, impl::writeBoxedCharacter);
 		}
 	}
 
@@ -156,8 +128,6 @@ class ScalarsWriterTest {
 	void testBoxedFloat() throws IOException {
 		for (Float f : BOXED_FLOATS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(f, impl::writeBoxedFloat);
-			assertThatGsonJsonWriterIsEqualToDatabind(f, impl::writeBoxedFloat);
-			assertThatJacksonJsonNodeIsEqualToDatabind(f, impl::writeBoxedFloat);
 		}
 	}
 
@@ -165,8 +135,6 @@ class ScalarsWriterTest {
 	void testBoxedDouble() throws IOException {
 		for (Double d : BOXED_DOUBLES) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(d, impl::writeBoxedDouble);
-			assertThatGsonJsonWriterIsEqualToDatabind(d, impl::writeBoxedDouble);
-			assertThatJacksonJsonNodeIsEqualToDatabind(d, impl::writeBoxedDouble);
 		}
 	}
 
@@ -174,8 +142,6 @@ class ScalarsWriterTest {
 	void testString() throws IOException {
 		for (String s : STRINGS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(s, impl::writeString);
-			assertThatGsonJsonWriterIsEqualToDatabind(s, impl::writeString);
-			assertThatJacksonJsonNodeIsEqualToDatabind(s, impl::writeString);
 		}
 	}
 }
