@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
@@ -15,14 +16,16 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected final RHS rhs;
 
-	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, LHS lhs, String propertyName, RHS rhs) {
-		super(utils, type, code, parent, propertyName);
+	protected AbstractWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, CodeBlock.Builder code, SELF parent, LHS lhs, String propertyName, RHS rhs, Type type) {
+		super(prototype, utils, type, code, parent, propertyName);
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
 
-	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		this(utils, utils.tf.getType(method.getParameters().get(0).asType()), CodeBlock.builder(), null, new LHS.Return(), null, new RHS.Variable(method.getParameters().get(0).getSimpleName().toString()));
+	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
+		this(prototype, utils, CodeBlock.builder(), null, new LHS.Return(), null,
+			new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString()),
+			utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()));
 	}
 
 	public CodeBlock.Builder build() {
@@ -67,28 +70,13 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		}
 	}
 
-	protected abstract void writeNull();
-
-	protected abstract void writeString(StringKind stringKind);
-
-	protected abstract void writeBinary(BinaryKind binaryKind);
-
-	/**
-	 * @param typeMirror if non-null, the type is a primitive wrapper and this is the primitive type
-	 */
-	public abstract void writePrimitive(TypeMirror typeMirror);
-
-	protected abstract void startArray();
-
-	protected abstract void endArray();
-
 	protected void writeIterable() {
 		Type componentType = type.isArrayType()
 			? type.getComponentType()
 			: type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
 
-		RHS.Variable elemVar = new RHS.Variable("elem$" + (stackDepth() + 1));
-		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "elem", elemVar);
+		RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1));
+		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "item", elemVar);
 		startArray();
 		code.beginControlFlow("for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
 		nested.build();
@@ -104,7 +92,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 		RHS.Accessor value = new RHS.Accessor(entry, "getValue()");
 		LHS.Field key = new LHS.Field("$L.getKey()", new Object[] { entry.name() });
-		SELF valueNested = nest(valueType.getTypeMirror(), key, "entry", value);
+		SELF valueNested = nest(valueType.getTypeMirror(), key, "value", value);
 
 		startObject();
 		code.beginControlFlow("for ($T<$T, $T> $L : " + rhs.format() + ".entrySet())",
@@ -134,9 +122,26 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		endObject();
 	}
 
+	protected abstract void writeNull();
+
+	protected abstract void writeString(StringKind stringKind);
+
+	protected abstract void writeBinary(BinaryKind binaryKind);
+
+	/**
+	 * @param typeMirror if non-null, the type is a primitive wrapper and this is the primitive type
+	 */
+	public abstract void writePrimitive(TypeMirror typeMirror);
+
+	protected abstract void startArray();
+
+	protected abstract void endArray();
+
 	protected abstract void startObject();
 
 	protected abstract void endObject();
+
+//	protected abstract void invokeDelegate(ExecutableElement method, String instance);
 
 	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs);
 

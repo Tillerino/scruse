@@ -4,8 +4,8 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseMethod;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -17,12 +17,12 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	// MUTABLE!!! Created with startObject or startArray
 	private String nodeName = null;
 
-	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, method);
+	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
+		super(utils, prototype);
 	}
 
-	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, JacksonJsonNodeWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
-		super(utils, type, code, parent, lhs, propertyName, rhs);
+	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, JacksonJsonNodeWriterGenerator parent, LHS lhs, RHS rhs, String propertyName, ScruseMethod prototype) {
+		super(prototype, utils, code, parent, lhs, propertyName, rhs, type);
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 
 	@Override
 	protected JacksonJsonNodeWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
-		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), code, this, lhs, rhs, propertyName);
+		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), code, this, lhs, rhs, propertyName, prototype);
 	}
 
 	String nodeName() {

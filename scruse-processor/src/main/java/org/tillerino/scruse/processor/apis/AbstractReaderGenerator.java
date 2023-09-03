@@ -6,6 +6,7 @@ import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
@@ -17,8 +18,8 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
 	protected final LHS lhs;
-	protected AbstractReaderGenerator(AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs) {
-		super(utils, type, code, parent, propertyName);
+	protected AbstractReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs) {
+		super(prototype, utils, type, code, parent, propertyName);
 		this.lhs = lhs;
 	}
 

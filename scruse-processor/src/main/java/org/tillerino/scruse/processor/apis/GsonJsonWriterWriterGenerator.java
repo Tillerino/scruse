@@ -3,8 +3,8 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseMethod;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -13,13 +13,13 @@ import java.util.Base64;
 public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJsonWriterWriterGenerator> {
 	private final VariableElement writerVariable;
 
-	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, method);
-		this.writerVariable = method.getParameters().get(1);
+	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
+		super(utils, prototype);
+		this.writerVariable = prototype.methodElement().getParameters().get(1);
 	}
 
-	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement writerVariable, GsonJsonWriterWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
-		super(utils, type, code, parent, lhs, propertyName, rhs);
+	public GsonJsonWriterWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement writerVariable, GsonJsonWriterWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
+		super(prototype, utils, code, parent, lhs, propertyName, rhs, type);
 		this.writerVariable = writerVariable;
 	}
 
@@ -86,7 +86,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 
 	@Override
 	protected GsonJsonWriterWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
-		return new GsonJsonWriterWriterGenerator(utils, utils.tf.getType(type), code, writerVariable, this, lhs, rhs, propertyName);
+		return new GsonJsonWriterWriterGenerator(prototype, utils, utils.tf.getType(type), code, writerVariable, this, lhs, rhs, propertyName);
 	}
 
 	private void addFieldNameIfNeeded() {

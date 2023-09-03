@@ -3,8 +3,8 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseMethod;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -12,13 +12,13 @@ import javax.lang.model.type.TypeMirror;
 public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {
 	private final VariableElement generatorVariable;
 
-	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ExecutableElement method) {
-		super(utils, method);
-		this.generatorVariable = method.getParameters().get(1);
+	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
+		super(utils, prototype);
+		this.generatorVariable = prototype.methodElement().getParameters().get(1);
 	}
 
-	protected JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement generatorVariable, JacksonJsonGeneratorWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
-		super(utils, type, code, parent, lhs, propertyName, rhs);
+	protected JacksonJsonGeneratorWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement generatorVariable, JacksonJsonGeneratorWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
+		super(prototype, utils, code, parent, lhs, propertyName, rhs, type);
 		this.generatorVariable = generatorVariable;
 	}
 
@@ -34,7 +34,12 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 	@Override
 	protected void writeString(StringKind stringKind) {
 		if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
+			if (stringKind == StringKind.STRING) {
+				code.addStatement("$L.writeStringField(" + f.format() + ", " + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), f.args(), rhs.args()));
+				return;
+			} else {
+				code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
+			}
 		}
 		switch (stringKind) {
 			case STRING -> code.addStatement("$L.writeString(" + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), rhs.args()));
@@ -103,7 +108,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
 	@Override
 	protected JacksonJsonGeneratorWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
-		return new JacksonJsonGeneratorWriterGenerator(utils, utils.tf.getType(type), code, generatorVariable, this, lhs, rhs, propertyName);
+		return new JacksonJsonGeneratorWriterGenerator(prototype, utils, utils.tf.getType(type), code, generatorVariable, this, lhs, rhs, propertyName);
 	}
 
 }
