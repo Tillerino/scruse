@@ -3,13 +3,16 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.PrototypeFinder;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
 	protected final LHS lhs;
@@ -29,6 +32,12 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	public CodeBlock.Builder build() {
+		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
+		if (delegate.isPresent()) {
+			invokeDelegate(utils.delegates.getOrCreateField(delegate.get().blueprint()), delegate.get().method().name(),
+				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
+			return code;
+		}
 		if (type.isPrimitive()) {
 			writePrimitive(type.getTypeMirror());
 		} else {
@@ -141,7 +150,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected abstract void endObject();
 
-//	protected abstract void invokeDelegate(ExecutableElement method, String instance);
+	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
 
 	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs);
 

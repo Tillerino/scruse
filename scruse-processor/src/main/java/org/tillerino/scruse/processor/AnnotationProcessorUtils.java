@@ -29,11 +29,14 @@ public class AnnotationProcessorUtils {
 	public final Types types;
 	public final CommonTypes commonTypes;
 	public final TypeFactory tf;
+	public final PrototypeFinder prototypeFinder;
+	public final Delegates delegates = new Delegates();
 
-	public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement) {
+	public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement, PrototypeFinder prototypeFinder) {
 		elements = processingEnv.getElementUtils();
 		types = processingEnv.getTypeUtils();
 		commonTypes = new CommonTypes();
+		this.prototypeFinder = prototypeFinder;
 
 		AnnotationProcessorContext apc = new AnnotationProcessorContext(processingEnv.getElementUtils(),
 			processingEnv.getTypeUtils(), processingEnv.getMessager(), false, false);

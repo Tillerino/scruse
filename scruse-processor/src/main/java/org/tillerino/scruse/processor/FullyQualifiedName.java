@@ -49,6 +49,13 @@ public sealed interface FullyQualifiedName {
 
 		String nameInCompilationUnit();
 
+		TopLevelClassName unnest();
+
+		default TopLevelClassName impl() {
+			TopLevelClassName unnested = unnest();
+			return new TopLevelClassName(unnested.parentPackage, unnested.className + "Impl");
+		}
+
 		static FullyQualifiedClassName of(TypeElement typeElement) {
 			Element enclosingElement = typeElement.getEnclosingElement();
 			if (enclosingElement instanceof PackageElement packageElement) {
@@ -80,6 +87,11 @@ public sealed interface FullyQualifiedName {
 			public String nameInCompilationUnit() {
 				return className;
 			}
+
+			@Override
+			public TopLevelClassName unnest() {
+				return this;
+			}
 		}
 
 		record NestedClassName(FullyQualifiedClassName parentClass, String className) implements FullyQualifiedClassName {
@@ -101,6 +113,12 @@ public sealed interface FullyQualifiedName {
 			@Override
 			public String nameInCompilationUnit() {
 				return parentClass.nameInCompilationUnit() + "$" + className;
+			}
+
+			@Override
+			public TopLevelClassName unnest() {
+				TopLevelClassName parentUnnested = parentClass.unnest();
+				return new TopLevelClassName(parentUnnested.parentPackage(), parentUnnested.className() + "$" + className);
 			}
 		}
 	}

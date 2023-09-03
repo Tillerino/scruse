@@ -8,6 +8,8 @@ import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<JacksonJsonNodeWriterGenerator> {
 	private final ClassName jsonNodeFactory = ClassName.get("com.fasterxml.jackson.databind.node", "JsonNodeFactory");
@@ -29,9 +31,9 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	protected void writeNull() {
 		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $T.instance.nullNode()", jsonNodeFactory);
-		} else if(lhs instanceof LHS.Array) {
+		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$L.addNull()", parent.nodeName());
-		} else if(lhs instanceof LHS.Field f) {
+		} else if (lhs instanceof LHS.Field f) {
 			code.addStatement("$L.putNull(" + f.format() + ")", flatten(parent.nodeName(), f.args()));
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
@@ -42,12 +44,14 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	protected void writeString(StringKind stringKind) {
 		if (lhs instanceof LHS.Return) {
 			switch (stringKind) {
-				case STRING -> code.addStatement("return $T.instance.textNode(" + rhs.format() + ")", flatten(jsonNodeFactory, rhs.args()));
-				case CHAR_ARRAY -> code.addStatement("return $T.instance.textNode(new String(" + rhs.format() + "))", flatten(jsonNodeFactory, rhs.args()));
+				case STRING ->
+					code.addStatement("return $T.instance.textNode(" + rhs.format() + ")", flatten(jsonNodeFactory, rhs.args()));
+				case CHAR_ARRAY ->
+					code.addStatement("return $T.instance.textNode(new String(" + rhs.format() + "))", flatten(jsonNodeFactory, rhs.args()));
 			}
-		} else if(lhs instanceof LHS.Array) {
+		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$L.add(" + rhs.format() + ")", flatten(parent.nodeName(), rhs.args()));
-		} else if(lhs instanceof LHS.Field f) {
+		} else if (lhs instanceof LHS.Field f) {
 			code.addStatement("$L.put(" + f.format() + ", " + rhs.format() + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
@@ -58,9 +62,9 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	protected void writeBinary(BinaryKind binaryKind) {
 		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $T.instance.binaryNode(" + rhs.format() + ")", flatten(jsonNodeFactory, rhs.args()));
-		} else if(lhs instanceof LHS.Array) {
+		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$L.add(" + rhs.format() + ")", flatten(parent.nodeName(), rhs.args()));
-		} else if(lhs instanceof LHS.Field f) {
+		} else if (lhs instanceof LHS.Field f) {
 			code.addStatement("$L.put(" + f.format() + ", " + rhs.format() + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
@@ -78,7 +82,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 				default -> throw new UnsupportedOperationException(stack() + " unsupported type " + typeMirror.getKind());
 			};
 			code.addStatement("return $T.instance.$LNode(" + value + ")", flatten(jsonNodeFactory, suffix, rhs.args()));
-		} else if(lhs instanceof LHS.Array) {
+		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$L.add(" + value + ")", flatten(parent.nodeName(), rhs.args()));
 		} else if (lhs instanceof LHS.Field f) {
 			code.addStatement("$L.put(" + f.format() + ", " + value + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
@@ -92,7 +96,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 			code.addStatement("$T $L = $T.instance.arrayNode()", arrayNode, nodeName(), jsonNodeFactory);
 		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$T $L = $L.addArray()", arrayNode, nodeName(), parent.nodeName());
-		} else if(lhs instanceof LHS.Field f) {
+		} else if (lhs instanceof LHS.Field f) {
 			code.addStatement("$T $L = $L.putArray(" + f.format() + ")", flatten(arrayNode, nodeName(), parent.nodeName(), f.args()));
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
@@ -111,9 +115,9 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 		nodeName = propertyName() + "$" + stackDepth() + "$node";
 		if (lhs instanceof LHS.Return) {
 			code.addStatement("$T $L = $T.instance.objectNode()", objectNode, nodeName(), jsonNodeFactory);
-		} else if(lhs instanceof LHS.Array) {
+		} else if (lhs instanceof LHS.Array) {
 			code.addStatement("$T $L = $L.addObject()", objectNode, nodeName(), parent.nodeName());
-		} else if(lhs instanceof LHS.Field f) {
+		} else if (lhs instanceof LHS.Field f) {
 			code.addStatement("$T $L = $L.putObject(" + f.format() + ")", flatten(objectNode, nodeName(), parent.nodeName(), f.args()));
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
@@ -124,6 +128,21 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	protected void endObject() {
 		if (lhs instanceof LHS.Return) {
 			code.addStatement("return $L", nodeName());
+		}
+	}
+
+	@Override
+	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
+		Object[] invocationArgs = flatten(instance, methodName, rhs.args());
+		String invocation = "$L.$L(" + rhs.format() + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining("")) + ")";
+		if (lhs instanceof LHS.Return) {
+			code.addStatement("return " + invocation, invocationArgs);
+		} else if (lhs instanceof LHS.Array) {
+			code.addStatement("$L.add(" + invocation + ")", flatten(parent.nodeName(), invocationArgs));
+		} else if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.put(" + f.format() + ", " + invocation + ")", flatten(parent.nodeName(), f.args(), invocationArgs));
+		} else {
+			throw new IllegalStateException("Unknown lhs " + lhs);
 		}
 	}
 

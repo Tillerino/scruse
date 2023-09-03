@@ -18,10 +18,7 @@ import javax.lang.model.type.TypeKind;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -35,7 +32,7 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class ScruseProcessor extends AbstractProcessor {
-	Map<FullyQualifiedClassName, ScruseBlueprint> blueprints = new LinkedHashMap<>();
+	Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
 
 	AnnotationProcessorUtils utils;
 
@@ -45,7 +42,7 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	private void mapStructSetup(ProcessingEnvironment processingEnv, TypeElement typeElement) {
-		utils = new AnnotationProcessorUtils(processingEnv, typeElement);
+		utils = new AnnotationProcessorUtils(processingEnv, typeElement, new PrototypeFinder(processingEnv.getTypeUtils(), blueprints));
 	}
 
 	@Override
@@ -76,13 +73,13 @@ public class ScruseProcessor extends AbstractProcessor {
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
 			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(new ScruseMethod(FullyQualifiedClassName.of(type), method.getSimpleName().toString(), method, ScruseMethod.Type.OUTPUT));
+			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.OUTPUT));
 		});
 		roundEnv.getElementsAnnotatedWith(JsonInput.class).forEach(element -> {
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
 			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(new ScruseMethod(FullyQualifiedClassName.of(type), method.getSimpleName().toString(), method, ScruseMethod.Type.INPUT));
+			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.INPUT));
 		});
 	}
 
@@ -104,6 +101,7 @@ public class ScruseProcessor extends AbstractProcessor {
 		TypeSpec.Builder classBuilder = TypeSpec.classBuilder(blueprint.className().nameInCompilationUnit() + "Impl")
 			.addModifiers(Modifier.PUBLIC)
 			.addSuperinterface(blueprint.typeElement().asType());
+		List<MethodSpec> methods = new ArrayList<>();
 		for (ScruseMethod method : blueprint.methods()) {
 			if (!method.methodElement().getModifiers().contains(Modifier.ABSTRACT)) {
 				// method is implemented by user and can be used by us
@@ -119,30 +117,28 @@ public class ScruseProcessor extends AbstractProcessor {
 				logError("Type parameters not yet supported", method.methodElement());
 				continue;
 			}
-			Supplier<CodeBlock.Builder> codeGenerator = determineCodeGenerator(method);
+			Supplier<CodeBlock.Builder> codeGenerator = switch (method.type()) {
+				case INPUT -> determineInputCodeGenerator(method);
+				case OUTPUT -> determineOutputCodeGenerator(method);
+			};
 			if (codeGenerator == null) {
 				logError("Signature unknown. Please see @JsonOutput/@JsonInput for hints.", method.methodElement());
 				continue;
 			}
 			try {
 				methodBuilder.addCode(codeGenerator.get().build());
-				classBuilder.addMethod(methodBuilder.build());
+				methods.add(methodBuilder.build());
 			} catch (Exception e) {
 				logError(e.getMessage(), method.methodElement());
 			}
 		}
+		utils.delegates.buildFields(classBuilder);
+		methods.forEach(classBuilder::addMethod);
 		JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(blueprint.className().fileName().replace("/", ".") + "Impl");
 		try (Writer writer = sourceFile.openWriter()) {
 			JavaFile file = JavaFile.builder(blueprint.className().packageName(), classBuilder.build()).build();
 			file.writeTo(writer);
 		}
-	}
-
-	private Supplier<CodeBlock.Builder> determineCodeGenerator(ScruseMethod method) {
-		if (method.type() == ScruseMethod.Type.OUTPUT) {
-			return determineOutputCodeGenerator(method);
-		}
-		return determineInputCodeGenerator(method);
 	}
 
 	private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(ScruseMethod method) {
@@ -179,8 +175,8 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	ScruseBlueprint blueprint(TypeElement element, boolean toBeGenerated) {
-		ScruseBlueprint blueprint = blueprints.computeIfAbsent(FullyQualifiedClassName.of(element),
-			name -> new ScruseBlueprint(new AtomicBoolean(toBeGenerated), name, element, new ArrayList<>(), new ArrayList<>()));
+		ScruseBlueprint blueprint = blueprints.computeIfAbsent(element.getQualifiedName().toString(),
+			name -> new ScruseBlueprint(new AtomicBoolean(toBeGenerated), FullyQualifiedClassName.of(element), element, new ArrayList<>(), new ArrayList<>()));
 		if (toBeGenerated) {
 			blueprint.toBeGenerated().set(true);
 		}

@@ -9,6 +9,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJsonWriterWriterGenerator> {
 	private final VariableElement writerVariable;
@@ -82,6 +84,13 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 	@Override
 	protected void endObject() {
 		code.addStatement("$L.endObject()", writerVariable.getSimpleName());
+	}
+
+	@Override
+	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
+		addFieldNameIfNeeded();
+		code.addStatement("$L.$L(" + rhs.format() + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining("")) + ")",
+			flatten(instance, methodName, rhs.args()));
 	}
 
 	@Override

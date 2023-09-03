@@ -8,6 +8,8 @@ import org.tillerino.scruse.processor.ScruseMethod;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {
 	private final VariableElement generatorVariable;
@@ -50,13 +52,19 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
 	@Override
 	protected void writeBinary(BinaryKind binaryKind) {
-		if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
-		}
+		addFieldNameIfRequired();
 		switch (binaryKind) {
 			case BYTE_ARRAY ->
 				code.addStatement("$L.writeBinary(" + rhs.format() + ")", flatten(generatorVariable.getSimpleName(), rhs.args()));
 		}
+	}
+
+	private boolean addFieldNameIfRequired() {
+		if (lhs instanceof LHS.Field f) {
+			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -82,9 +90,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
 	@Override
 	protected void startArray() {
-		if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
-		}
+		addFieldNameIfRequired();
 		code.addStatement("$L.writeStartArray()", generatorVariable.getSimpleName());
 	}
 
@@ -95,15 +101,20 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
 	@Override
 	protected void startObject() {
-		if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.writeFieldName(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
-		}
+		addFieldNameIfRequired();
 		code.addStatement("$L.writeStartObject()", generatorVariable.getSimpleName());
 	}
 
 	@Override
 	protected void endObject() {
 		code.addStatement("$L.writeEndObject()", generatorVariable.getSimpleName());
+	}
+
+	@Override
+	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
+		addFieldNameIfRequired();
+		code.addStatement("$L.$L(" + rhs.format() + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining("")) + ")",
+			flatten(instance, methodName, rhs.args()));
 	}
 
 	@Override
