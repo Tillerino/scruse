@@ -6,10 +6,7 @@ import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
-import org.tillerino.scruse.processor.apis.GsonJsonWriterWriterGenerator;
-import org.tillerino.scruse.processor.apis.JacksonJsonGeneratorWriterGenerator;
-import org.tillerino.scruse.processor.apis.JacksonJsonNodeWriterGenerator;
-import org.tillerino.scruse.processor.apis.JacksonJsonParserReaderGenerator;
+import org.tillerino.scruse.processor.apis.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -165,6 +162,9 @@ public class ScruseProcessor extends AbstractProcessor {
 			VariableElement parserVariable = method.methodElement().getParameters().get(0);
 			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
 				return new JacksonJsonParserReaderGenerator(utils, method)::build;
+			}
+			if (parserVariable.asType().toString().equals("com.google.gson.stream.JsonReader")) {
+				return new GsonJsonReaderReaderGenerator(utils, method)::build;
 			}
 		}
 		return null;

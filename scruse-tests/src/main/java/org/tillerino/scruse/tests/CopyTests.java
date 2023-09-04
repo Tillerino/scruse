@@ -48,8 +48,10 @@ public class CopyTests {
 
 	public static void main(String[] args) throws IOException {
 		// we haven't implemented reading for the other libraries yet and some of the tests are mixed, so we "replace" it with JsonParser
-		copy(null, "org.tillerino.scruse.tests.alt.gson", JsonWriter.class, JsonParser.class, Map.of(
-			"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatGsonJsonWriterIsEqualToDatabind"
+		copy(null, "org.tillerino.scruse.tests.alt.gson", JsonWriter.class, JsonReader.class, Map.of(
+			"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatGsonJsonWriterIsEqualToDatabind",
+			"assertThatJacksonJsonParserIsEqualToDatabind", "assertThatGsonJsonReaderIsEqualToDatabind",
+			"assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively", "assertThatGsonJsonReaderIsEqualToDatabindComparingRecursively"
 		), WriterMode.ARGUMENT);
 		copy(null, "org.tillerino.scruse.tests.alt.jsonnode", JsonNode.class, JsonParser.class, Map.of(
 			"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatJacksonJsonNodeIsEqualToDatabind"
