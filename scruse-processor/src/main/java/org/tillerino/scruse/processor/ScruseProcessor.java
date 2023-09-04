@@ -163,6 +163,9 @@ public class ScruseProcessor extends AbstractProcessor {
 			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
 				return new JacksonJsonParserReaderGenerator(utils, method)::build;
 			}
+			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
+				return new JacksonJsonNodeReaderGenerator(utils, method)::build;
+			}
 			if (parserVariable.asType().toString().equals("com.google.gson.stream.JsonReader")) {
 				return new GsonJsonReaderReaderGenerator(utils, method)::build;
 			}

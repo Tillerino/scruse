@@ -53,8 +53,10 @@ public class CopyTests {
 			"assertThatJacksonJsonParserIsEqualToDatabind", "assertThatGsonJsonReaderIsEqualToDatabind",
 			"assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively", "assertThatGsonJsonReaderIsEqualToDatabindComparingRecursively"
 		), WriterMode.ARGUMENT);
-		copy(null, "org.tillerino.scruse.tests.alt.jsonnode", JsonNode.class, JsonParser.class, Map.of(
-			"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatJacksonJsonNodeIsEqualToDatabind"
+		copy(null, "org.tillerino.scruse.tests.alt.jsonnode", JsonNode.class, JsonNode.class, Map.of(
+			"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatJacksonJsonNodeIsEqualToDatabind",
+			"assertThatJacksonJsonParserIsEqualToDatabind", "assertThatJacksonJsonNodeIsEqualToDatabind",
+			"assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively", "assertThatJacksonJsonNodeIsEqualToDatabindComparingRecursively"
 		), WriterMode.RETURN);
 	}
 

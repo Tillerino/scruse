@@ -156,7 +156,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Array(varName, len));
 				nested.build(Branch.IF);
 			}
-			code.endControlFlow();
+			code.endControlFlow(); // end of loop
+			afterArray();
 			if (utils.types.isSameType(rawRawComponentType, rawComponentType)) {
 				lhs.assign(code, "$T.copyOf($L, $L)", java.util.Arrays.class, varName, len);
 			} else {
@@ -188,7 +189,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Collection(varName));
 				nested.build(Branch.IF);
 			}
-			code.endControlFlow();
+			code.endControlFlow(); // end of loop
+			afterArray();
 			lhs.assign(code, "$L", varName);
 		}
 		code.nextControlFlow("else");
@@ -240,7 +242,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				throwUnexpected("field name");
 				code.endControlFlow();
 			}
-			code.endControlFlow();
+			code.endControlFlow(); // end of loop
+			afterObject();
 
 			lhs.assign(code, "$L", varName);
 		}
@@ -284,6 +287,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			throwUnexpected("field name");
 			code.endControlFlow();
 			code.endControlFlow(); // ends the loop
+			afterObject();
 			if (type.isRecord()) {
 				lhs.assign(code, "new $T($L)", type.getTypeMirror(), properties.stream().map(p -> ((LHS.Variable) p.lhs).name()).collect(Collectors.joining(", ")));
 			} else {
@@ -343,7 +347,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void iterateOverFields();
 
+	protected abstract void afterObject();
+
 	protected abstract void iterateOverElements();
+
+	protected abstract void afterArray();
 
 	protected abstract void throwUnexpected(String expected);
 

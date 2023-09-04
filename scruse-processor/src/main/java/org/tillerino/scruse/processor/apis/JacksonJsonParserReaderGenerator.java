@@ -120,6 +120,11 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
+	protected void afterObject() {
+		// we skipped the END_OBJECT token in the head of the loop
+	}
+
+	@Override
 	protected void readFieldName(String propertyName) {
 		code.addStatement("String $L = $L.currentName()", propertyName, parserVariable.getSimpleName());
 		advance();
@@ -129,6 +134,11 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	protected void iterateOverElements() {
 		// we immediately skip the END_ARRAY token once we encounter it
 		code.beginControlFlow("while ($L.currentToken() != $T.END_ARRAY || $L.nextToken() == null && false)", parserVariable.getSimpleName(), jsonToken(), parserVariable.getSimpleName());
+	}
+
+	@Override
+	protected void afterArray() {
+		// we skipped the END_ARRAY token in the head of the loop
 	}
 
 	@Override

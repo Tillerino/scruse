@@ -3,6 +3,7 @@ package org.tillerino.scruse.tests;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonReader;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -42,6 +43,15 @@ public class InputUtils {
 			return ours;
 		});
 	}
+
+	public static <T> T assertThatJacksonJsonNodeIsEqualToDatabind(String json, FailableFunction<JsonNode, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		JsonNode parser = new ObjectMapper().readTree(json);
+		T ours = consumer.apply(parser);
+		T databind = new ObjectMapper().readValue(json, typeRef);
+		assertThat(ours).isEqualTo(databind);
+		return ours;
+	}
+
 	public static <T> T assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
 		return withJacksonJsonParser(json, parser -> {
 			T ours = consumer.apply(parser);
@@ -58,6 +68,14 @@ public class InputUtils {
 			assertEqualsComparingRecursively(ours, databind);
 			return ours;
 		});
+	}
+
+	public static <T> T assertThatJacksonJsonNodeIsEqualToDatabindComparingRecursively(String json, FailableFunction<JsonNode, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		JsonNode parser = new ObjectMapper().readTree(json);
+		T ours = consumer.apply(parser);
+		T databind = new ObjectMapper().readValue(json, typeRef);
+		assertEqualsComparingRecursively(ours, databind);
+		return ours;
 	}
 
 	private static <T> void assertEqualsComparingRecursively(T ours, T databind) {

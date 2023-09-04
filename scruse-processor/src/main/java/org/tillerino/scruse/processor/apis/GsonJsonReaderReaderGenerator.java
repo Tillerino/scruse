@@ -76,7 +76,8 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
 	@Override
 	protected void readPrimitive(TypeMirror type) {
-		record R(String cast, String method) {}
+		record R(String cast, String method) {
+		}
 		R readMethod = switch (type.getKind()) {
 			case BOOLEAN -> new R("", "nextBoolean");
 			case BYTE -> new R("(byte) ", "nextInt");
@@ -101,9 +102,12 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
 	@Override
 	protected void iterateOverFields() {
-		// we immediately skip the END_OBJECT token once we encounter it
-		code.beginControlFlow("while ($L.peek() != $T.END_OBJECT || $T.skipEndObject($L))",
-			parserVariable.getSimpleName(), jsonToken(), jsonReaderHelper(), parserVariable.getSimpleName());
+		code.beginControlFlow("while ($L.peek() != $T.END_OBJECT)", parserVariable.getSimpleName(), jsonToken());
+	}
+
+	@Override
+	protected void afterObject() {
+		code.addStatement("$L.endObject()", parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -113,9 +117,12 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
 	@Override
 	protected void iterateOverElements() {
-		// we immediately skip the END_ARRAY token once we encounter it
-		code.beginControlFlow("while ($L.peek() != $T.END_ARRAY || $T.skipEndArray($L))",
-			parserVariable.getSimpleName(), jsonToken(), jsonReaderHelper(), parserVariable.getSimpleName());
+		code.beginControlFlow("while ($L.peek() != $T.END_ARRAY)", parserVariable.getSimpleName(), jsonToken());
+	}
+
+	@Override
+	protected void afterArray() {
+		code.addStatement("$L.endArray()", parserVariable.getSimpleName());
 	}
 
 	@Override
