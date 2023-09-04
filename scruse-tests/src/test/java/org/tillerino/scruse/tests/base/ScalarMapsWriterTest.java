@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.tillerino.scruse.tests.OutputUtils.*;
+import static org.tillerino.scruse.tests.OutputUtils.assertThatJacksonJsonGeneratorIsEqualToDatabind;
 
 class ScalarMapsWriterTest {
 	ScalarMapsWriter impl = new ScalarMapsWriterImpl();

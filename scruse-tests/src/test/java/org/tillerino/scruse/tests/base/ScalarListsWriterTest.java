@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.tillerino.scruse.tests.OutputUtils.*;
+import static org.tillerino.scruse.tests.OutputUtils.assertThatJacksonJsonGeneratorIsEqualToDatabind;
 
 class ScalarListsWriterTest {
 	ScalarListsWriter impl = new ScalarListsWriterImpl();

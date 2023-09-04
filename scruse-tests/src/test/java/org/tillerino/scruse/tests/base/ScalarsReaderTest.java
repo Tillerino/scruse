@@ -1,7 +1,8 @@
-package org.tillerino.scruse.tests;
+package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.InputUtils;
 
 import java.io.IOException;
 

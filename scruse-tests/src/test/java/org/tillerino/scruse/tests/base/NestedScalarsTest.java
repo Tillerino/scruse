@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.tillerino.scruse.tests.OutputUtils.*;
+import static org.tillerino.scruse.tests.OutputUtils.assertThatJacksonJsonGeneratorIsEqualToDatabind;
 import static org.tillerino.scruse.tests.base.ScalarMapsWriterTest.map;
 
 class NestedScalarsTest {

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.tillerino.scruse.tests.OutputUtils.*;
+import static org.tillerino.scruse.tests.OutputUtils.assertThatJacksonJsonGeneratorIsEqualToDatabind;
 
 class ScalarsWriterTest {
 	static final boolean[] BOOLEANS = {true, false};

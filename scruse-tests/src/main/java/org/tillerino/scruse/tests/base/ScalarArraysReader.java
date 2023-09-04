@@ -1,4 +1,4 @@
-package org.tillerino.scruse.tests;
+package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonInput;
