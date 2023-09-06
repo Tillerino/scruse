@@ -3,308 +3,147 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.InputUtils;
+import org.tillerino.scruse.tests.JsonData;
 
 import java.io.IOException;
 
 class ScalarsReaderTest {
-	ScalarsReader impl = new ScalarsReaderImpl();
+	PrimitiveScalarsReader primitive = new PrimitiveScalarsReaderImpl();
+	BoxedScalarsReader boxed = new BoxedScalarsReaderImpl();
 
 	@Test
 	void testBoolean() throws IOException {
-		TypeReference<Boolean> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"true",
-			"false"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoolean, typeRef);
+		for (String json : JsonData.BOOLEANS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readBoolean, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testByte() throws IOException {
-		TypeReference<Byte> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"127",
-			"-128"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readByte, typeRef);
+		for (String json : JsonData.BYTES) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readByte, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testShort() throws IOException {
-		TypeReference<Short> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"32767",
-			"-32768"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readShort, typeRef);
+		for (String json : JsonData.SHORTS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readShort, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testInt() throws IOException {
-		TypeReference<Integer> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"2147483647",
-			"-2147483648"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readInt, typeRef);
+		for (String json : JsonData.INTS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readInt, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testLong() throws IOException {
-		TypeReference<Long> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"9223372036854775807",
-			"-9223372036854775808"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readLong, typeRef);
+		for (String json : JsonData.LONGS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readLong, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testChar() throws IOException {
-		TypeReference<Character> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"\"a\"",
-			"\"A\"",
-			"\"ö\"",
-			"\"Ö\"",
-			"\"\\u0000\"",
-			"\"\\uFFFF\""
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readCharacter, typeRef);
+		for (String json : JsonData.CHARS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readCharacter, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testFloat() throws IOException {
-		TypeReference<Float> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"3.4028235E38",
-			"-3.4028235E38",
-			"1.4E-45",
-			"-1.4E-45",
-			"\"NaN\"",
-			"\"Infinity\"",
-			"\"-Infinity\""
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readFloat, typeRef);
+		for (String json : JsonData.FLOATS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readFloat, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testDouble() throws IOException {
-		TypeReference<Double> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"1.7976931348623157E308",
-			"-1.7976931348623157E308",
-			"4.9E-324",
-			"-4.9E-324",
-			"\"NaN\"",
-			"\"Infinity\"",
-			"\"-Infinity\""
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readDouble, typeRef);
+		for (String json : JsonData.DOUBLES) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readDouble, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedBoolean() throws IOException {
-		TypeReference<Boolean> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"true",
-			"false",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedBoolean, typeRef);
+		for (String json : JsonData.BOXED_BOOLEANS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedBoolean, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedByte() throws IOException {
-		TypeReference<Byte> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"127",
-			"-128",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedByte, typeRef);
+		for (String json : JsonData.BOXED_BYTES) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedByte, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedShort() throws IOException {
-		TypeReference<Short> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"32767",
-			"-32768",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedShort, typeRef);
+		for (String json : JsonData.BOXED_SHORTS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedShort, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedInteger() throws IOException {
-		TypeReference<Integer> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"2147483647",
-			"-2147483648",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedInt, typeRef);
+		for (String json : JsonData.BOXED_INTEGERS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedInt, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedLong() throws IOException {
-		TypeReference<Long> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"9223372036854775807",
-			"-9223372036854775808",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedLong, typeRef);
+		for (String json : JsonData.BOXED_LONGS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedLong, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedCharacter() throws IOException {
-		TypeReference<Character> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"\"a\"",
-			"\"A\"",
-			"\"ö\"",
-			"\"Ö\"",
-			"\"\\u0000\"",
-			"\"\\uFFFF\"",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedCharacter, typeRef);
+		for (String json : JsonData.BOXED_CHARS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedCharacter, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedFloat() throws IOException {
-		TypeReference<Float> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"3.4028235E38",
-			"-3.4028235E38",
-			"1.4E-45",
-			"-1.4E-45",
-			"\"NaN\"",
-			"\"Infinity\"",
-			"\"-Infinity\"",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedFloat, typeRef);
+		for (String json : JsonData.BOXED_FLOATS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedFloat, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testBoxedDouble() throws IOException {
-		TypeReference<Double> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"1",
-			"0",
-			"-1",
-			"1.7976931348623157E308",
-			"-1.7976931348623157E308",
-			"4.9E-324",
-			"-4.9E-324",
-			"\"NaN\"",
-			"\"Infinity\"",
-			"\"-Infinity\"",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readBoxedDouble, typeRef);
+		for (String json : JsonData.BOXED_DOUBLES) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedDouble, new TypeReference<>() {
+			});
 		}
 	}
 
 	@Test
 	void testString() throws IOException {
-		TypeReference<String> typeRef = new TypeReference<>() {
-		};
-		String[] jsons = {
-			"\"\"",
-			"\"a\"",
-			"\"A\"",
-			"\"ö\"",
-			"\"Ö\"",
-			"\"\\u0000\"",
-			"\"\\uFFFF\"",
-			"null"
-		};
-		for (String json : jsons) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readString, typeRef);
+		for (String json : JsonData.STRINGS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readString, new TypeReference<>() {
+			});
 		}
 	}
 }

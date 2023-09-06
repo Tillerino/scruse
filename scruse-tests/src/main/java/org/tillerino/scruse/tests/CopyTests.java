@@ -10,9 +10,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
@@ -28,7 +26,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.base.ScalarsWriter;
+import org.tillerino.scruse.tests.base.PrimitiveScalarsWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -41,7 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * These tests are then translated for other libraries.
  */
 public class CopyTests {
-	private static final String originalPackage = ScalarsWriter.class.getPackageName();
+	private static final String originalPackage = PrimitiveScalarsWriter.class.getPackageName();
 	private static final PrinterConfiguration configuration = new DefaultPrinterConfiguration()
 		.addOption(new DefaultConfigurationOption(ConfigOption.INDENTATION, new Indentation(IndentType.TABS, 1)));
 	private static final DefaultPrettyPrinter printer = new DefaultPrettyPrinter(configuration);
@@ -108,6 +106,8 @@ public class CopyTests {
 							n.setName(reader.getCanonicalName());
 						} else {
 							n.setName(n.getName().asString().replace(originalPackage, targetPackage));
+							// for static imports
+							methodReplacements.forEach((o, r) -> n.setName(n.getName().asString().replace(o, r)));
 						}
 						return super.visit(n, arg);
 					}

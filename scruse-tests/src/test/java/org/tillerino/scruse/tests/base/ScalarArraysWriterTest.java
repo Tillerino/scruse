@@ -1,6 +1,7 @@
 package org.tillerino.scruse.tests.base;
 
 import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.JavaData;
 
 import java.io.IOException;
 
@@ -11,187 +12,119 @@ class ScalarArraysWriterTest {
 
 	@Test
 	void testBooleanArray() throws IOException {
-		boolean[][] values = {
-			null,
-			ScalarsWriterTest.BOOLEANS
-		};
-		for (boolean[] object : values) {
+		for (boolean[] object : JavaData.BOOLEAN_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBooleanArray);
 		}
 	}
 
 	@Test
 	void testByteArray() throws IOException {
-		byte[][] values = {
-			null,
-			ScalarsWriterTest.BYTES
-		};
-		for (byte[] object : values) {
+		for (byte[] object : JavaData.BYTE_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeByteArray);
 		}
 	}
 
 	@Test
 	void testShortArray() throws IOException {
-		short[][] values = {
-			null,
-			ScalarsWriterTest.SHORTS
-		};
-		for (short[] object : values) {
+		for (short[] object : JavaData.SHORT_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeShortArray);
 		}
 	}
 
 	@Test
 	void testIntArray() throws IOException {
-		int[][] values = {
-			null,
-			ScalarsWriterTest.INTS
-		};
-		for (int[] object : values) {
+		for (int[] object : JavaData.INT_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeIntArray);
 		}
 	}
 
 	@Test
 	void testLongArray() throws IOException {
-		long[][] values = {
-			null,
-			ScalarsWriterTest.LONGS
-		};
-		for (long[] object : values) {
+		for (long[] object : JavaData.LONG_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeLongArray);
 		}
 	}
 
 	@Test
 	void testCharArray() throws IOException {
-		char[][] values = {
-			null,
-			ScalarsWriterTest.CHARS
-		};
-		for (char[] object : values) {
+		for (char[] object : JavaData.CHAR_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeCharArray);
 		}
 	}
 
 	@Test
 	void testFloatArray() throws IOException {
-		float[][] values = {
-			null,
-			ScalarsWriterTest.FLOATS
-		};
-		for (float[] object : values) {
+		for (float[] object : JavaData.FLOAT_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeFloatArray);
 		}
 	}
 
 	@Test
 	void testDoubleArray() throws IOException {
-		double[][] values = {
-			null,
-			ScalarsWriterTest.DOUBLES
-		};
-		for (double[] object : values) {
+		for (double[] object : JavaData.DOUBLE_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeDoubleArray);
 		}
 	}
 
 	@Test
 	void testBoxedBooleanArray() throws IOException {
-		Boolean[][] values = {
-			null,
-			ScalarsWriterTest.BOXED_BOOLEANS
-		};
-		for (Boolean[] object : values) {
+		for (Boolean[] object : JavaData.BOXED_BOOLEAN_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedBooleanArray);
 		}
 	}
 
 	@Test
 	void testBoxedByteArray() throws IOException {
-		Byte[][] values = {
-			null,
-			ScalarsWriterTest.BOXED_BYTES
-		};
-		for (Byte[] object : values) {
+		for (Byte[] object : JavaData.BOXED_BYTE_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedByteArray);
 		}
 	}
 
 	@Test
 	void testBoxedShortArray() throws IOException {
-		Short[][] values = {
-			null,
-			ScalarsWriterTest.BOXED_SHORTS
-		};
-		for (Short[] object : values) {
+		for (Short[] object : JavaData.BOXED_SHORT_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedShortArray);
 		}
 	}
 
 	@Test
 	void testBoxedIntArray() throws IOException {
-		Integer[][] values = {
-			null,
-			ScalarsWriterTest.INTEGERS
-		};
-		for (Integer[] object : values) {
+		for (Integer[] object : JavaData.BOXED_INT_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedIntArray);
 		}
 	}
 
 	@Test
 	void testBoxedLongArray() throws IOException {
-		Long[][] values = {
-			null,
-			ScalarsWriterTest.BOXED_LONGS
-		};
-		for (Long[] object : values) {
+		for (Long[] object : JavaData.BOXED_LONG_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedLongArray);
 		}
 	}
 
 	@Test
 	void testBoxedCharArray() throws IOException {
-		Character[][] values = {
-			null,
-			ScalarsWriterTest.CHARACTERS
-		};
-		for (Character[] object : values) {
+		for (Character[] object : JavaData.BOXED_CHAR_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedCharArray);
 		}
 	}
 
 	@Test
 	void testBoxedFloatArray() throws IOException {
-		Float[][] values = {
-			null,
-			ScalarsWriterTest.BOXED_FLOATS
-		};
-		for (Float[] object : values) {
+		for (Float[] object : JavaData.BOXED_FLOAT_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedFloatArray);
 		}
 	}
 
 	@Test
 	void testBoxedDoubleArray() throws IOException {
-		Double[][] values = {
-			null,
-			ScalarsWriterTest.BOXED_DOUBLES
-		};
-		for (Double[] object : values) {
+		for (Double[] object : JavaData.BOXED_DOUBLE_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeBoxedDoubleArray);
 		}
 	}
 
 	@Test
 	void testStringArray() throws IOException {
-		String[][] values = {
-			null,
-			ScalarsWriterTest.STRINGS
-		};
-		for (String[] object : values) {
+		for (String[] object : JavaData.STRING_ARRAYS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringArray);
 		}
 	}
