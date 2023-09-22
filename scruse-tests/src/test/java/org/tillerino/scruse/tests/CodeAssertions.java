@@ -9,8 +9,9 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.utils.CodeGenerationUtils;
 import com.github.javaparser.utils.SourceRoot;
-import net.bytebuddy.implementation.MethodCall;
 import org.apache.commons.lang3.function.Failable;
+import org.assertj.core.api.AbstractListAssert;
+import org.assertj.core.api.ObjectAssert;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,10 +55,17 @@ public class CodeAssertions {
 
 	public record MethodAssert(CompileUnitAssert cu, MethodDeclaration decl) {
 		public void calls(String name) {
+			allCalls().contains(name);
+		}
+
+		private AbstractListAssert<?, List<? extends String>, String, ObjectAssert<String>> allCalls() {
 			BlockStmt blockStmt = decl.getBody().orElseThrow(() -> new AssertionError("No body in " + decl.getNameAsString()));
-			assertThat(blockStmt.findAll(MethodCallExpr.class))
-				.extracting(MethodCallExpr::getNameAsString)
-				.contains(name);
+			return assertThat(blockStmt.findAll(MethodCallExpr.class))
+				.extracting(MethodCallExpr::getNameAsString);
+		}
+
+		public void doesNotCall(String name) {
+			allCalls().doesNotContain(name);
 		}
 	}
 }
