@@ -56,6 +56,7 @@ public class ScruseProcessor extends AbstractProcessor {
 		roundEnv.getElementsAnnotatedWith(JsonConfig.class).forEach(element -> {
 			TypeElement type = (TypeElement) element;
 			ScruseBlueprint blueprint = blueprint(type, true);
+			mapStructSetup(processingEnv, type);
 			for (AnnotationMirror annotation : type.getAnnotationMirrors()) {
 				if (FullyQualifiedClassName.of((TypeElement) annotation.getAnnotationType().asElement()).importName().equals(JsonConfig.class.getName())) {
 					annotation.getElementValues().forEach((name, value) -> {

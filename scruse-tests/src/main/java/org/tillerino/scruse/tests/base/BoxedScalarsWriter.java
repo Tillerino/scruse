@@ -26,7 +26,7 @@ public interface BoxedScalarsWriter {
 	void writeBoxedLong(Long l, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
-	void writeBoxedCharacter(Character c, JsonGenerator generator) throws IOException;
+	void writeBoxedChar(Character c, JsonGenerator generator) throws IOException;
 
 	@JsonOutput
 	void writeBoxedFloat(Float f, JsonGenerator generator) throws IOException;

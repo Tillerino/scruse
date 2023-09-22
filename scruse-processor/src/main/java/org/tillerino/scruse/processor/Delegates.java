@@ -10,12 +10,25 @@ import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Keeps track of the delegate readers/writers that are collected while processing a blueprint.
+ */
 public class Delegates {
 	Map<String, Field> variables = new LinkedHashMap<>();
 
-	public String getOrCreateField(ScruseBlueprint b) {
-		return variables.computeIfAbsent(b.className().importName(),
-			__ -> new Field(StringUtils.uncapitalize(b.className().className()) + "$" + variables.size() + "$delegate", b))
+	/**
+	 * Returns the variable name for the given blueprint. If it does not exist yet, it is created.
+	 *
+	 * @param caller the blueprint which is currently being processed
+	 * @param callee the blueprint which is being called from caller
+	 * @return the field name
+	 */
+	public String getOrCreateField(ScruseBlueprint caller, ScruseBlueprint callee) {
+		if (caller == callee) {
+			return "this";
+		}
+		return variables.computeIfAbsent(callee.className().importName(),
+			__ -> new Field(StringUtils.uncapitalize(callee.className().className()) + "$" + variables.size() + "$delegate", callee))
 			.variable();
 	}
 

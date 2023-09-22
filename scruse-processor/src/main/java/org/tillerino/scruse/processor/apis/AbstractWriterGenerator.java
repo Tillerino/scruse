@@ -34,7 +34,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	public CodeBlock.Builder build() {
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
 		if (delegate.isPresent()) {
-			invokeDelegate(utils.delegates.getOrCreateField(delegate.get().blueprint()), delegate.get().method().name(),
+			invokeDelegate(utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint()), delegate.get().method().name(),
 				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			return code;
 		}
@@ -65,7 +65,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	 */
 	protected void writeNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			writePrimitive(utils.types.unboxedType(type.getTypeMirror()));
+			nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs).build();
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			writeString(type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (AnnotationProcessorUtils.isArrayOf(type, TypeKind.BYTE)) {

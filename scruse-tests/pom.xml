@@ -68,6 +68,41 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-tests</id>
+            <!-- This must run after the compile phase and before the test-compile phase.
+                 The generate-test-sources phase doesn't hold any other meaning for us, so we can use it. -->
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>org.tillerino.scruse.tests.CopyTests</mainClass>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <executions>
+          <execution>
+            <id>compile-again-for-copied-classes</id>
+            <!-- Since our prototypes are in the main sources, we need to run compile again after copying them.
+                 The process-test-sources phase doesn't hold any other meaning for us, so we can use it. -->
+            <phase>process-test-sources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

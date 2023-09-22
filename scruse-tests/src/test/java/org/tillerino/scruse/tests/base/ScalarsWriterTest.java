@@ -14,56 +14,56 @@ class ScalarsWriterTest {
 	@Test
 	void testBoolean() throws IOException {
 		for (boolean b : JavaData.BOOLEANS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, primitive::writeBoolean);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, primitive::writePrimitiveBooleanX);
 		}
 	}
 
 	@Test
 	void testByte() throws IOException {
 		for (byte b : JavaData.BYTES) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, primitive::writeByte);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(b, primitive::writePrimitiveByteX);
 		}
 	}
 
 	@Test
 	void testShort() throws IOException {
 		for (short s : JavaData.SHORTS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(s, primitive::writeShort);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(s, primitive::writePrimitiveShortX);
 		}
 	}
 
 	@Test
 	void testInt() throws IOException {
 		for (int i : JavaData.INTS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(i, primitive::writeInt);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(i, primitive::writePrimitiveIntX);
 		}
 	}
 
 	@Test
 	void testLong() throws IOException {
 		for (long l : JavaData.LONGS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(l, primitive::writeLong);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(l, primitive::writePrimitiveLongX);
 		}
 	}
 
 	@Test
 	void testChar() throws IOException {
 		for (char c : JavaData.CHARS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(c, primitive::writeCharacter);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(c, primitive::writePrimitiveCharX);
 		}
 	}
 
 	@Test
 	void testFloat() throws IOException {
 		for (float f : JavaData.FLOATS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(f, primitive::writeFloat);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(f, primitive::writePrimitiveFloatX);
 		}
 	}
 
 	@Test
 	void testDouble() throws IOException {
 		for (double d : JavaData.DOUBLES) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(d, primitive::writeDouble);
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(d, primitive::writePrimitiveDoubleX);
 		}
 	}
 
@@ -90,7 +90,7 @@ class ScalarsWriterTest {
 
 	@Test
 	void testBoxedInteger() throws IOException {
-		for (Integer i : JavaData.INTEGERS) {
+		for (Integer i : JavaData.BOXED_INTS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(i, boxed::writeBoxedInt);
 		}
 	}
@@ -103,9 +103,9 @@ class ScalarsWriterTest {
 	}
 
 	@Test
-	void testBoxedCharacter() throws IOException {
-		for (Character c : JavaData.CHARACTERS) {
-			assertThatJacksonJsonGeneratorIsEqualToDatabind(c, boxed::writeBoxedCharacter);
+	void testBoxedChar() throws IOException {
+		for (Character c : JavaData.BOXED_CHARS) {
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(c, boxed::writeBoxedChar);
 		}
 	}
 

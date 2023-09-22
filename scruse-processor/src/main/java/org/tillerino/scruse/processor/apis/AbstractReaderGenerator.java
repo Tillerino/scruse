@@ -6,6 +6,7 @@ import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.PrototypeFinder;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.annotation.Nullable;
@@ -29,6 +30,18 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	public CodeBlock.Builder build(Branch branch) {
+		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
+		if (delegate.isPresent()) {
+			if (branch != Branch.IF) {
+				code.nextControlFlow("else");
+			}
+			String field = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+			invokeDelegate(field, delegate.get().method().name(), prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
+			if (branch != Branch.IF) {
+				code.endControlFlow();
+			}
+			return code;
+		}
 		if (type.isPrimitive()) {
 			readPrimitive(branch, type.getTypeMirror());
 		} else {
@@ -108,7 +121,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			readPrimitive(Branch.ELSE_IF, utils.types.unboxedType(type.getTypeMirror()));
+			nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs).build(Branch.ELSE_IF);
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			readString(Branch.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (type.isArrayType()) {
@@ -134,7 +147,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		Type componentType = type.getComponentType();
 		startArrayCase(branch);
 		{
-			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedCharacter)) {
+			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedChar)) {
 				throw new AssertionError("Please provide a custom reader for " + type);
 			}
 			TypeMirror rawComponentType = componentType.asRawType().getTypeMirror();
@@ -354,6 +367,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	protected abstract void afterArray();
 
 	protected abstract void throwUnexpected(String expected);
+
+	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
 
 	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs);
 	sealed interface LHS {

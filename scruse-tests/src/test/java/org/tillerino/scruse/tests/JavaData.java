@@ -22,9 +22,9 @@ public class JavaData {
 	public static final Boolean[] BOXED_BOOLEANS = { true, false, null };
 	public static final Byte[] BOXED_BYTES = { Byte.MIN_VALUE, -1, 0, 1, Byte.MAX_VALUE, null };
 	public static final Short[] BOXED_SHORTS = { Short.MIN_VALUE, -1, 0, 1, Short.MAX_VALUE, null };
-	public static final Integer[] INTEGERS = { Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE, null };
+	public static final Integer[] BOXED_INTS = { Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE, null };
 	public static final Long[] BOXED_LONGS = { Long.MIN_VALUE, -1L, 0L, 1L, Long.MAX_VALUE, null };
-	public static final Character[] CHARACTERS = { Character.MIN_VALUE, 'a', 'A', 'ö', 'Ö', Character.MAX_VALUE, null };
+	public static final Character[] BOXED_CHARS = { Character.MIN_VALUE, 'a', 'A', 'ö', 'Ö', Character.MAX_VALUE, null };
 	public static final Float[] BOXED_FLOATS = { Float.MIN_VALUE, -1f, 0f, 1f, Float.MAX_VALUE, Float.NaN, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, null };
 	public static final Double[] BOXED_DOUBLES = { Double.MIN_VALUE, -1d, 0d, 1d, Double.MAX_VALUE, Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null };
 	public static final String[] STRINGS = new String[] { "", " ", "a", "A", "ö", "Ö", "a b", "a\tb", "a\nb", "a\rb", "a\"b", "a\\b", "a/b", "a\b", "a\f", "a\b\f\n\r\t", null };
@@ -43,9 +43,9 @@ public class JavaData {
 	public static final Boolean[][] BOXED_BOOLEAN_ARRAYS = {null, BOXED_BOOLEANS};
 	public static final Byte[][] BOXED_BYTE_ARRAYS = {null, BOXED_BYTES};
 	public static final Short[][] BOXED_SHORT_ARRAYS = {null, BOXED_SHORTS};
-	public static final Integer[][] BOXED_INT_ARRAYS = {null, INTEGERS};
+	public static final Integer[][] BOXED_INT_ARRAYS = {null, BOXED_INTS};
 	public static final Long[][] BOXED_LONG_ARRAYS = {null, BOXED_LONGS};
-	public static final Character[][] BOXED_CHAR_ARRAYS = {null, CHARACTERS};
+	public static final Character[][] BOXED_CHAR_ARRAYS = {null, BOXED_CHARS};
 	public static final Float[][] BOXED_FLOAT_ARRAYS = {null, BOXED_FLOATS};
 	public static final Double[][] BOXED_DOUBLE_ARRAYS = {null, BOXED_DOUBLES};
 	public static final String[][] STRING_ARRAYS = {null, STRINGS};
@@ -54,9 +54,9 @@ public class JavaData {
 	public static final List<List<Boolean>> BOOLEAN_LISTS = asList(null, asList(BOXED_BOOLEANS));
 	public static final List<List<Byte>> BYTE_LISTS = asList(null, asList(BOXED_BYTES));
 	public static final List<List<Short>> SHORT_LISTS = asList(null, asList(BOXED_SHORTS));
-	public static final List<List<Integer>> INT_LISTS = asList(null, asList(INTEGERS));
+	public static final List<List<Integer>> INT_LISTS = asList(null, asList(BOXED_INTS));
 	public static final List<List<Long>> LONG_LISTS = asList(null, asList(BOXED_LONGS));
-	public static final List<List<Character>> CHAR_LISTS = asList(null, asList(CHARACTERS));
+	public static final List<List<Character>> CHAR_LISTS = asList(null, asList(BOXED_CHARS));
 	public static final List<List<Float>> FLOAT_LISTS = asList(null, asList(BOXED_FLOATS));
 	public static final List<List<Double>> DOUBLE_LISTS = asList(null, asList(BOXED_DOUBLES));
 	public static final List<List<String>> STRING_LISTS = asList(null, asList(STRINGS));

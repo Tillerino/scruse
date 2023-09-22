@@ -18,7 +18,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleAnnotationValueVisitor14;
 import javax.lang.model.util.Types;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -100,22 +99,22 @@ public class AnnotationProcessorUtils {
 		public final TypeMirror boxedBoolean = elements.getTypeElement(Boolean.class.getName()).asType();
 		public final TypeMirror boxedByte = elements.getTypeElement(Byte.class.getName()).asType();
 		public final TypeMirror boxedShort = elements.getTypeElement(Short.class.getName()).asType();
-		public final TypeMirror boxedInteger = elements.getTypeElement(Integer.class.getName()).asType();
+		public final TypeMirror boxedInt = elements.getTypeElement(Integer.class.getName()).asType();
 		public final TypeMirror boxedLong = elements.getTypeElement(Long.class.getName()).asType();
 		public final TypeMirror boxedFloat = elements.getTypeElement(Float.class.getName()).asType();
 		public final TypeMirror boxedDouble = elements.getTypeElement(Double.class.getName()).asType();
-		public final TypeMirror boxedCharacter = elements.getTypeElement(Character.class.getName()).asType();
+		public final TypeMirror boxedChar = elements.getTypeElement(Character.class.getName()).asType();
 		public final TypeMirror object = elements.getTypeElement(Object.class.getName()).asType();
 
 		public final Set<String> boxedTypes = Set.of(
 			boxedBoolean.toString(),
 			boxedByte.toString(),
 			boxedShort.toString(),
-			boxedInteger.toString(),
+			boxedInt.toString(),
 			boxedLong.toString(),
 			boxedFloat.toString(),
 			boxedDouble.toString(),
-			boxedCharacter.toString()
+			boxedChar.toString()
 		);
 	}
 }

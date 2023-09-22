@@ -21,7 +21,7 @@ public interface BoxedScalarsReader {
 	@JsonInput
 	Long readBoxedLong(JsonParser parser) throws IOException;
 	@JsonInput
-	Character readBoxedCharacter(JsonParser parser) throws IOException;
+	Character readBoxedChar(JsonParser parser) throws IOException;
 	@JsonInput
 	Float readBoxedFloat(JsonParser parser) throws IOException;
 	@JsonInput

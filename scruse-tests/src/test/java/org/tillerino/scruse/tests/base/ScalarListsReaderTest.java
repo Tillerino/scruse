@@ -92,7 +92,7 @@ class ScalarListsReaderTest {
 	}
 
 	@Test
-	void testCharacterList() throws IOException {
+	void testCharList() throws IOException {
 		String[] jsons = {
 			"null",
 			"[]",

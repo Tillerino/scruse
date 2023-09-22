@@ -10,6 +10,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
+import java.util.List;
 
 public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<JacksonJsonParserReaderGenerator> {
 	private final VariableElement parserVariable;
@@ -149,6 +150,11 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 			parserVariable.getSimpleName(),
 			" at ",
 			parserVariable.getSimpleName());
+	}
+
+	@Override
+	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
+		lhs.assign(code, "$L.$L($L)", instance, methodName, String.join(", ", ownArguments));
 	}
 
 	@Override

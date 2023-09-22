@@ -14,7 +14,7 @@ class ScalarsReaderTest {
 	@Test
 	void testBoolean() throws IOException {
 		for (String json : JsonData.BOOLEANS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readBoolean, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveBooleanX, new TypeReference<>() {
 			});
 		}
 	}
@@ -22,7 +22,7 @@ class ScalarsReaderTest {
 	@Test
 	void testByte() throws IOException {
 		for (String json : JsonData.BYTES) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readByte, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveByteX, new TypeReference<>() {
 			});
 		}
 	}
@@ -30,7 +30,7 @@ class ScalarsReaderTest {
 	@Test
 	void testShort() throws IOException {
 		for (String json : JsonData.SHORTS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readShort, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveShortX, new TypeReference<>() {
 			});
 		}
 	}
@@ -38,7 +38,7 @@ class ScalarsReaderTest {
 	@Test
 	void testInt() throws IOException {
 		for (String json : JsonData.INTS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readInt, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveIntX, new TypeReference<>() {
 			});
 		}
 	}
@@ -46,7 +46,7 @@ class ScalarsReaderTest {
 	@Test
 	void testLong() throws IOException {
 		for (String json : JsonData.LONGS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readLong, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveLongX, new TypeReference<>() {
 			});
 		}
 	}
@@ -54,7 +54,7 @@ class ScalarsReaderTest {
 	@Test
 	void testChar() throws IOException {
 		for (String json : JsonData.CHARS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readCharacter, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveCharX, new TypeReference<>() {
 			});
 		}
 	}
@@ -62,7 +62,7 @@ class ScalarsReaderTest {
 	@Test
 	void testFloat() throws IOException {
 		for (String json : JsonData.FLOATS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readFloat, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveFloatX, new TypeReference<>() {
 			});
 		}
 	}
@@ -70,7 +70,7 @@ class ScalarsReaderTest {
 	@Test
 	void testDouble() throws IOException {
 		for (String json : JsonData.DOUBLES) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readDouble, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, primitive::readPrimitiveDoubleX, new TypeReference<>() {
 			});
 		}
 	}
@@ -116,9 +116,9 @@ class ScalarsReaderTest {
 	}
 
 	@Test
-	void testBoxedCharacter() throws IOException {
+	void testBoxedChar() throws IOException {
 		for (String json : JsonData.BOXED_CHARS) {
-			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedCharacter, new TypeReference<>() {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readBoxedChar, new TypeReference<>() {
 			});
 		}
 	}

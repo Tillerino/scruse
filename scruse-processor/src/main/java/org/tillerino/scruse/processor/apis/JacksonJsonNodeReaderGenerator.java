@@ -10,7 +10,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<JacksonJsonNodeReaderGenerator> {
 	private final VariableElement parserVariable;
@@ -134,6 +136,11 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 			"Expected " + expected + ", got ",
 			nodeVar(),
 			" at (TODO)");
+	}
+
+	@Override
+	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
+		lhs.assign(code, "$L.$L($L" + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining()) + ")", instance, methodName, nodeVar());
 	}
 
 	@Override

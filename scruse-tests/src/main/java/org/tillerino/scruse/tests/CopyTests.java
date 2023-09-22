@@ -153,6 +153,7 @@ public class CopyTests {
 					}
 				}, null);
 				cu.getStorage().get().save(printer::print);
+				System.out.println("Wrote test copy " + cu.getStorage().get().getPath());
 			}
 		}
 	}
