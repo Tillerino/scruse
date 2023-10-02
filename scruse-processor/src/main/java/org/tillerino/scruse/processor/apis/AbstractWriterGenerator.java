@@ -3,13 +3,14 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.Polymorphism;
 import org.tillerino.scruse.processor.PrototypeFinder;
 import org.tillerino.scruse.processor.ScruseMethod;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleTypeVisitor8;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
 		this(prototype, utils, CodeBlock.builder(), null, new LHS.Return(), null,
-			new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString()),
+			new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true),
 			utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()));
 	}
 
@@ -41,20 +42,24 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		if (type.isPrimitive()) {
 			writePrimitive(type.getTypeMirror());
 		} else {
-			if (rhs instanceof RHS.Variable v) {
-				code.beginControlFlow("if ($L != null)", v.name());
-			} else {
-				RHS.Variable nest = new RHS.Variable(property + "$" + (stackDepth() + 1));
-				code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
-				nest(type.getTypeMirror(), lhs, null, nest).build();
-				return code;
+			if (rhs.nullable()) {
+				if (rhs instanceof RHS.Variable v) {
+					code.beginControlFlow("if ($L != null)", v.name());
+				} else {
+					RHS.Variable nest = new RHS.Variable(property + "$" + (stackDepth() + 1), true);
+					code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
+					nest(type.getTypeMirror(), lhs, null, nest).build();
+					return code;
+				}
 			}
 
 			writeNullCheckedObject();
 
-			code.nextControlFlow("else");
-			writeNull();
-			code.endControlFlow();
+			if (rhs.nullable()) {
+				code.nextControlFlow("else");
+				writeNull();
+				code.endControlFlow();
+			}
 		}
 		return code;
 	}
@@ -84,7 +89,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			? type.getComponentType()
 			: type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
 
-		RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1));
+		RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1), true);
 		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "item", elemVar);
 		startArray();
 		code.beginControlFlow("for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
@@ -97,9 +102,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		Type keyType = type.determineTypeArguments(Map.class).get(0);
 		Type valueType = type.determineTypeArguments(Map.class).get(1);
 
-		RHS.Variable entry = new RHS.Variable("entry$" + (stackDepth() + 1));
+		RHS.Variable entry = new RHS.Variable("entry$" + (stackDepth() + 1), false);
 
-		RHS.Accessor value = new RHS.Accessor(entry, "getValue()");
+		RHS.Accessor value = new RHS.Accessor(entry, "getValue()", true);
 		LHS.Field key = new LHS.Field("$L.getKey()", new Object[] { entry.name() });
 		SELF valueNested = nest(valueType.getTypeMirror(), key, "value", value);
 
@@ -112,23 +117,40 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	protected void writeObjectAsMap() {
+		startObject();
+		code.add("\n");
+
+		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
+		if (polymorphismMaybe.isPresent()) {
+			Polymorphism polymorphism = polymorphismMaybe.get();
+			for (Polymorphism.Child child : polymorphism.children()) {
+				code.beginControlFlow("if (" + rhs.format() + " instanceof $T)", flatten(rhs.args(), child.type()));
+				nest(utils.commonTypes.string, new LHS.Field("$S", new Object[] { polymorphism.discriminator() }), polymorphism.discriminator(), new RHS.StringLiteral(child.name())).build();
+				RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
+				code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
+				nest(child.type(), lhs, null, casted).writeObjectPropertiesAsFields();
+				code.endControlFlow();
+			}
+		} else {
+			writeObjectPropertiesAsFields();
+		}
+
+		endObject();
+	}
+
+	void writeObjectPropertiesAsFields() {
 		DeclaredType t = (DeclaredType) type.getTypeMirror();
 		if (!t.getTypeArguments().isEmpty()) {
 			throw new IllegalArgumentException(stack().toString() + " Type parameters not yet supported");
 		}
 
-		startObject();
-		code.add("\n");
-
 		type.getPropertyReadAccessors().forEach((propertyName, accessor) -> {
 			LHS lhs = new LHS.Field("$S", new Object[] { propertyName });
-			RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource());
+			RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
 			SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest);
 			nested.build();
 			code.add("\n");
 		});
-
-		endObject();
 	}
 
 	protected abstract void writeNull();
@@ -168,6 +190,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			else if (this instanceof Accessor a) {
 				return a.object().format() + ".$L";
 			}
+			else if (this instanceof StringLiteral s) {
+				return "$S";
+			}
 			else {
 				throw new IllegalArgumentException();
 			}
@@ -180,12 +205,23 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			else if (this instanceof Accessor a) {
 				return new Object[] { a.object().args(), a.accessorLiteral() };
 			}
+			else if (this instanceof StringLiteral s) {
+				return new Object[] { s.value() };
+			}
 			else {
 				throw new IllegalArgumentException();
 			}
 		}
 
-		record Variable(String name) implements RHS { }
-		record Accessor(RHS object, String accessorLiteral) implements RHS { }
+		boolean nullable();
+
+		record Variable(String name, boolean nullable) implements RHS { }
+		record Accessor(RHS object, String accessorLiteral, boolean nullable) implements RHS { }
+		record StringLiteral(String value) implements RHS {
+			@Override
+			public boolean nullable() {
+				return false;
+			}
+		}
 	}
 }
