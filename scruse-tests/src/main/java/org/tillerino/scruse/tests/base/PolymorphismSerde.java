@@ -3,12 +3,21 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.api.SerializationContext;
 
 import java.io.IOException;
 
 interface PolymorphismSerde {
 	@JsonOutput
 	void writePolymorphism(SealedInterface sealedInterface, JsonGenerator generator) throws IOException;
+
+	interface WithDelegate {
+		@JsonOutput
+		void writePolymorphism(SealedInterface sealedInterface, JsonGenerator generator, SerializationContext context) throws IOException;
+
+		@JsonOutput
+		void writeOne(RecordOne recordOne, JsonGenerator generator, SerializationContext context) throws IOException;
+	}
 
 	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	sealed interface SealedInterface {

@@ -18,7 +18,7 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
 		}
 		String discriminator = StringUtils.defaultIfEmpty(annotation.property(), annotation.use().getDefaultPropertyName());
 		if (type.getPermittedSubclasses().isEmpty()) {
-			throw new UnsupportedOperationException("Only supportin polymorphism for sealed interfaces for now");
+			throw new UnsupportedOperationException("Only supporting polymorphism for sealed interfaces for now");
 		}
 		List<Child> children = type.getPermittedSubclasses().stream()
 			.map(e -> new Child(e, name(annotation.use(), e, elements))).toList();

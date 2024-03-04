@@ -140,11 +140,11 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(ScruseMethod method) {
-		if (method.methodElement().getParameters().size() == 1) {
+		if (method.parametersWithoutContext().size() == 1) {
 			if (method.methodElement().getReturnType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
 				return new JacksonJsonNodeWriterGenerator(utils, method)::build;
 			}
-		} else if (method.methodElement().getParameters().size() == 2 && method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
+		} else if (method.parametersWithoutContext().size() == 2 && method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
 			VariableElement generatorVariable = method.methodElement().getParameters().get(1);
 			if (generatorVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonGenerator")) {
 				return new JacksonJsonGeneratorWriterGenerator(utils, method)::build;
@@ -159,7 +159,7 @@ public class ScruseProcessor extends AbstractProcessor {
 		if (method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
 			return null;
 		}
-		if (method.methodElement().getParameters().size() == 1) {
+		if (method.parametersWithoutContext().size() == 1) {
 			VariableElement parserVariable = method.methodElement().getParameters().get(0);
 			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
 				return new JacksonJsonParserReaderGenerator(utils, method)::build;

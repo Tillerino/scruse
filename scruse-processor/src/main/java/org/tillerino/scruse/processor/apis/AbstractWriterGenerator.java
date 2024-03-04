@@ -10,7 +10,6 @@ import org.tillerino.scruse.processor.ScruseMethod;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleTypeVisitor8;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +34,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	public CodeBlock.Builder build() {
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
 		if (delegate.isPresent()) {
-			invokeDelegate(utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint()), delegate.get().method().name(),
+			String delegateField = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+			invokeDelegate(delegateField, delegate.get().method().name(),
 				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			return code;
 		}
@@ -117,28 +117,67 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	protected void writeObjectAsMap() {
-		startObject();
-		code.add("\n");
-
 		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
 		if (polymorphismMaybe.isPresent()) {
 			Polymorphism polymorphism = polymorphismMaybe.get();
+			boolean firstChild = true;
 			for (Polymorphism.Child child : polymorphism.children()) {
-				code.beginControlFlow("if (" + rhs.format() + " instanceof $T)", flatten(rhs.args(), child.type()));
-				nest(utils.commonTypes.string, new LHS.Field("$S", new Object[] { polymorphism.discriminator() }), polymorphism.discriminator(), new RHS.StringLiteral(child.name())).build();
+				if (firstChild) {
+					code.beginControlFlow("if (" + rhs.format() + " instanceof $T)", flatten(rhs.args(), child.type()));
+				} else {
+					code.nextControlFlow("else if (" + rhs.format() + " instanceof $T)", flatten(rhs.args(), child.type()));
+				}
+				firstChild = false;
 				RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
 				code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
-				nest(child.type(), lhs, null, casted).writeObjectPropertiesAsFields();
-				code.endControlFlow();
+				Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
+				if (delegate.isPresent()) {
+					String delegateField = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+					if (!delegate.get().method().lastParameterIsContext()) {
+						throw new IllegalArgumentException("Delegate method must have a context parameter");
+					}
+					if (!prototype.lastParameterIsContext()) {
+						throw new IllegalArgumentException("Prototype method must have a context parameter");
+					}
+					code.addStatement("$L.setPendingDiscriminator($S, $S)", prototype.contextParameter().orElseThrow(), polymorphism.discriminator(), child.name());
+					// TODO crude call
+					nest(child.type(), lhs, null, casted)
+						.invokeDelegate(delegateField, delegate.get().method().name(),
+						prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
+						.toList());
+				} else {
+					startObject();
+					code.add("\n");
+					nest(utils.commonTypes.string, new LHS.Field("$S", new Object[] { polymorphism.discriminator() }), polymorphism.discriminator(), new RHS.StringLiteral(child.name())).build();
+					nest(child.type(), lhs, null, casted).writeObjectPropertiesAsFields();
+					endObject();
+				}
 			}
+			if (firstChild) {
+				throw new IllegalArgumentException("Polymorphism must have at least one child type");
+			}
+			code.nextControlFlow("else");
+			code.addStatement("throw new $T($S)", IllegalArgumentException.class, "Unknown type");
+			code.endControlFlow();
 		} else {
+			startObject();
+			code.add("\n");
 			writeObjectPropertiesAsFields();
+			endObject();
 		}
-
-		endObject();
 	}
 
 	void writeObjectPropertiesAsFields() {
+		prototype.contextParameter().ifPresent(context -> {
+			if (stackDepth() > 1) {
+				// only relevant for top-level object
+				return;
+			}
+			code.beginControlFlow("if ($L.isDiscriminatorPending())", context);
+			nest(utils.commonTypes.string, new LHS.Field("$L.pendingDiscriminatorProperty", new Object[] { context.getSimpleName() }), "discriminator", new RHS.Accessor(new RHS.Variable(context.getSimpleName().toString(), false), "pendingDiscriminatorValue", false)).build();
+			code.addStatement("$L.pendingDiscriminatorProperty = null", context);
+			code.endControlFlow();
+		});
 		DeclaredType t = (DeclaredType) type.getTypeMirror();
 		if (!t.getTypeArguments().isEmpty()) {
 			throw new IllegalArgumentException(stack().toString() + " Type parameters not yet supported");

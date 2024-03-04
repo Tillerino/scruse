@@ -5,10 +5,14 @@ import org.mapstruct.ap.internal.model.common.Type;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
+/**
+ * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or {@link org.tillerino.scruse.annotations.JsonOutput}.
+ */
 public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableElement methodElement, InputOutput type) {
 	enum InputOutput {
 		INPUT, OUTPUT
@@ -42,6 +46,31 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 			}
 		}
 		return true;
+	}
+
+	public boolean lastParameterIsContext() {
+		if (methodElement.getParameters().isEmpty()) {
+			return false;
+		}
+		TypeMirror lastParameterType = methodElement.getParameters().get(methodElement.getParameters().size() - 1).asType();
+		return lastParameterType.toString().equals(switch (type) {
+			case INPUT -> "org.tillerino.scruse.api.DeserializationContext";
+			case OUTPUT -> "org.tillerino.scruse.api.SerializationContext";
+		});
+	}
+
+	public List<? extends VariableElement> parametersWithoutContext() {
+		if (lastParameterIsContext()) {
+			return methodElement.getParameters().subList(0, methodElement.getParameters().size() - 1);
+		}
+		return methodElement.getParameters();
+	}
+
+	public Optional<VariableElement> contextParameter() {
+		if (lastParameterIsContext()) {
+			return Optional.of(methodElement.getParameters().get(methodElement.getParameters().size() - 1));
+		}
+		return Optional.empty();
 	}
 
 	@Override
