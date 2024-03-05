@@ -6,6 +6,7 @@ import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.Polymorphism;
 import org.tillerino.scruse.processor.PrototypeFinder;
 import org.tillerino.scruse.processor.ScruseMethod;
 
@@ -249,7 +250,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			{
 				startFieldCase(Branch.IF);
 				String keyVar = "key$" + stackDepth();
-				readFieldName(keyVar);
+				readFieldNameInIteration(keyVar);
 				nest(valueType.getTypeMirror(), "value", new LHS.Map(varName, keyVar)).build(Branch.IF);
 				code.nextControlFlow("else");
 				throwUnexpected("field name");
@@ -275,41 +276,65 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readObject(Branch branch) {
 		startObjectCase(branch);
-		{
-			List<SELF> properties = findProperties();
-			for (SELF nest : properties) {
-				if (nest.lhs instanceof LHS.Variable v) {
-					code.addStatement("$T $L = $L", nest.type.getTypeMirror(), v.name, nest.type.getNull());
-				}
+
+		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
+		if (polymorphismMaybe.isPresent()) {
+			Polymorphism polymorphism = polymorphismMaybe.get();
+			LHS.Variable discriminator = new LHS.Variable("discriminator$" + stackDepth());
+			code.addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
+			nest(utils.commonTypes.string, polymorphism.discriminator(), discriminator).readDiscriminator(polymorphism.discriminator());
+			Branch branch2 = Branch.IF;
+			for (Polymorphism.Child child : polymorphism.children()) {
+				branch2.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
+				nest(child.type(), null, lhs).readObjectFields();
+				branch2 = Branch.ELSE_IF;
 			}
-			iterateOverFields();
-			startFieldCase(Branch.IF);
-			String fieldVar = "field$" + stackDepth();
-			readFieldName(fieldVar);
-			Branch fieldBranch = Branch.IF;
-			for (SELF nest : properties) {
-				fieldBranch.controlFlow(code, "$L.equals($S)", fieldVar, nest.property);
-				nest.build(Branch.IF);
-				fieldBranch = Branch.ELSE_IF;
-			}
-			// unknown fields are ignored for now
-			if (fieldBranch == Branch.ELSE_IF) {
-				code.endControlFlow(); // ends the last field
+			if (branch2 == Branch.IF) {
+				throw new AssertionError("No children for " + type);
 			}
 			code.nextControlFlow("else");
-			throwUnexpected("field name");
-			code.endControlFlow();
+			code.addStatement("throw new $T($S + $L)", IOException.class, "Unknown type ", discriminator.name());
 			code.endControlFlow(); // ends the loop
-			afterObject();
-			if (type.isRecord()) {
-				lhs.assign(code, "new $T($L)", type.getTypeMirror(), properties.stream().map(p -> ((LHS.Variable) p.lhs).name()).collect(Collectors.joining(", ")));
-			} else {
-				lhs.assign(code, "$L", "object$" + stackDepth());
-			}
+		} else {
+			readObjectFields();
 		}
-		code.nextControlFlow("else");
+
+        code.nextControlFlow("else");
 		throwUnexpected("object");
 		code.endControlFlow();
+	}
+
+	void readObjectFields() {
+		List<SELF> properties = findProperties();
+		for (SELF nest : properties) {
+			if (nest.lhs instanceof LHS.Variable v) {
+				code.addStatement("$T $L = $L", nest.type.getTypeMirror(), v.name, nest.type.getNull());
+			}
+		}
+		iterateOverFields();
+		startFieldCase(Branch.IF);
+		String fieldVar = "field$" + stackDepth();
+		readFieldNameInIteration(fieldVar);
+		Branch fieldBranch = Branch.IF;
+		for (SELF nest : properties) {
+			fieldBranch.controlFlow(code, "$L.equals($S)", fieldVar, nest.property);
+			nest.build(Branch.IF);
+			fieldBranch = Branch.ELSE_IF;
+		}
+		// unknown fields are ignored for now
+		if (fieldBranch == Branch.ELSE_IF) {
+			code.endControlFlow(); // ends the last field
+		}
+		code.nextControlFlow("else");
+		throwUnexpected("field name");
+		code.endControlFlow();
+		code.endControlFlow(); // ends the loop
+		afterObject();
+		if (type.isRecord()) {
+			lhs.assign(code, "new $T($L)", type.getTypeMirror(), properties.stream().map(p -> ((LHS.Variable) p.lhs).name()).collect(Collectors.joining(", ")));
+		} else {
+			lhs.assign(code, "$L", "object$" + stackDepth());
+		}
 	}
 
 	private List<SELF> findProperties() {
@@ -356,11 +381,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void readString(StringKind stringKind);
 
-	protected abstract void readFieldName(String propertyName);
+	protected abstract void readFieldNameInIteration(String propertyName);
 
 	protected abstract void iterateOverFields();
 
 	protected abstract void afterObject();
+
+	protected abstract void readDiscriminator(String propertyName);
 
 	protected abstract void iterateOverElements();
 

@@ -6,6 +6,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.Polymorphism;
 import org.tillerino.scruse.processor.PrototypeFinder;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -120,14 +121,10 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
 		if (polymorphismMaybe.isPresent()) {
 			Polymorphism polymorphism = polymorphismMaybe.get();
-			boolean firstChild = true;
+			Branch branch = Branch.IF;
 			for (Polymorphism.Child child : polymorphism.children()) {
-				if (firstChild) {
-					code.beginControlFlow("if (" + rhs.format() + " instanceof $T)", flatten(rhs.args(), child.type()));
-				} else {
-					code.nextControlFlow("else if (" + rhs.format() + " instanceof $T)", flatten(rhs.args(), child.type()));
-				}
-				firstChild = false;
+				branch.controlFlow(code, rhs.format() + " instanceof $T", flatten(rhs.args(), child.type()));
+				branch = Branch.ELSE_IF;
 				RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
 				code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
 				Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
@@ -153,7 +150,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 					endObject();
 				}
 			}
-			if (firstChild) {
+			if (branch == Branch.IF) {
 				throw new IllegalArgumentException("Polymorphism must have at least one child type");
 			}
 			code.nextControlFlow("else");
@@ -169,7 +166,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	void writeObjectPropertiesAsFields() {
 		prototype.contextParameter().ifPresent(context -> {
-			if (stackDepth() > 1) {
+			if (stackDepth() > 1 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types)) {
 				// only relevant for top-level object
 				return;
 			}

@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseMethod;
 
@@ -126,9 +127,14 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void readFieldName(String propertyName) {
+	protected void readFieldNameInIteration(String propertyName) {
 		code.addStatement("String $L = $L.currentName()", propertyName, parserVariable.getSimpleName());
 		advance();
+	}
+
+	@Override
+	protected void readDiscriminator(String propertyName) {
+		lhs.assign(code, "$T.readDiscriminator($S, $L)", JacksonJsonParserReaderHelper.class, propertyName, parserVariable.getSimpleName());
 	}
 
 	@Override

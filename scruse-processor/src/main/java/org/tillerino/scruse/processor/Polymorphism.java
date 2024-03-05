@@ -7,6 +7,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +44,17 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
 			return minimalName(t.asType(), elements) + "$" + element.getSimpleName().toString();
 		}
 		return subtype.toString();
+	}
+
+	public static boolean isSomeChild(TypeMirror type, Types types) {
+		// this test is pretty half-assed, but false-positives only produce a bit of extra code
+		for (TypeMirror directSupertype : types.directSupertypes(type)) {
+			if (directSupertype.getAnnotation(JsonTypeInfo.class) != null
+				|| isSomeChild(directSupertype, types)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public record Child(TypeMirror type, String name) {
