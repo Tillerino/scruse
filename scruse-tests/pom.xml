@@ -69,6 +69,36 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>clean-test-alt</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${project.basedir}/src/main/java/org/tillerino/scruse/tests/alt</directory>
+                  <includes>
+                    <include>**/*.java</include>
+                  </includes>
+                </fileset>
+                <fileset>
+                  <directory>${project.basedir}/src/test/java/org/tillerino/scruse/tests/alt</directory>
+                  <includes>
+                    <include>**/*.java</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
