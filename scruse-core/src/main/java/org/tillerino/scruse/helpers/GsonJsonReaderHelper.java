@@ -19,4 +19,24 @@ public class GsonJsonReaderHelper {
             return parser.nextString();
         }
     }
+
+    public static boolean isBeginObject(JsonReader parser, boolean advance) throws IOException {
+        if (parser.peek() != JsonToken.BEGIN_OBJECT) {
+            return false;
+        }
+        if (advance) {
+            parser.beginObject();
+        }
+        return true;
+    }
+
+    public static boolean isNull(JsonReader parser, boolean advance) throws IOException {
+        if (parser.peek() != JsonToken.NULL) {
+            return false;
+        }
+        if (advance) {
+            parser.nextNull();
+        }
+        return true;
+    }
 }

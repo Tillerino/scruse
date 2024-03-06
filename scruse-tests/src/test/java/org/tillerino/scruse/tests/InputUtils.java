@@ -6,8 +6,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
+import org.tillerino.scruse.api.DeserializationContext;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -35,6 +37,15 @@ public class InputUtils {
 		});
 	}
 
+	public static <T> T assertThatJacksonJsonParserIsEqualToDatabind(String json, FailableBiFunction<JsonParser, DeserializationContext, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		return withJacksonJsonParser(json, parser -> {
+			T ours = consumer.apply(parser, new DeserializationContext());
+			T databind = new ObjectMapper().readValue(json, typeRef);
+			assertThat(ours).isEqualTo(databind);
+			return ours;
+		});
+	}
+
 	public static <T> T assertThatGsonJsonReaderIsEqualToDatabind(String json, FailableFunction<JsonReader, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
 		return withGsonJsonReader(json, parser -> {
 			T ours = consumer.apply(parser);
@@ -44,9 +55,26 @@ public class InputUtils {
 		});
 	}
 
+	public static <T> T assertThatGsonJsonReaderIsEqualToDatabind(String json, FailableBiFunction<JsonReader, DeserializationContext, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		return withGsonJsonReader(json, parser -> {
+			T ours = consumer.apply(parser, new DeserializationContext());
+			T databind = new ObjectMapper().readValue(json, typeRef);
+			assertThat(ours).isEqualTo(databind);
+			return ours;
+		});
+	}
+
 	public static <T> T assertThatJacksonJsonNodeIsEqualToDatabind(String json, FailableFunction<JsonNode, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
 		JsonNode parser = new ObjectMapper().readTree(json);
 		T ours = consumer.apply(parser);
+		T databind = new ObjectMapper().readValue(json, typeRef);
+		assertThat(ours).isEqualTo(databind);
+		return ours;
+	}
+
+	public static <T> T assertThatJacksonJsonNodeIsEqualToDatabind(String json, FailableBiFunction<JsonNode, DeserializationContext, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		JsonNode parser = new ObjectMapper().readTree(json);
+		T ours = consumer.apply(parser, new DeserializationContext());
 		T databind = new ObjectMapper().readValue(json, typeRef);
 		assertThat(ours).isEqualTo(databind);
 		return ours;

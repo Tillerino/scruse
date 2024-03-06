@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -37,9 +38,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void startObjectCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $T.START_OBJECT", parserVariable.getSimpleName(), jsonToken());
-		advance();
+	protected Snippet objectCaseCondition() {
+		return new Snippet("$T.currentTokenIs($L, $T.START_OBJECT, true)", JacksonJsonParserReaderHelper.class, parserVariable.getSimpleName(), jsonToken());
 	}
 
 	@Override
@@ -66,9 +66,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void startNullCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $T.VALUE_NULL", parserVariable.getSimpleName(), jsonToken());
-		advance();
+	protected Snippet nullCaseCondition() {
+		return new Snippet("$T.currentTokenIs($L, $T.VALUE_NULL, true)", JacksonJsonParserReaderHelper.class, parserVariable.getSimpleName(), jsonToken());
 	}
 
 	private TypeElement jsonToken() {
@@ -118,12 +117,12 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected void iterateOverFields() {
 		// we immediately skip the END_OBJECT token once we encounter it
-		code.beginControlFlow("while ($L.currentToken() != $T.END_OBJECT || $L.nextToken() == null && false)", parserVariable.getSimpleName(), jsonToken(), parserVariable.getSimpleName());
+		code.beginControlFlow("while ($L.currentToken() != $T.END_OBJECT)", parserVariable.getSimpleName(), jsonToken());
 	}
 
 	@Override
 	protected void afterObject() {
-		// we skipped the END_OBJECT token in the head of the loop
+		code.addStatement("$L.nextToken()", parserVariable.getSimpleName());
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
 	protected final LHS lhs;
+
 	protected AbstractReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs) {
 		super(prototype, utils, type, code, parent, propertyName);
 		this.lhs = lhs;
@@ -46,7 +47,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		if (type.isPrimitive()) {
 			readPrimitive(branch, type.getTypeMirror());
 		} else {
-			startNullCase(branch);
+			Snippet cond = nullCaseCondition();
+			if (canBePolyChild) {
+				branch.controlFlow(code, "!$L.isObjectOpen(false) && " + cond.code, flatten(prototype.contextParameter().get(), cond.args));
+			} else {
+				branch.controlFlow(code, cond.code, cond.args);
+			}
 			lhs.assign(code, "null");
 			readNullCheckedObject();
 		}
@@ -237,7 +243,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	private void readMap(Branch branch) {
-		startObjectCase(branch);
+		Snippet cond = objectCaseCondition();
+		branch.controlFlow(code, cond.code, flatten(cond.args));
 		{
 			Type keyType = type.determineTypeArguments(Map.class).get(0).getTypeBound();
 			if (!utils.types.isSameType(keyType.getTypeMirror(), utils.commonTypes.string)) {
@@ -275,26 +282,16 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	private void readObject(Branch branch) {
-		startObjectCase(branch);
+		Snippet cond = objectCaseCondition();
+		if (canBePolyChild) {
+			branch.controlFlow(code, "$L.isObjectOpen(true) || " + cond.code, flatten(prototype.contextParameter().get(), cond.args));
+		} else {
+			branch.controlFlow(code, cond.code, cond.args);
+		}
 
 		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
 		if (polymorphismMaybe.isPresent()) {
-			Polymorphism polymorphism = polymorphismMaybe.get();
-			LHS.Variable discriminator = new LHS.Variable("discriminator$" + stackDepth());
-			code.addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
-			nest(utils.commonTypes.string, polymorphism.discriminator(), discriminator).readDiscriminator(polymorphism.discriminator());
-			Branch branch2 = Branch.IF;
-			for (Polymorphism.Child child : polymorphism.children()) {
-				branch2.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
-				nest(child.type(), null, lhs).readObjectFields();
-				branch2 = Branch.ELSE_IF;
-			}
-			if (branch2 == Branch.IF) {
-				throw new AssertionError("No children for " + type);
-			}
-			code.nextControlFlow("else");
-			code.addStatement("throw new $T($S + $L)", IOException.class, "Unknown type ", discriminator.name());
-			code.endControlFlow(); // ends the loop
+			readPolymorphicObject(polymorphismMaybe.get());
 		} else {
 			readObjectFields();
 		}
@@ -302,6 +299,41 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         code.nextControlFlow("else");
 		throwUnexpected("object");
 		code.endControlFlow();
+	}
+
+	private void readPolymorphicObject(Polymorphism polymorphism) {
+		LHS.Variable discriminator = new LHS.Variable("discriminator$" + stackDepth());
+		code.addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
+		nest(utils.commonTypes.string, polymorphism.discriminator(), discriminator).readDiscriminator(polymorphism.discriminator());
+		Branch branch = Branch.IF;
+		for (Polymorphism.Child child : polymorphism.children()) {
+			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
+			Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
+			if (delegate.isPresent()) {
+				String delegateField = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+				if (!delegate.get().method().lastParameterIsContext()) {
+					throw new IllegalArgumentException("Delegate method must have a context parameter");
+				}
+				if (!prototype.lastParameterIsContext()) {
+					throw new IllegalArgumentException("Prototype method must have a context parameter");
+				}
+				code.addStatement("$L.markObjectOpen()", prototype.contextParameter().orElseThrow());
+				// TODO crude call
+				nest(child.type(), null, lhs)
+						.invokeDelegate(delegateField, delegate.get().method().name(),
+								prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
+										.toList());
+			} else {
+				nest(child.type(), null, lhs).readObjectFields();
+			}
+			branch = Branch.ELSE_IF;
+		}
+		if (branch == Branch.IF) {
+			throw new AssertionError("No children for " + type);
+		}
+		code.nextControlFlow("else");
+		code.addStatement("throw new $T($S + $L)", IOException.class, "Unknown type ", discriminator.name());
+		code.endControlFlow(); // ends the loop
 	}
 
 	void readObjectFields() {
@@ -369,13 +401,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void startNumberCase(Branch branch);
 
-	protected abstract void startObjectCase(Branch branch);
+	protected abstract Snippet objectCaseCondition();
 
 	protected abstract void startArrayCase(Branch branch);
 
 	protected abstract void startBooleanCase(Branch branch);
 
-	protected abstract void startNullCase(Branch branch);
+	protected abstract Snippet nullCaseCondition();
 
 	protected abstract void readPrimitive(TypeMirror type);
 
@@ -440,4 +472,6 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		}
 	}
 
+	protected record Snippet(String code, Object... args) {
+	}
 }

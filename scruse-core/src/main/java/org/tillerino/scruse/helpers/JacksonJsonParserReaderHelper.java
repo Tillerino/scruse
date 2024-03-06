@@ -19,4 +19,14 @@ public class JacksonJsonParserReaderHelper {
             return value;
         }
     }
+
+    public static boolean currentTokenIs(JsonParser parser, JsonToken token, boolean advance) throws IOException {
+        if (parser.currentToken() != token) {
+            return false;
+        }
+        if (advance) {
+            parser.nextToken();
+        }
+        return true;
+    }
 }

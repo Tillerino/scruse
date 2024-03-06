@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.Polymorphism;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.annotation.Nullable;
@@ -17,14 +18,16 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 	protected final Type type;
 	@Nullable
 	protected final String property;
+    protected final boolean canBePolyChild;
 
-	protected AbstractCodeGeneratorStack(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, @Nullable String property) {
+    protected AbstractCodeGeneratorStack(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, @Nullable String property) {
 		this.prototype = prototype;
 		this.utils = utils;
 		this.type = type;
 		this.code = code;
 		this.parent = parent;
 		this.property = property;
+        this.canBePolyChild = prototype.contextParameter().isPresent() && stackDepth() == 1 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
 	}
 
 	int stackDepth() {

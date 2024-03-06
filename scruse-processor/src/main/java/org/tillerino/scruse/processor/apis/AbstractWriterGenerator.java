@@ -8,6 +8,7 @@ import org.tillerino.scruse.processor.PrototypeFinder;
 import org.tillerino.scruse.processor.ScruseMethod;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -165,16 +166,13 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	void writeObjectPropertiesAsFields() {
-		prototype.contextParameter().ifPresent(context -> {
-			if (stackDepth() > 1 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types)) {
-				// only relevant for top-level object
-				return;
-			}
+		if (canBePolyChild) {
+			VariableElement context = prototype.contextParameter().orElseThrow();
 			code.beginControlFlow("if ($L.isDiscriminatorPending())", context);
 			nest(utils.commonTypes.string, new LHS.Field("$L.pendingDiscriminatorProperty", new Object[] { context.getSimpleName() }), "discriminator", new RHS.Accessor(new RHS.Variable(context.getSimpleName().toString(), false), "pendingDiscriminatorValue", false)).build();
 			code.addStatement("$L.pendingDiscriminatorProperty = null", context);
 			code.endControlFlow();
-		});
+		}
 		DeclaredType t = (DeclaredType) type.getTypeMirror();
 		if (!t.getTypeArguments().isEmpty()) {
 			throw new IllegalArgumentException(stack().toString() + " Type parameters not yet supported");

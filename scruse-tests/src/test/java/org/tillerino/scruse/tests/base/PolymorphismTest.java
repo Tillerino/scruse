@@ -29,4 +29,10 @@ class PolymorphismTest {
 		InputUtils.assertThatJacksonJsonParserIsEqualToDatabind("{\"@c\": \".PolymorphismSerde$RecordOne\", \"s\":\"abc\"}", serde::readPolymorphism, new TypeReference<>() {});
 		InputUtils.assertThatJacksonJsonParserIsEqualToDatabind("{\"@c\": \".PolymorphismSerde$RecordTwo\", \"i\": 123}", serde::readPolymorphism, new TypeReference<>() {});
 	}
+
+	@Test
+	void sealedInterfaceWithDelefatorDefaultsInput() throws IOException {
+		InputUtils.assertThatJacksonJsonParserIsEqualToDatabind("{\"@c\": \".PolymorphismSerde$RecordOne\", \"s\":\"abc\"}", withDelegate::readPolymorphism, new TypeReference<>() {});
+		InputUtils.assertThatJacksonJsonParserIsEqualToDatabind("{\"@c\": \".PolymorphismSerde$RecordTwo\", \"i\": 123}", withDelegate::readPolymorphism, new TypeReference<>() {});
+	}
 }

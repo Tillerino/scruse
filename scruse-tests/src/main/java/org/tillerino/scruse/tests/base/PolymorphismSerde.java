@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 
 import java.io.IOException;
@@ -22,6 +23,12 @@ interface PolymorphismSerde {
 
 		@JsonOutput
 		void writeOne(RecordOne recordOne, JsonGenerator generator, SerializationContext context) throws IOException;
+
+		@JsonInput
+		SealedInterface readPolymorphism(JsonParser parser, DeserializationContext context) throws IOException;
+
+		@JsonInput
+		RecordOne readOne(JsonParser parser, DeserializationContext context) throws IOException;
 	}
 
 	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)

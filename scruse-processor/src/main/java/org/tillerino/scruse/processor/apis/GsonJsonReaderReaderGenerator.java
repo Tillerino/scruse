@@ -1,9 +1,9 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.GsonJsonReaderHelper;
-import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseMethod;
 
@@ -38,9 +38,8 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 	}
 
 	@Override
-	protected void startObjectCase(Branch branch) {
-		branch.controlFlow(code, "$L.peek() == $T.BEGIN_OBJECT", parserVariable.getSimpleName(), jsonToken());
-		code.addStatement("$L.beginObject()", parserVariable.getSimpleName());
+	protected Snippet objectCaseCondition() {
+		return new Snippet("$T.isBeginObject($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -64,9 +63,8 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 	}
 
 	@Override
-	protected void startNullCase(Branch branch) {
-		branch.controlFlow(code, "$L.peek() == $T.NULL", parserVariable.getSimpleName(), jsonToken());
-		code.addStatement("$L.nextNull()", parserVariable.getSimpleName());
+	protected Snippet nullCaseCondition() {
+		return new Snippet("$T.isNull($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
 	}
 
 	private TypeElement jsonToken() {

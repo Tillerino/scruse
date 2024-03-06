@@ -125,8 +125,9 @@ public class CopyTests {
 					public Visitable visit(MethodDeclaration n, Void arg) {
 						if (n.getAnnotationByClass(JsonInput.class).isPresent()) {
 							for (Parameter parameter : n.getParameters()) {
-								parameter.getType().toString().equals("JsonParser");
-								parameter.setType(reader);
+								if (parameter.getType().toString().equals("JsonParser")) {
+									parameter.setType(reader);
+								}
 							}
 						}
 

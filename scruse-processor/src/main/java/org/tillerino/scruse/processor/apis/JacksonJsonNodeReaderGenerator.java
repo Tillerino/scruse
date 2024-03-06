@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonNodeReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -43,8 +44,8 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 	}
 
 	@Override
-	protected void startObjectCase(Branch branch) {
-		branch.controlFlow(code, "$L.isObject()", nodeVar());
+	protected Snippet objectCaseCondition() {
+		return new Snippet("$L.isObject()", nodeVar());
 	}
 
 	@Override
@@ -70,8 +71,8 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 	}
 
 	@Override
-	protected void startNullCase(Branch branch) {
-		branch.controlFlow(code, "$L.isNull()", nodeVar());
+	protected Snippet nullCaseCondition() {
+		return new Snippet("$L.isNull()", nodeVar());
 	}
 
 	@Override
