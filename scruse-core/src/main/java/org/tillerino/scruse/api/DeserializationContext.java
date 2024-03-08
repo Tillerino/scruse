@@ -6,6 +6,12 @@ import org.tillerino.scruse.input.EmptyArrays;
  * Context for a single deserialization operation.
  * This can be used in a {@link org.tillerino.scruse.annotations.JsonInput} for additional features
  * like polymorphic deserialization.
+ *
+ * <p>
+ * This class can be extended to pass additional state between custom serializer implementations.
+ *
+ * <p>
+ * To reduce heap allocations, you can reuse instances.
  */
 public class DeserializationContext {
     /**

@@ -7,7 +7,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 
 import java.io.IOException;
 
-record ScalarFieldsRecord(boolean bo, byte by, short s, int i, long l, char c, float f, double d, Boolean bbo, Byte bby, Short ss, Integer ii, Long ll, Character cc, Float ff, Double dd, String str) {
+public record ScalarFieldsRecord(boolean bo, byte by, short s, int i, long l, char c, float f, double d, Boolean bbo, Byte bby, Short ss, Integer ii, Long ll, Character cc, Float ff, Double dd, String str) {
 	interface Serde {
 		@JsonOutput
 		void write(ScalarFieldsRecord record, JsonGenerator generator) throws IOException;

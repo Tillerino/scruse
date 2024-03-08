@@ -25,6 +25,14 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Common -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
+      </dependency>
+
+      <!-- Processor dependencies -->
       <dependency>
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
@@ -35,6 +43,8 @@
         <artifactId>javapoet</artifactId>
         <version>${javapoet.version}</version>
       </dependency>
+
+      <!-- JSON implementations -->
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
@@ -55,11 +65,8 @@
         <artifactId>gson</artifactId>
         <version>${gson.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>${commons-lang3.version}</version>
-      </dependency>
+
+      <!-- Testing -->
       <dependency>
         <groupId>net.javacrumbs.json-unit</groupId>
         <artifactId>json-unit-assertj</artifactId>

@@ -4,6 +4,12 @@ package org.tillerino.scruse.api;
  * Context for a single serialization operation.
  * This can be used in a {@link org.tillerino.scruse.annotations.JsonOutput} for additional features
  * like polymorphic deserialization.
+ *
+ * <p>
+ * This class can be extended to pass additional state between custom serializer implementations.
+ *
+ * <p>
+ * To reduce heap allocations, you can reuse instances.
  */
 public class SerializationContext {
     /**

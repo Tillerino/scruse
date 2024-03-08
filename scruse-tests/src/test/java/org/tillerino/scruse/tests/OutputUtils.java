@@ -21,7 +21,7 @@ import java.util.function.Function;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 public class OutputUtils {
-	static String withJacksonJsonGenerator(FailableConsumer<JsonGenerator, IOException> output) throws IOException {
+	public static String withJacksonJsonGenerator(FailableConsumer<JsonGenerator, IOException> output) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		JsonGenerator generator = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 		output.accept(generator);
@@ -29,7 +29,7 @@ public class OutputUtils {
 		return out.toString(StandardCharsets.UTF_8);
 	}
 
-	static String withGsonJsonWriter(FailableConsumer<JsonWriter, IOException> output) throws IOException {
+	public static String withGsonJsonWriter(FailableConsumer<JsonWriter, IOException> output) throws IOException {
 		StringWriter out = new StringWriter();
 		JsonWriter generator = new JsonWriter(out);
 		output.accept(generator);

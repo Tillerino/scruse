@@ -17,13 +17,13 @@ import java.io.StringReader;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class InputUtils {
-	static <T> T withJacksonJsonParser(String json, FailableFunction<JsonParser, T, IOException> consumer) throws IOException {
+	public static <T> T withJacksonJsonParser(String json, FailableFunction<JsonParser, T, IOException> consumer) throws IOException {
 		try (JsonParser parser = new JsonFactory().createParser(json)) {
 			return consumer.apply(parser);
 		}
 	}
 
-	static <T> T withGsonJsonReader(String json, FailableFunction<JsonReader, T, IOException> consumer) throws IOException {
+	public static <T> T withGsonJsonReader(String json, FailableFunction<JsonReader, T, IOException> consumer) throws IOException {
 		JsonReader parser = new JsonReader(new StringReader(json));
 		return consumer.apply(parser);
 	}
