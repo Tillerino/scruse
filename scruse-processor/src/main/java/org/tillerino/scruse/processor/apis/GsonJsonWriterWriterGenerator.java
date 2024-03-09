@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.lang.model.element.VariableElement;
@@ -15,13 +16,13 @@ import java.util.stream.Collectors;
 public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJsonWriterWriterGenerator> {
 	private final VariableElement writerVariable;
 
-	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
-		super(utils, prototype);
+	public GsonJsonWriterWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+		super(utils, prototype, generatedClass);
 		this.writerVariable = prototype.methodElement().getParameters().get(1);
 	}
 
 	public GsonJsonWriterWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement writerVariable, GsonJsonWriterWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
-		super(prototype, utils, code, parent, lhs, propertyName, rhs, type);
+		super(prototype, utils, code, parent, lhs, propertyName, rhs, type, parent.generatedClass);
 		this.writerVariable = writerVariable;
 	}
 

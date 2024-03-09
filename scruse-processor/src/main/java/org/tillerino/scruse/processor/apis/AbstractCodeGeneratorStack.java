@@ -1,8 +1,10 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import org.apache.commons.lang3.Validate;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.Polymorphism;
 import org.tillerino.scruse.processor.ScruseMethod;
 
@@ -13,19 +15,22 @@ import java.util.List;
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
 	protected final ScruseMethod prototype;
 	protected final AnnotationProcessorUtils utils;
+	@Nullable
 	protected final SELF parent;
 	protected final CodeBlock.Builder code;
 	protected final Type type;
+	protected final GeneratedClass generatedClass;
 	@Nullable
 	protected final String property;
     protected final boolean canBePolyChild;
 
-    protected AbstractCodeGeneratorStack(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, @Nullable String property) {
+    protected AbstractCodeGeneratorStack(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, GeneratedClass generatedClass, @Nullable String property) {
 		this.prototype = prototype;
 		this.utils = utils;
 		this.type = type;
 		this.code = code;
 		this.parent = parent;
+		this.generatedClass = Validate.notNull(generatedClass);
 		this.property = property;
         this.canBePolyChild = prototype.contextParameter().isPresent() && stackDepth() == 1 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
 	}

@@ -13,7 +13,7 @@ import java.util.Optional;
 /**
  * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or {@link org.tillerino.scruse.annotations.JsonOutput}.
  */
-public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableElement methodElement, InputOutput type) {
+public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableElement methodElement, InputOutput type, AnnotationProcessorUtils utils) {
 	enum InputOutput {
 		INPUT, OUTPUT
 	}
@@ -53,9 +53,9 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 			return false;
 		}
 		TypeMirror lastParameterType = methodElement.getParameters().get(methodElement.getParameters().size() - 1).asType();
-		return lastParameterType.toString().equals(switch (type) {
-			case INPUT -> "org.tillerino.scruse.api.DeserializationContext";
-			case OUTPUT -> "org.tillerino.scruse.api.SerializationContext";
+		return utils.types.isAssignable(lastParameterType, switch (type) {
+			case INPUT -> utils.commonTypes.deserializationContext;
+			case OUTPUT -> utils.commonTypes.serializationContext;
 		});
 	}
 

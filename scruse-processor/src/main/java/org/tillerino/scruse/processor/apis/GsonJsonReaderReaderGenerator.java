@@ -1,10 +1,10 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
-import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.GsonJsonReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.annotation.Nullable;
@@ -17,13 +17,13 @@ import java.util.List;
 public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJsonReaderReaderGenerator> {
 	private final VariableElement parserVariable;
 
-	public GsonJsonReaderReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
-		super(prototype, utils, utils.tf.getType(prototype.methodElement().getReturnType()), null, CodeBlock.builder(), null, new LHS.Return());
+	public GsonJsonReaderReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+		super(prototype, utils, generatedClass, null, CodeBlock.builder(), null, new LHS.Return(), utils.tf.getType(prototype.methodElement().getReturnType()));
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 
 	public GsonJsonReaderReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, GsonJsonReaderReaderGenerator parent) {
-		super(prototype, utils, type, propertyName, code, parent, lhs);
+		super(prototype, utils, parent.generatedClass, propertyName, code, parent, lhs, type);
 		this.parserVariable = parserVariable;
 	}
 

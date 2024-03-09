@@ -5,10 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.input.EmptyArrays;
-import org.tillerino.scruse.processor.AnnotationProcessorUtils;
-import org.tillerino.scruse.processor.Polymorphism;
-import org.tillerino.scruse.processor.PrototypeFinder;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.*;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
@@ -21,8 +18,8 @@ import java.util.stream.Collectors;
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
 	protected final LHS lhs;
 
-	protected AbstractReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs) {
-		super(prototype, utils, type, code, parent, propertyName);
+	protected AbstractReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, GeneratedClass generatedClass, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs, Type type) {
+		super(prototype, utils, type, code, parent, generatedClass, propertyName);
 		this.lhs = lhs;
 	}
 
@@ -37,7 +34,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			if (branch != Branch.IF) {
 				code.nextControlFlow("else");
 			}
-			String field = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+			String field = generatedClass.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(field, delegate.get().method().name(), prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			if (branch != Branch.IF) {
 				code.endControlFlow();
@@ -310,7 +307,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
 			Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
 			if (delegate.isPresent()) {
-				String delegateField = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+				String delegateField = generatedClass.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
 				if (!delegate.get().method().lastParameterIsContext()) {
 					throw new IllegalArgumentException("Delegate method must have a context parameter");
 				}

@@ -8,6 +8,8 @@ import org.mapstruct.ap.internal.option.Options;
 import org.mapstruct.ap.internal.processor.DefaultModelElementProcessorContext;
 import org.mapstruct.ap.internal.util.AnnotationProcessorContext;
 import org.mapstruct.ap.internal.util.RoundContext;
+import org.tillerino.scruse.api.DeserializationContext;
+import org.tillerino.scruse.api.SerializationContext;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -29,7 +31,6 @@ public class AnnotationProcessorUtils {
 	public final CommonTypes commonTypes;
 	public final TypeFactory tf;
 	public final PrototypeFinder prototypeFinder;
-	public final Delegates delegates = new Delegates();
 
 	public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement, PrototypeFinder prototypeFinder) {
 		elements = processingEnv.getElementUtils();
@@ -105,6 +106,8 @@ public class AnnotationProcessorUtils {
 		public final TypeMirror boxedDouble = elements.getTypeElement(Double.class.getName()).asType();
 		public final TypeMirror boxedChar = elements.getTypeElement(Character.class.getName()).asType();
 		public final TypeMirror object = elements.getTypeElement(Object.class.getName()).asType();
+		public final TypeMirror serializationContext = elements.getTypeElement(SerializationContext.class.getName()).asType();
+		public final TypeMirror deserializationContext = elements.getTypeElement(DeserializationContext.class.getName()).asType();
 
 		public final Set<String> boxedTypes = Set.of(
 			boxedBoolean.toString(),

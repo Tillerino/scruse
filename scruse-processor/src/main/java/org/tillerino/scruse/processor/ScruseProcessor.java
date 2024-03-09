@@ -39,7 +39,10 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	private void mapStructSetup(ProcessingEnvironment processingEnv, TypeElement typeElement) {
-		utils = new AnnotationProcessorUtils(processingEnv, typeElement, new PrototypeFinder(processingEnv.getTypeUtils(), blueprints));
+		if (utils == null) {
+			// AFAICT, the typeElement is only used for type resolution, so the first processed type should do fine
+			utils = new AnnotationProcessorUtils(processingEnv, typeElement, new PrototypeFinder(processingEnv.getTypeUtils(), blueprints));
+		}
 	}
 
 	@Override
@@ -70,14 +73,16 @@ public class ScruseProcessor extends AbstractProcessor {
 		roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
+			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.OUTPUT));
+			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.OUTPUT, utils));
 		});
 		roundEnv.getElementsAnnotatedWith(JsonInput.class).forEach(element -> {
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
+			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.INPUT));
+			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.INPUT, utils));
 		});
 	}
 
@@ -100,6 +105,7 @@ public class ScruseProcessor extends AbstractProcessor {
 			.addModifiers(Modifier.PUBLIC)
 			.addSuperinterface(blueprint.typeElement().asType());
 		List<MethodSpec> methods = new ArrayList<>();
+		GeneratedClass generatedClass = new GeneratedClass(classBuilder);
 		for (ScruseMethod method : blueprint.methods()) {
 			if (!method.methodElement().getModifiers().contains(Modifier.ABSTRACT)) {
 				// method is implemented by user and can be used by us
@@ -116,8 +122,8 @@ public class ScruseProcessor extends AbstractProcessor {
 				continue;
 			}
 			Supplier<CodeBlock.Builder> codeGenerator = switch (method.type()) {
-				case INPUT -> determineInputCodeGenerator(method);
-				case OUTPUT -> determineOutputCodeGenerator(method);
+				case INPUT -> determineInputCodeGenerator(method, generatedClass);
+				case OUTPUT -> determineOutputCodeGenerator(method, generatedClass);
 			};
 			if (codeGenerator == null) {
 				logError("Signature unknown. Please see @JsonOutput/@JsonInput for hints.", method.methodElement());
@@ -130,45 +136,47 @@ public class ScruseProcessor extends AbstractProcessor {
 				logError(e.getMessage(), method.methodElement());
 			}
 		}
-		utils.delegates.buildFields(classBuilder);
+		generatedClass.buildFields(classBuilder);
 		methods.forEach(classBuilder::addMethod);
 		JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(blueprint.className().fileName().replace("/", ".") + "Impl");
 		try (Writer writer = sourceFile.openWriter()) {
-			JavaFile file = JavaFile.builder(blueprint.className().packageName(), classBuilder.build()).build();
+			JavaFile.Builder builder = JavaFile.builder(blueprint.className().packageName(), classBuilder.build());
+			generatedClass.fileBuilderMods.forEach(mod -> mod.accept(builder));
+			JavaFile file = builder.build();
 			file.writeTo(writer);
 		}
 	}
 
-	private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(ScruseMethod method) {
+	private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(ScruseMethod method, GeneratedClass generatedClass) {
 		if (method.parametersWithoutContext().size() == 1) {
 			if (method.methodElement().getReturnType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
-				return new JacksonJsonNodeWriterGenerator(utils, method)::build;
+				return new JacksonJsonNodeWriterGenerator(utils, method, generatedClass)::build;
 			}
 		} else if (method.parametersWithoutContext().size() == 2 && method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
 			VariableElement generatorVariable = method.methodElement().getParameters().get(1);
 			if (generatorVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonGenerator")) {
-				return new JacksonJsonGeneratorWriterGenerator(utils, method)::build;
+				return new JacksonJsonGeneratorWriterGenerator(utils, method, generatedClass)::build;
 			} else if (generatorVariable.asType().toString().equals("com.google.gson.stream.JsonWriter")) {
-				return new GsonJsonWriterWriterGenerator(utils, method)::build;
+				return new GsonJsonWriterWriterGenerator(utils, method, generatedClass)::build;
 			}
 		}
 		return null;
 	}
 
-	private Supplier<CodeBlock.Builder> determineInputCodeGenerator(ScruseMethod method) {
+	private Supplier<CodeBlock.Builder> determineInputCodeGenerator(ScruseMethod method, GeneratedClass generatedClass) {
 		if (method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
 			return null;
 		}
 		if (method.parametersWithoutContext().size() == 1) {
 			VariableElement parserVariable = method.methodElement().getParameters().get(0);
 			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
-				return new JacksonJsonParserReaderGenerator(utils, method)::build;
+				return new JacksonJsonParserReaderGenerator(utils, method, generatedClass)::build;
 			}
 			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
-				return new JacksonJsonNodeReaderGenerator(utils, method)::build;
+				return new JacksonJsonNodeReaderGenerator(utils, method, generatedClass)::build;
 			}
 			if (parserVariable.asType().toString().equals("com.google.gson.stream.JsonReader")) {
-				return new GsonJsonReaderReaderGenerator(utils, method)::build;
+				return new GsonJsonReaderReaderGenerator(utils, method, generatedClass)::build;
 			}
 		}
 		return null;

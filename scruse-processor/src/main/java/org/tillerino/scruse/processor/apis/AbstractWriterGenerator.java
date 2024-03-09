@@ -2,10 +2,7 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.processor.AnnotationProcessorUtils;
-import org.tillerino.scruse.processor.Polymorphism;
-import org.tillerino.scruse.processor.PrototypeFinder;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 
 import javax.lang.model.element.VariableElement;
@@ -21,22 +18,22 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected final RHS rhs;
 
-	protected AbstractWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, CodeBlock.Builder code, SELF parent, LHS lhs, String propertyName, RHS rhs, Type type) {
-		super(prototype, utils, type, code, parent, propertyName);
+	protected AbstractWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, CodeBlock.Builder code, SELF parent, LHS lhs, String propertyName, RHS rhs, Type type, GeneratedClass generatedClass) {
+		super(prototype, utils, type, code, parent, generatedClass, propertyName);
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
 
-	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
+	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
 		this(prototype, utils, CodeBlock.builder(), null, new LHS.Return(), null,
 			new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true),
-			utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()));
+			utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()), generatedClass);
 	}
 
 	public CodeBlock.Builder build() {
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
 		if (delegate.isPresent()) {
-			String delegateField = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+			String delegateField = generatedClass.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(delegateField, delegate.get().method().name(),
 				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			return code;
@@ -128,28 +125,27 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 				branch = Branch.ELSE_IF;
 				RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
 				code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
-				Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
-				if (delegate.isPresent()) {
-					String delegateField = utils.delegates.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
-					if (!delegate.get().method().lastParameterIsContext()) {
-						throw new IllegalArgumentException("Delegate method must have a context parameter");
-					}
-					if (!prototype.lastParameterIsContext()) {
-						throw new IllegalArgumentException("Prototype method must have a context parameter");
-					}
-					code.addStatement("$L.setPendingDiscriminator($S, $S)", prototype.contextParameter().orElseThrow(), polymorphism.discriminator(), child.name());
-					// TODO crude call
-					nest(child.type(), lhs, null, casted)
-						.invokeDelegate(delegateField, delegate.get().method().name(),
-						prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
-						.toList());
-				} else {
+
+				utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype).ifPresentOrElse(delegate -> {
+					String delegateField = generatedClass.getOrCreateField(prototype.blueprint(), delegate.blueprint());
+					VariableElement calleeContext = delegate.method().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
+                    VariableElement callerContext = prototype.contextParameter().orElseThrow(() -> new IllegalArgumentException("Prototype method must have a context parameter"));
+                    if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
+                        throw new IllegalArgumentException("Context types must be compatible");
+                    }
+                    code.addStatement("$L.setPendingDiscriminator($S, $S)", callerContext, polymorphism.discriminator(), child.name());
+                    // TODO crude call
+                    nest(child.type(), lhs, null, casted)
+                            .invokeDelegate(delegateField, delegate.method().name(),
+                                    prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
+                                            .toList());
+                }, () -> {
 					startObject();
 					code.add("\n");
 					nest(utils.commonTypes.string, new LHS.Field("$S", new Object[] { polymorphism.discriminator() }), polymorphism.discriminator(), new RHS.StringLiteral(child.name())).build();
 					nest(child.type(), lhs, null, casted).writeObjectPropertiesAsFields();
 					endObject();
-				}
+				});
 			}
 			if (branch == Branch.IF) {
 				throw new IllegalArgumentException("Polymorphism must have at least one child type");

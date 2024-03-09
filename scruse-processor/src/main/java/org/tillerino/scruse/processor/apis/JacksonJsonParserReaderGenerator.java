@@ -1,10 +1,11 @@
 package org.tillerino.scruse.processor.apis;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.squareup.javapoet.CodeBlock;
-import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.annotation.Nullable;
@@ -17,19 +18,19 @@ import java.util.List;
 public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<JacksonJsonParserReaderGenerator> {
 	private final VariableElement parserVariable;
 
-	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
-		super(prototype, utils, utils.tf.getType(prototype.methodElement().getReturnType()), null, CodeBlock.builder(), null, new LHS.Return());
+	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+		super(prototype, utils, generatedClass, null, CodeBlock.builder(), null, new LHS.Return(), utils.tf.getType(prototype.methodElement().getReturnType()));
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 
 	public JacksonJsonParserReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, JacksonJsonParserReaderGenerator parent) {
-		super(prototype, utils, type, propertyName, code, parent, lhs);
+		super(prototype, utils, parent.generatedClass, propertyName, code, parent, lhs, type);
 		this.parserVariable = parserVariable;
 	}
 
 	@Override
 	protected void startStringCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $T.VALUE_STRING", parserVariable.getSimpleName(), jsonToken());
+		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token(JsonToken.VALUE_STRING));
 	}
 
 	@Override
@@ -39,12 +40,13 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected Snippet objectCaseCondition() {
-		return new Snippet("$T.currentTokenIs($L, $T.START_OBJECT, true)", JacksonJsonParserReaderHelper.class, parserVariable.getSimpleName(), jsonToken());
+		importHelper();
+		return new Snippet("currentTokenIs($L, $L, true)", parserVariable.getSimpleName(), token(JsonToken.START_OBJECT));
 	}
 
 	@Override
 	protected void startArrayCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $T.START_ARRAY", parserVariable.getSimpleName(), jsonToken());
+		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token(JsonToken.START_ARRAY));
 		advance();
 	}
 
@@ -55,7 +57,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected void startFieldCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $T.FIELD_NAME", parserVariable.getSimpleName(), jsonToken());
+		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token(JsonToken.FIELD_NAME));
 	}
 
 	@Override
@@ -67,11 +69,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected Snippet nullCaseCondition() {
-		return new Snippet("$T.currentTokenIs($L, $T.VALUE_NULL, true)", JacksonJsonParserReaderHelper.class, parserVariable.getSimpleName(), jsonToken());
-	}
-
-	private TypeElement jsonToken() {
-		return utils.elements.getTypeElement("com.fasterxml.jackson.core.JsonToken");
+		importHelper();
+		return new Snippet("currentTokenIs($L, $L, true)", parserVariable.getSimpleName(), token(JsonToken.VALUE_NULL));
 	}
 
 	@Override
@@ -116,13 +115,13 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected void iterateOverFields() {
+		importHelper();
 		// we immediately skip the END_OBJECT token once we encounter it
-		code.beginControlFlow("while ($L.currentToken() != $T.END_OBJECT)", parserVariable.getSimpleName(), jsonToken());
+		code.beginControlFlow("while (!currentTokenIs($L, $L, true))", parserVariable.getSimpleName(), token(JsonToken.END_OBJECT));
 	}
 
 	@Override
 	protected void afterObject() {
-		code.addStatement("$L.nextToken()", parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -133,13 +132,15 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected void readDiscriminator(String propertyName) {
-		lhs.assign(code, "$T.readDiscriminator($S, $L)", JacksonJsonParserReaderHelper.class, propertyName, parserVariable.getSimpleName());
+		importHelper();
+		lhs.assign(code, "readDiscriminator($S, $L)", propertyName, parserVariable.getSimpleName());
 	}
 
 	@Override
 	protected void iterateOverElements() {
+		importHelper();
 		// we immediately skip the END_ARRAY token once we encounter it
-		code.beginControlFlow("while ($L.currentToken() != $T.END_ARRAY || $L.nextToken() == null && false)", parserVariable.getSimpleName(), jsonToken(), parserVariable.getSimpleName());
+		code.beginControlFlow("while (!currentTokenIs($L, $L, true))", parserVariable.getSimpleName(), token(JsonToken.END_ARRAY));
 	}
 
 	@Override
@@ -165,6 +166,16 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected JacksonJsonParserReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs) {
 		return new JacksonJsonParserReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this);
+	}
+
+	private Class<JacksonJsonParserReaderHelper> importHelper() {
+		generatedClass.fileBuilderMods.add(builder -> builder.addStaticImport(JacksonJsonParserReaderHelper.class, "*"));
+		return JacksonJsonParserReaderHelper.class;
+	}
+
+	private String token(JsonToken t) {
+		generatedClass.fileBuilderMods.add(builder -> builder.addStaticImport(JsonToken.class, "*"));
+		return t.name();
 	}
 
 	private void advance() {

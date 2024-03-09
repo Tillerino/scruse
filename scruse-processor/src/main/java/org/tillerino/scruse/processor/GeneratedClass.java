@@ -1,20 +1,25 @@
 package org.tillerino.scruse.processor;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName.TopLevelClassName;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Keeps track of the delegate readers/writers that are collected while processing a blueprint.
  */
-public class Delegates {
+public class GeneratedClass {
 	Map<String, Field> variables = new LinkedHashMap<>();
+	public final TypeSpec.Builder typeBuilder;
+	public final List<Consumer<JavaFile.Builder>> fileBuilderMods = new ArrayList<>();
+
+	public GeneratedClass(TypeSpec.Builder typeBuilder) {
+		this.typeBuilder = typeBuilder;
+	}
+
 
 	/**
 	 * Returns the variable name for the given blueprint. If it does not exist yet, it is created.

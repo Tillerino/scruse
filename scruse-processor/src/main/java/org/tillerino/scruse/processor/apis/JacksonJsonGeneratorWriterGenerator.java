@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.lang.model.element.VariableElement;
@@ -14,13 +15,13 @@ import java.util.stream.Collectors;
 public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {
 	private final VariableElement generatorVariable;
 
-	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype) {
-		super(utils, prototype);
+	public JacksonJsonGeneratorWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+		super(utils, prototype, generatedClass);
 		this.generatorVariable = prototype.methodElement().getParameters().get(1);
 	}
 
 	protected JacksonJsonGeneratorWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement generatorVariable, JacksonJsonGeneratorWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
-		super(prototype, utils, code, parent, lhs, propertyName, rhs, type);
+		super(prototype, utils, code, parent, lhs, propertyName, rhs, type, parent.generatedClass);
 		this.generatorVariable = generatorVariable;
 	}
 
