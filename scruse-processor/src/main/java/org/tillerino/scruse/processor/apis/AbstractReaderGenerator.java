@@ -344,16 +344,15 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		startFieldCase(Branch.IF);
 		String fieldVar = "field$" + stackDepth();
 		readFieldNameInIteration(fieldVar);
-		Branch fieldBranch = Branch.IF;
+		code.beginControlFlow("switch($L)", fieldVar);
 		for (SELF nest : properties) {
-			fieldBranch.controlFlow(code, "$L.equals($S)", fieldVar, nest.property);
+			code.beginControlFlow("case $S:", nest.property);
 			nest.build(Branch.IF);
-			fieldBranch = Branch.ELSE_IF;
+			code.addStatement("break");
+			code.endControlFlow();
 		}
 		// unknown fields are ignored for now
-		if (fieldBranch == Branch.ELSE_IF) {
-			code.endControlFlow(); // ends the last field
-		}
+		code.endControlFlow(); // ends the last field
 		code.nextControlFlow("else");
 		throwUnexpected("field name");
 		code.endControlFlow();
