@@ -52,6 +52,7 @@ public class JsonData {
 	public static final String[] BOXED_FLOATS = ArrayUtils.addAll(FLOATS, "null");
 	public static final String[] BOXED_DOUBLES = ArrayUtils.addAll(DOUBLES, "null");
 	public static final String[] STRINGS = ArrayUtils.addAll(BOXED_CHARS, "\"abc\"");
+	public static final String[] ENUMS = {"null", "\"SOME_VALUE\"", "\"ANOTHER_VALUE\""};
 
 	// Primitive arrays
 	public static final String[] BOOLEAN_ARRAYS = {
@@ -206,6 +207,14 @@ public class JsonData {
 		"[\"abc\"]",
 		asArray(STRINGS),
 	};
+	public static final String[] ENUM_ARRAYS = {
+		"null",
+		"[]",
+		"[null]",
+		"[\"SOME_VALUE\"]",
+		"[\"ANOTHER_VALUE\"]",
+		asArray(ENUMS),
+	};
 
 	// Scalar maps
 	public static final String[] STRING_BOOLEAN_MAPS = {
@@ -279,6 +288,14 @@ public class JsonData {
 		"{\"a\": \"a\"}",
 		"{\"a\": \"b\"}",
 		"{\"a\": \"a\", \"b\": null, \"c\": \"c\"}",
+	};
+	public static final String[] STRING_ENUM_MAPS = {
+		"null",
+		"{ }",
+		"{\"a\": null}",
+		"{\"a\": \"SOME_VALUE\"}",
+		"{\"a\": \"ANOTHER_VALUE\"}",
+		"{\"a\": \"SOME_VALUE\", \"b\": null, \"c\": \"ANOTHER_VALUE\"}",
 	};
 
 	static String asArray(String[] values) {

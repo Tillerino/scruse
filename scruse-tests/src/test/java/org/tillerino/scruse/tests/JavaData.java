@@ -1,5 +1,7 @@
 package org.tillerino.scruse.tests;
 
+import org.tillerino.scruse.tests.model.AnEnum;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ public class JavaData {
 	public static final Float[] BOXED_FLOATS = { Float.MIN_VALUE, -1f, 0f, 1f, Float.MAX_VALUE, Float.NaN, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, null };
 	public static final Double[] BOXED_DOUBLES = { Double.MIN_VALUE, -1d, 0d, 1d, Double.MAX_VALUE, Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null };
 	public static final String[] STRINGS = new String[] { "", " ", "a", "A", "ö", "Ö", "a b", "a\tb", "a\nb", "a\rb", "a\"b", "a\\b", "a/b", "a\b", "a\f", "a\b\f\n\r\t", null };
+	public static final AnEnum[] ENUMS = { null, AnEnum.SOME_VALUE, AnEnum.ANOTHER_VALUE };
 
 	// Primitive arrays
 	public static final boolean[][] BOOLEAN_ARRAYS = {null, BOOLEANS};
@@ -49,6 +52,7 @@ public class JavaData {
 	public static final Float[][] BOXED_FLOAT_ARRAYS = {null, BOXED_FLOATS};
 	public static final Double[][] BOXED_DOUBLE_ARRAYS = {null, BOXED_DOUBLES};
 	public static final String[][] STRING_ARRAYS = {null, STRINGS};
+	public static final AnEnum[][] ENUM_ARRAYS = {null, ENUMS};
 
 	// Scalar lists
 	public static final List<List<Boolean>> BOOLEAN_LISTS = asList(null, asList(BOXED_BOOLEANS));
@@ -60,6 +64,7 @@ public class JavaData {
 	public static final List<List<Float>> FLOAT_LISTS = asList(null, asList(BOXED_FLOATS));
 	public static final List<List<Double>> DOUBLE_LISTS = asList(null, asList(BOXED_DOUBLES));
 	public static final List<List<String>> STRING_LISTS = asList(null, asList(STRINGS));
+	public static final List<List<AnEnum>> ENUM_LISTS = asList(null, asList(ENUMS));
 
 	// Scalar maps
 	public static final List<Map<String, Boolean>> STRING_BOOLEAN_MAPS = asList(
@@ -106,6 +111,11 @@ public class JavaData {
 		null,
 		map(),
 		map("a", "a", "b", null, "c", "❆", "d", "a\b\f\n\r\t")
+	);
+	public static final List<Map<String, AnEnum>> STRING_ENUM_MAPS = asList(
+		null,
+		map(),
+		map("a", AnEnum.SOME_VALUE, "b", null, "c", AnEnum.ANOTHER_VALUE)
 	);
 
 	public static <K, V> Map<K, V> map() {

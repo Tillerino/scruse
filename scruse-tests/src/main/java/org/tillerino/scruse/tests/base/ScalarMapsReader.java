@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonInput;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,4 +34,7 @@ interface ScalarMapsReader {
 
 	@JsonInput
 	Map<String, String> readStringStringMap(JsonParser parser) throws IOException;
+
+	@JsonInput
+	Map<String, AnEnum> readStringEnumMap(JsonParser parser) throws IOException;
 }

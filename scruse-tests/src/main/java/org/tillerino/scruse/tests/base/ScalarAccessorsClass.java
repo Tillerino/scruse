@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import lombok.EqualsAndHashCode;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 
@@ -27,11 +28,12 @@ class ScalarAccessorsClass {
 	private Float ff;
 	private Double dd;
 	private String str;
+	private AnEnum en;
 
 	public ScalarAccessorsClass() {
 	}
 
-	public ScalarAccessorsClass(boolean bo, byte by, short s, int i, long l, char c, float f, double d, Boolean bbo, Byte bby, Short ss, Integer ii, Long ll, Character cc, Float ff, Double dd, String str) {
+	public ScalarAccessorsClass(boolean bo, byte by, short s, int i, long l, char c, float f, double d, Boolean bbo, Byte bby, Short ss, Integer ii, Long ll, Character cc, Float ff, Double dd, String str, AnEnum en) {
 		this.bo = bo;
 		this.by = by;
 		this.s = s;
@@ -49,6 +51,7 @@ class ScalarAccessorsClass {
 		this.ff = ff;
 		this.dd = dd;
 		this.str = str;
+		this.en = en;
 	}
 
 	public boolean isBo() {
@@ -185,6 +188,14 @@ class ScalarAccessorsClass {
 
 	public void setStr(String str) {
 		this.str = str;
+	}
+
+	public AnEnum getEn() {
+		return en;
+	}
+
+	public void setEn(AnEnum en) {
+		this.en = en;
 	}
 
 	interface Serde {

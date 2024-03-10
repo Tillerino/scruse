@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base;
 
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.JavaData;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.util.List;
@@ -70,6 +71,13 @@ class ScalarListsWriterTest {
 	void testStringList() throws IOException {
 		for (List<String> object : JavaData.STRING_LISTS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringList);
+		}
+	}
+
+	@Test
+	void testEnumList() throws IOException {
+		for (List<AnEnum> object : JavaData.ENUM_LISTS) {
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeEnumList);
 		}
 	}
 }

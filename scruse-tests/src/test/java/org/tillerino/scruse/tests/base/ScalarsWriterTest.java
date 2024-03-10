@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base;
 
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.JavaData;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 
@@ -127,6 +128,13 @@ class ScalarsWriterTest {
 	void testString() throws IOException {
 		for (String s : JavaData.STRINGS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(s, boxed::writeString);
+		}
+	}
+
+	@Test
+	void testEnum() throws IOException {
+		for (AnEnum e : JavaData.ENUMS) {
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(e, boxed::writeEnum);
 		}
 	}
 }

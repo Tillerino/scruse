@@ -146,4 +146,12 @@ class ScalarsReaderTest {
 			});
 		}
 	}
+
+	@Test
+	void testEnum() throws IOException {
+		for (String json : JsonData.ENUMS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, boxed::readEnum, new TypeReference<>() {
+			});
+		}
+	}
 }

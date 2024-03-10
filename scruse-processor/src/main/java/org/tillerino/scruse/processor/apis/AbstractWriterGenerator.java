@@ -33,7 +33,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	public CodeBlock.Builder build() {
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
 		if (delegate.isPresent()) {
-			String delegateField = generatedClass.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(delegateField, delegate.get().method().name(),
 				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			return code;
@@ -72,6 +72,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs).build();
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			writeString(type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
+		} else if (type.isEnumType()) {
+			writeEnum();
 		} else if (AnnotationProcessorUtils.isArrayOf(type, TypeKind.BYTE)) {
 			writeBinary(BinaryKind.BYTE_ARRAY);
 		} else if (type.isIterableType()) {
@@ -127,7 +129,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 				code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
 
 				utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype).ifPresentOrElse(delegate -> {
-					String delegateField = generatedClass.getOrCreateField(prototype.blueprint(), delegate.blueprint());
+					String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
 					VariableElement calleeContext = delegate.method().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
                     VariableElement callerContext = prototype.contextParameter().orElseThrow(() -> new IllegalArgumentException("Prototype method must have a context parameter"));
                     if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
@@ -181,6 +183,12 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			nested.build();
 			code.add("\n");
 		});
+	}
+
+	private void writeEnum() {
+		RHS.Variable enumValue = new RHS.Variable(propertyName() + "$" + stackDepth() + "$string", false);
+		code.addStatement("$T $L = " + rhs.format() + ".name()", flatten(utils.commonTypes.string, enumValue.name(), rhs.args()));
+		nest(utils.commonTypes.string, lhs, null, enumValue).build();
 	}
 
 	protected abstract void writeNull();

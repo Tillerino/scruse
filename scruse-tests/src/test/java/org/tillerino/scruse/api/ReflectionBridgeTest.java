@@ -11,6 +11,7 @@ import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.OutputUtils;
 import org.tillerino.scruse.tests.base.ScalarFieldsRecord;
 import org.tillerino.scruse.tests.base.ScalarFieldsRecord$SerdeImpl;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -44,7 +45,7 @@ class ReflectionBridgeTest {
 
         assertThat(serializerMaybe).isNotEmpty();
         assertThat(OutputUtils.withJacksonJsonGenerator(generator -> {
-            ScalarFieldsRecord value = new ScalarFieldsRecord(false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, "six");
+            ScalarFieldsRecord value = new ScalarFieldsRecord(false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, "six", AnEnum.SOME_VALUE);
             serializerMaybe.get().invoke(value, generator);
         })).isNotEmpty();
     }
@@ -58,7 +59,7 @@ class ReflectionBridgeTest {
 
         assertThat(serializerMaybe).isNotEmpty();
         org.tillerino.scruse.tests.alt.jsonnode.ScalarFieldsRecord value = new org.tillerino.scruse.tests.alt.jsonnode.ScalarFieldsRecord(
-                false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, "six");
+                false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, false, (byte) 1, (short) 2, 3, 4L, 'c', 4f, 5.0d, "six", AnEnum.SOME_VALUE);
         assertThat(serializerMaybe.get().invoke(value)).isNotEmpty();
     }
 

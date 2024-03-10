@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.JsonData;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -114,6 +115,17 @@ class ScalarListsReaderTest {
 	void testStringList() throws IOException {
 		for (String json : JsonData.STRING_ARRAYS) {
 			List<String> list = InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readStringList, new TypeReference<>() {
+			});
+			if (list != null) {
+				assertThat(list).isInstanceOf(ArrayList.class);
+			}
+		}
+	}
+
+	@Test
+	void testEnumList() throws IOException {
+		for (String json : JsonData.ENUM_ARRAYS) {
+			List<AnEnum> list = InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readEnumList, new TypeReference<>() {
 			});
 			if (list != null) {
 				assertThat(list).isInstanceOf(ArrayList.class);

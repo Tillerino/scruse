@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,4 +35,7 @@ interface ScalarListsWriter {
 
 	@JsonOutput
 	void writeStringList(List<String> input, JsonGenerator generator) throws IOException;
+
+	@JsonOutput
+	void writeEnumList(List<AnEnum> input, JsonGenerator generator) throws IOException;
 }

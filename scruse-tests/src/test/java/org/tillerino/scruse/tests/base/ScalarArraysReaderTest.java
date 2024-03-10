@@ -149,6 +149,14 @@ class ScalarArraysReaderTest {
 	}
 
 	@Test
+	void testEnumArray() throws IOException {
+		for (String json : JsonData.ENUM_ARRAYS) {
+			InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readEnumArray, new TypeReference<>() {
+			});
+		}
+	}
+
+	@Test
 	void testLargeIntArray() throws IOException {
 		String json = """
 			[

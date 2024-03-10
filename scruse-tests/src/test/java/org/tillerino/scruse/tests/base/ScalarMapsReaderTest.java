@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.JsonData;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -106,6 +107,17 @@ class ScalarMapsReaderTest {
 	void readStringStringMap() throws IOException {
 		for (String json : JsonData.STRING_STRING_MAPS) {
 			Map<String, String> list = InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readStringStringMap, new TypeReference<>() {
+			});
+			if (list != null) {
+				assertThat(list).isInstanceOf(LinkedHashMap.class);
+			}
+		}
+	}
+
+	@Test
+	void readStringEnumMap() throws IOException {
+		for (String json : JsonData.STRING_ENUM_MAPS) {
+			Map<String, AnEnum> list = InputUtils.assertThatJacksonJsonParserIsEqualToDatabind(json, impl::readStringEnumMap, new TypeReference<>() {
 			});
 			if (list != null) {
 				assertThat(list).isInstanceOf(LinkedHashMap.class);

@@ -34,7 +34,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			if (branch != Branch.IF) {
 				code.nextControlFlow("else");
 			}
-			String field = generatedClass.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+			String field = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(field, delegate.get().method().name(), prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			if (branch != Branch.IF) {
 				code.endControlFlow();
@@ -128,6 +128,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs).build(Branch.ELSE_IF);
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			readString(Branch.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
+		} else if (type.isEnumType()) {
+			readEnum(Branch.ELSE_IF);
 		} else if (type.isArrayType()) {
 			readArray(Branch.ELSE_IF);
 		} else if (type.isIterableType()) {
@@ -142,6 +144,24 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	private void readString(Branch branch, StringKind stringKind) {
 		startStringCase(branch);
 		readString(stringKind);
+		code.nextControlFlow("else");
+		throwUnexpected("string");
+		code.endControlFlow();
+	}
+
+	private void readEnum(Branch branch) {
+		startStringCase(branch);
+		{
+			String enumValuesField = generatedClass.getOrCreateEnumField(type.getTypeMirror());
+			LHS.Variable enumVar = new LHS.Variable(propertyName() + "$" + stackDepth() + "$string");
+			code.addStatement("$T $L", utils.commonTypes.string, enumVar.name);
+			nest(utils.commonTypes.string, null, enumVar).readString(StringKind.STRING);
+			code.beginControlFlow("if ($L.containsKey($L))", enumValuesField, enumVar.name);
+			lhs.assign(code, "$L.get($L)", enumValuesField, enumVar.name);
+			code.nextControlFlow("else");
+			throwUnexpected("enum value");
+			code.endControlFlow();
+		}
 		code.nextControlFlow("else");
 		throwUnexpected("string");
 		code.endControlFlow();
@@ -307,7 +327,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
 			Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
 			if (delegate.isPresent()) {
-				String delegateField = generatedClass.getOrCreateField(prototype.blueprint(), delegate.get().blueprint());
+				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
 				if (!delegate.get().method().lastParameterIsContext()) {
 					throw new IllegalArgumentException("Delegate method must have a context parameter");
 				}

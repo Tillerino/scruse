@@ -41,7 +41,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected Snippet objectCaseCondition() {
 		importHelper();
-		return new Snippet("currentTokenIs($L, $L, true)", parserVariable.getSimpleName(), token(JsonToken.START_OBJECT));
+		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token(JsonToken.START_OBJECT));
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected Snippet nullCaseCondition() {
 		importHelper();
-		return new Snippet("currentTokenIs($L, $L, true)", parserVariable.getSimpleName(), token(JsonToken.VALUE_NULL));
+		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token(JsonToken.VALUE_NULL));
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	protected void iterateOverFields() {
 		importHelper();
 		// we immediately skip the END_OBJECT token once we encounter it
-		code.beginControlFlow("while (!currentTokenIs($L, $L, true))", parserVariable.getSimpleName(), token(JsonToken.END_OBJECT));
+		code.beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token(JsonToken.END_OBJECT));
 	}
 
 	@Override
@@ -140,7 +140,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	protected void iterateOverElements() {
 		importHelper();
 		// we immediately skip the END_ARRAY token once we encounter it
-		code.beginControlFlow("while (!currentTokenIs($L, $L, true))", parserVariable.getSimpleName(), token(JsonToken.END_ARRAY));
+		code.beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token(JsonToken.END_ARRAY));
 	}
 
 	@Override

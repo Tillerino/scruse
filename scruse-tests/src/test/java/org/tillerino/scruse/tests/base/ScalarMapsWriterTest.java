@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base;
 
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.JavaData;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 import java.util.Map;
@@ -71,6 +72,13 @@ class ScalarMapsWriterTest {
 	void testStringStringMap() throws IOException {
 		for (Map<String, String> object : JavaData.STRING_STRING_MAPS) {
 			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringStringMap);
+		}
+	}
+
+	@Test
+	void testStringEnumMap() throws IOException {
+		for (Map<String, AnEnum> object : JavaData.STRING_ENUM_MAPS) {
+			assertThatJacksonJsonGeneratorIsEqualToDatabind(object, impl::writeStringEnumMap);
 		}
 	}
 }

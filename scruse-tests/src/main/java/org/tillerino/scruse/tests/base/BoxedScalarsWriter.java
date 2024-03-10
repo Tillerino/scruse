@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.tests.model.AnEnum;
 
 import java.io.IOException;
 
@@ -36,4 +37,7 @@ public interface BoxedScalarsWriter {
 
 	@JsonOutput
 	void writeString(String s, JsonGenerator generator) throws IOException;
+
+	@JsonOutput
+	void writeEnum(AnEnum e, JsonGenerator generator) throws IOException;
 }
