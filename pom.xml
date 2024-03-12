@@ -72,6 +72,13 @@
         <version>${gson.version}</version>
       </dependency>
 
+      <!-- Bridges -->
+      <dependency>
+        <groupId>jakarta.ws.rs</groupId>
+        <artifactId>jakarta.ws.rs-api</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+
       <!-- Testing -->
       <dependency>
         <groupId>net.javacrumbs.json-unit</groupId>
