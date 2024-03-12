@@ -18,26 +18,26 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected final RHS rhs;
 
-	protected AbstractWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, CodeBlock.Builder code, SELF parent, LHS lhs, String propertyName, RHS rhs, Type type, GeneratedClass generatedClass) {
-		super(prototype, utils, type, code, parent, generatedClass, propertyName);
+	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, GeneratedClass generatedClass, ScruseMethod prototype, CodeBlock.Builder code, SELF parent, Type type, String propertyName, RHS rhs, LHS lhs, boolean isStackRelevantType) {
+		super(utils, generatedClass, prototype, code, parent, type, isStackRelevantType, propertyName);
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
 
 	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		this(prototype, utils, CodeBlock.builder(), null, new LHS.Return(), null,
-			new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true),
-			utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()), generatedClass);
+		this(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()), null, new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true), new LHS.Return(),
+				true);
 	}
 
 	public CodeBlock.Builder build() {
-		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
+		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return));
 		if (delegate.isPresent()) {
 			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(delegateField, delegate.get().method().name(),
 				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
 			return code;
 		}
+		detectSelfReferencingType();
 		if (type.isPrimitive()) {
 			writePrimitive(type.getTypeMirror());
 		} else {
@@ -47,7 +47,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 				} else {
 					RHS.Variable nest = new RHS.Variable(property + "$" + (stackDepth() + 1), true);
 					code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
-					nest(type.getTypeMirror(), lhs, null, nest).build();
+					nest(type.getTypeMirror(), lhs, null, nest, false).build();
 					return code;
 				}
 			}
@@ -69,7 +69,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	 */
 	protected void writeNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs).build();
+			nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs, false).build();
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			writeString(type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (type.isEnumType()) {
@@ -91,7 +91,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			: type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
 
 		RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1), true);
-		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "item", elemVar);
+		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "item", elemVar, true);
 		startArray();
 		code.beginControlFlow("for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
 		nested.build();
@@ -107,7 +107,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 		RHS.Accessor value = new RHS.Accessor(entry, "getValue()", true);
 		LHS.Field key = new LHS.Field("$L.getKey()", new Object[] { entry.name() });
-		SELF valueNested = nest(valueType.getTypeMirror(), key, "value", value);
+		SELF valueNested = nest(valueType.getTypeMirror(), key, "value", value, true);
 
 		startObject();
 		code.beginControlFlow("for ($T<$T, $T> $L : " + rhs.format() + ".entrySet())",
@@ -118,56 +118,58 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	protected void writeObjectAsMap() {
-		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
-		if (polymorphismMaybe.isPresent()) {
-			Polymorphism polymorphism = polymorphismMaybe.get();
-			Branch branch = Branch.IF;
-			for (Polymorphism.Child child : polymorphism.children()) {
-				branch.controlFlow(code, rhs.format() + " instanceof $T", flatten(rhs.args(), child.type()));
-				branch = Branch.ELSE_IF;
-				RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
-				code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
-
-				utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype).ifPresentOrElse(delegate -> {
-					String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
-					VariableElement calleeContext = delegate.method().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
-                    VariableElement callerContext = prototype.contextParameter().orElseThrow(() -> new IllegalArgumentException("Prototype method must have a context parameter"));
-                    if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
-                        throw new IllegalArgumentException("Context types must be compatible");
-                    }
-                    code.addStatement("$L.setPendingDiscriminator($S, $S)", callerContext, polymorphism.discriminator(), child.name());
-                    // TODO crude call
-                    nest(child.type(), lhs, null, casted)
-                            .invokeDelegate(delegateField, delegate.method().name(),
-                                    prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
-                                            .toList());
-                }, () -> {
-					startObject();
-					code.add("\n");
-					nest(utils.commonTypes.string, new LHS.Field("$S", new Object[] { polymorphism.discriminator() }), polymorphism.discriminator(), new RHS.StringLiteral(child.name())).build();
-					nest(child.type(), lhs, null, casted).writeObjectPropertiesAsFields();
-					endObject();
-				});
-			}
-			if (branch == Branch.IF) {
-				throw new IllegalArgumentException("Polymorphism must have at least one child type");
-			}
-			code.nextControlFlow("else");
-			code.addStatement("throw new $T($S)", IllegalArgumentException.class, "Unknown type");
-			code.endControlFlow();
-		} else {
+		Polymorphism.of(type.getTypeElement(), utils.elements).ifPresentOrElse(this::writePolymorphicObject, () -> {
 			startObject();
 			code.add("\n");
 			writeObjectPropertiesAsFields();
 			endObject();
+		});
+	}
+
+	private void writePolymorphicObject(Polymorphism polymorphism) {
+		Branch branch = Branch.IF;
+		for (Polymorphism.Child child : polymorphism.children()) {
+			branch.controlFlow(code, rhs.format() + " instanceof $T", flatten(rhs.args(), child.type()));
+			branch = Branch.ELSE_IF;
+			RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
+			code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
+
+			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
+				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
+				VariableElement calleeContext = delegate.method().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
+				VariableElement callerContext = prototype.contextParameter().orElseThrow(() -> new IllegalArgumentException("Prototype method must have a context parameter"));
+				if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
+				throw new IllegalArgumentException("Context types must be compatible");
+				}
+				code.addStatement("$L.setPendingDiscriminator($S, $S)", callerContext, polymorphism.discriminator(), child.name());
+				// TODO crude call
+				nest(child.type(), lhs, "instance", casted, true)
+				.invokeDelegate(delegateField, delegate.method().name(),
+				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
+				.toList());
+			}, () -> {
+				startObject();
+				code.add("\n");
+				nest(utils.commonTypes.string, new LHS.Field("$S", new Object[] { polymorphism.discriminator() }),
+					polymorphism.discriminator(), new RHS.StringLiteral(child.name()), false).build();
+				nest(child.type(), lhs, "instance", casted, true).writeObjectPropertiesAsFields();
+				endObject();
+			});
 		}
+		if (branch == Branch.IF) {
+			throw new IllegalArgumentException("Polymorphism must have at least one child type");
+		}
+		code.nextControlFlow("else");
+		code.addStatement("throw new $T($S)", IllegalArgumentException.class, "Unknown type");
+		code.endControlFlow();
 	}
 
 	void writeObjectPropertiesAsFields() {
 		if (canBePolyChild) {
 			VariableElement context = prototype.contextParameter().orElseThrow();
 			code.beginControlFlow("if ($L.isDiscriminatorPending())", context);
-			nest(utils.commonTypes.string, new LHS.Field("$L.pendingDiscriminatorProperty", new Object[] { context.getSimpleName() }), "discriminator", new RHS.Accessor(new RHS.Variable(context.getSimpleName().toString(), false), "pendingDiscriminatorValue", false)).build();
+			nest(utils.commonTypes.string, new LHS.Field("$L.pendingDiscriminatorProperty", new Object[] { context.getSimpleName() }), "discriminator",
+				new RHS.Accessor(new RHS.Variable(context.getSimpleName().toString(), false), "pendingDiscriminatorValue", false), false).build();
 			code.addStatement("$L.pendingDiscriminatorProperty = null", context);
 			code.endControlFlow();
 		}
@@ -179,7 +181,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		type.getPropertyReadAccessors().forEach((propertyName, accessor) -> {
 			LHS lhs = new LHS.Field("$S", new Object[] { propertyName });
 			RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
-			SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest);
+			SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest, true);
 			nested.build();
 			code.add("\n");
 		});
@@ -188,7 +190,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	private void writeEnum() {
 		RHS.Variable enumValue = new RHS.Variable(propertyName() + "$" + stackDepth() + "$string", false);
 		code.addStatement("$T $L = " + rhs.format() + ".name()", flatten(utils.commonTypes.string, enumValue.name(), rhs.args()));
-		nest(utils.commonTypes.string, lhs, null, enumValue).build();
+		nest(utils.commonTypes.string, lhs, null, enumValue, false).build();
 	}
 
 	protected abstract void writeNull();
@@ -212,7 +214,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
 
-	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs);
+	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType);
 
 	sealed interface LHS {
 		record Return() implements LHS { }

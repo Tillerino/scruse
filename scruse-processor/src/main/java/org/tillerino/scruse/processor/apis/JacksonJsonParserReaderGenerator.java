@@ -9,7 +9,6 @@ import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 
 import javax.annotation.Nullable;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -19,12 +18,12 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	private final VariableElement parserVariable;
 
 	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		super(prototype, utils, generatedClass, null, CodeBlock.builder(), null, new LHS.Return(), utils.tf.getType(prototype.methodElement().getReturnType()));
+		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getReturnType()), true, null, new LHS.Return());
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 
-	public JacksonJsonParserReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, JacksonJsonParserReaderGenerator parent) {
-		super(prototype, utils, parent.generatedClass, propertyName, code, parent, lhs, type);
+	public JacksonJsonParserReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, JacksonJsonParserReaderGenerator parent, boolean stackRelevantType) {
+		super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
 		this.parserVariable = parserVariable;
 	}
 
@@ -164,8 +163,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected JacksonJsonParserReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs) {
-		return new JacksonJsonParserReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this);
+	protected JacksonJsonParserReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType) {
+		return new JacksonJsonParserReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this, stackRelevantType);
 	}
 
 	private Class<JacksonJsonParserReaderHelper> importHelper() {

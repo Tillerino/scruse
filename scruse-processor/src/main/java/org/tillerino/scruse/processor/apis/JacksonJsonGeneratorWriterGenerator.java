@@ -20,8 +20,8 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 		this.generatorVariable = prototype.methodElement().getParameters().get(1);
 	}
 
-	protected JacksonJsonGeneratorWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement generatorVariable, JacksonJsonGeneratorWriterGenerator parent, LHS lhs, RHS rhs, String propertyName) {
-		super(prototype, utils, code, parent, lhs, propertyName, rhs, type, parent.generatedClass);
+	protected JacksonJsonGeneratorWriterGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, VariableElement generatorVariable, JacksonJsonGeneratorWriterGenerator parent, LHS lhs, RHS rhs, String propertyName, boolean stackRelevantType) {
+		super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
 		this.generatorVariable = generatorVariable;
 	}
 
@@ -119,8 +119,8 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 	}
 
 	@Override
-	protected JacksonJsonGeneratorWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
-		return new JacksonJsonGeneratorWriterGenerator(prototype, utils, utils.tf.getType(type), code, generatorVariable, this, lhs, rhs, propertyName);
+	protected JacksonJsonGeneratorWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+		return new JacksonJsonGeneratorWriterGenerator(prototype, utils, utils.tf.getType(type), code, generatorVariable, this, lhs, rhs, propertyName, stackRelevantType);
 	}
 
 }

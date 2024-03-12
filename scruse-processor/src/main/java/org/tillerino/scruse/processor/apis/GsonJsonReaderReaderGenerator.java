@@ -18,12 +18,12 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 	private final VariableElement parserVariable;
 
 	public GsonJsonReaderReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		super(prototype, utils, generatedClass, null, CodeBlock.builder(), null, new LHS.Return(), utils.tf.getType(prototype.methodElement().getReturnType()));
+		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getReturnType()), true, null, new LHS.Return());
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 
-	public GsonJsonReaderReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, GsonJsonReaderReaderGenerator parent) {
-		super(prototype, utils, parent.generatedClass, propertyName, code, parent, lhs, type);
+	public GsonJsonReaderReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, GsonJsonReaderReaderGenerator parent, boolean stackRelevantType) {
+		super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
 		this.parserVariable = parserVariable;
 	}
 
@@ -147,7 +147,7 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 	}
 
 	@Override
-	protected GsonJsonReaderReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs) {
-		return new GsonJsonReaderReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this);
+	protected GsonJsonReaderReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType) {
+		return new GsonJsonReaderReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this, stackRelevantType);
 	}
 }

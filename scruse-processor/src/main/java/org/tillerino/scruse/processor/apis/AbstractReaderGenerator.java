@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>> extends AbstractCodeGeneratorStack<SELF> {
 	protected final LHS lhs;
 
-	protected AbstractReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, GeneratedClass generatedClass, String propertyName, CodeBlock.Builder code, SELF parent, LHS lhs, Type type) {
-		super(prototype, utils, type, code, parent, generatedClass, propertyName);
+	protected AbstractReaderGenerator(AnnotationProcessorUtils utils, GeneratedClass generatedClass, ScruseMethod prototype, CodeBlock.Builder code, SELF parent, Type type, boolean stackRelevantType, String propertyName, LHS lhs) {
+		super(utils, generatedClass, prototype, code, parent, type, stackRelevantType, propertyName);
 		this.lhs = lhs;
 	}
 
@@ -29,7 +29,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	public CodeBlock.Builder build(Branch branch) {
-		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype);
+		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return));
 		if (delegate.isPresent()) {
 			if (branch != Branch.IF) {
 				code.nextControlFlow("else");
@@ -41,6 +41,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			}
 			return code;
 		}
+		detectSelfReferencingType();
 		if (type.isPrimitive()) {
 			readPrimitive(branch, type.getTypeMirror());
 		} else {
@@ -117,7 +118,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private String readStringInstead() {
 		String stringVar = "string$" + (stackDepth() + 1);
-		SELF nested = nest(utils.commonTypes.string, null, new LHS.Variable(stringVar));
+		SELF nested = nest(utils.commonTypes.string, null, new LHS.Variable(stringVar), false);
 		code.addStatement("$T $L", nested.type.getTypeMirror(), stringVar);
 		nested.readString(StringKind.STRING);
 		return stringVar;
@@ -125,7 +126,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
-			nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs).build(Branch.ELSE_IF);
+			nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false).build(Branch.ELSE_IF);
 		} else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
 			readString(Branch.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
 		} else if (type.isEnumType()) {
@@ -155,7 +156,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			String enumValuesField = generatedClass.getOrCreateEnumField(type.getTypeMirror());
 			LHS.Variable enumVar = new LHS.Variable(propertyName() + "$" + stackDepth() + "$string");
 			code.addStatement("$T $L", utils.commonTypes.string, enumVar.name);
-			nest(utils.commonTypes.string, null, enumVar).readString(StringKind.STRING);
+			nest(utils.commonTypes.string, null, enumVar, false).readString(StringKind.STRING);
 			code.beginControlFlow("if ($L.containsKey($L))", enumValuesField, enumVar.name);
 			lhs.assign(code, "$L.get($L)", enumValuesField, enumVar.name);
 			code.nextControlFlow("else");
@@ -190,7 +191,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.addStatement("$L = $T.copyOf($L, $T.max(10, $L.length + ($L.length >> 1)))", varName, java.util.Arrays.class, varName, Math.class, varName, varName);
 				code.endControlFlow();
 
-				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Array(varName, len));
+				SELF nested = nest(componentType.getTypeMirror(), "item", new LHS.Array(varName, len), true);
 				nested.build(Branch.IF);
 			}
 			code.endControlFlow(); // end of loop
@@ -223,7 +224,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 			iterateOverElements();
 			{
-				SELF nested = nest(componentType.getTypeMirror(), "elem", new LHS.Collection(varName));
+				SELF nested = nest(componentType.getTypeMirror(), "item", new LHS.Collection(varName), true);
 				nested.build(Branch.IF);
 			}
 			code.endControlFlow(); // end of loop
@@ -275,7 +276,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				startFieldCase(Branch.IF);
 				String keyVar = "key$" + stackDepth();
 				readFieldNameInIteration(keyVar);
-				nest(valueType.getTypeMirror(), "value", new LHS.Map(varName, keyVar)).build(Branch.IF);
+				nest(valueType.getTypeMirror(), "value", new LHS.Map(varName, keyVar), true).build(Branch.IF);
 				code.nextControlFlow("else");
 				throwUnexpected("field name");
 				code.endControlFlow();
@@ -321,14 +322,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	private void readPolymorphicObject(Polymorphism polymorphism) {
 		LHS.Variable discriminator = new LHS.Variable("discriminator$" + stackDepth());
 		code.addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
-		nest(utils.commonTypes.string, polymorphism.discriminator(), discriminator).readDiscriminator(polymorphism.discriminator());
+		nest(utils.commonTypes.string, polymorphism.discriminator(), discriminator, false).readDiscriminator(polymorphism.discriminator());
 		Branch branch = Branch.IF;
 		for (Polymorphism.Child child : polymorphism.children()) {
 			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
-			Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype);
-			if (delegate.isPresent()) {
-				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-				if (!delegate.get().method().lastParameterIsContext()) {
+			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
+				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
+				if (!delegate.method().lastParameterIsContext()) {
 					throw new IllegalArgumentException("Delegate method must have a context parameter");
 				}
 				if (!prototype.lastParameterIsContext()) {
@@ -336,13 +336,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				}
 				code.addStatement("$L.markObjectOpen()", prototype.contextParameter().orElseThrow());
 				// TODO crude call
-				nest(child.type(), null, lhs)
-						.invokeDelegate(delegateField, delegate.get().method().name(),
+				nest(child.type(), "instance", lhs, true)
+						.invokeDelegate(delegateField, delegate.method().name(),
 								prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
 										.toList());
-			} else {
-				nest(child.type(), null, lhs).readObjectFields();
-			}
+			}, () -> {
+				nest(child.type(), "instance", lhs, true).readObjectFields();
+			});
 			branch = Branch.ELSE_IF;
 		}
 		if (branch == Branch.IF) {
@@ -390,7 +390,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		if (type.isRecord()) {
 			for (Element component : type.getRecordComponents()) {
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
-				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName));
+				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName), true);
 				nested.add(nest);
 			}
 		} else {
@@ -402,7 +402,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 					case SETTER -> new LHS.Setter(objectVar, a.getElement().getSimpleName().toString());
 					default -> throw new AssertionError(a.getAccessorType());
 				};
-				SELF nest = nest(a.getAccessedType(), p, lhs);
+				SELF nest = nest(a.getAccessedType(), p, lhs, true);
 				nested.add(nest);
 			});
 		}
@@ -445,7 +445,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
 
-	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs);
+	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType);
 	sealed interface LHS {
 		default void assign(CodeBlock.Builder code, String string, Object... args) {
 			if (this instanceof Return) {

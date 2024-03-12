@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
@@ -13,26 +14,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
-	protected final ScruseMethod prototype;
 	protected final AnnotationProcessorUtils utils;
+	protected final GeneratedClass generatedClass;
+	protected final ScruseMethod prototype;
+	protected final CodeBlock.Builder code;
 	@Nullable
 	protected final SELF parent;
-	protected final CodeBlock.Builder code;
 	protected final Type type;
-	protected final GeneratedClass generatedClass;
+	protected final boolean stackRelevantType;
 	@Nullable
 	protected final String property;
     protected final boolean canBePolyChild;
 
-    protected AbstractCodeGeneratorStack(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, SELF parent, GeneratedClass generatedClass, @Nullable String property) {
+    protected AbstractCodeGeneratorStack(AnnotationProcessorUtils utils, GeneratedClass generatedClass, ScruseMethod prototype, CodeBlock.Builder code, SELF parent, Type type, boolean stackRelevantType, @Nullable String property) {
 		this.prototype = prototype;
 		this.utils = utils;
 		this.type = type;
 		this.code = code;
 		this.parent = parent;
 		this.generatedClass = Validate.notNull(generatedClass);
+		this.stackRelevantType = stackRelevantType;
 		this.property = property;
         this.canBePolyChild = prototype.contextParameter().isPresent() && stackDepth() == 1 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
+	}
+
+	protected void detectSelfReferencingType() {
+		if (stackRelevantType && parent != null && parent.stackContainsType(type)) {
+			throw new ContextedRuntimeException("Self-referencing type detected. Define a separate method for this type.")
+				.addContextValue("type", type)
+				.addContextValue("stack", stack());
+		}
+	}
+
+	boolean stackContainsType(Type type) {
+		if ((stackRelevantType || parent == null) && this.type.equals(type)) {
+			return true;
+		}
+		if (parent != null) {
+			return parent.stackContainsType(type);
+		}
+		return false;
 	}
 
 	int stackDepth() {
@@ -44,12 +65,12 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 			if (property == null) {
 				return parent.stack();
 			}
-			return parent.stack().append(" -> ").append(property);
+			return parent.stack().append(" -> ").append(property + ": " + type.getName());
 		}
 		if (property == null) {
-			return new StringBuilder();
+			return new StringBuilder(type.getName());
 		}
-		return new StringBuilder(property);
+		return new StringBuilder(property + ": " + type.getName());
 	}
 
 	protected String propertyName() {

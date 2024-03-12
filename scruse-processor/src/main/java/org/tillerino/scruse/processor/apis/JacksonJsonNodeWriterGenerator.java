@@ -24,8 +24,8 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 		super(utils, prototype, generatedClass);
 	}
 
-	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, JacksonJsonNodeWriterGenerator parent, LHS lhs, RHS rhs, String propertyName, ScruseMethod prototype) {
-		super(prototype, utils, code, parent, lhs, propertyName, rhs, type, parent.generatedClass);
+	public JacksonJsonNodeWriterGenerator(AnnotationProcessorUtils utils, Type type, CodeBlock.Builder code, JacksonJsonNodeWriterGenerator parent, LHS lhs, RHS rhs, String propertyName, ScruseMethod prototype, boolean stackRelevantType) {
+		super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
 	}
 
 	@Override
@@ -148,8 +148,8 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	}
 
 	@Override
-	protected JacksonJsonNodeWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs) {
-		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), code, this, lhs, rhs, propertyName, prototype);
+	protected JacksonJsonNodeWriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+		return new JacksonJsonNodeWriterGenerator(utils, utils.tf.getType(type), code, this, lhs, rhs, propertyName, prototype, stackRelevantType);
 	}
 
 	String nodeName() {

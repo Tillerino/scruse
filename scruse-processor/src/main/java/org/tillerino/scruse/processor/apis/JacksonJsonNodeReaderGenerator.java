@@ -24,12 +24,12 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 	private String fieldVar;
 
 	public JacksonJsonNodeReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		super(prototype, utils, generatedClass, null, CodeBlock.builder(), null, new LHS.Return(), utils.tf.getType(prototype.methodElement().getReturnType()));
+		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getReturnType()), true, null, new LHS.Return());
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 
-	public JacksonJsonNodeReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, JacksonJsonNodeReaderGenerator parent) {
-		super(prototype, utils, parent.generatedClass, propertyName, code, parent, lhs, type);
+	public JacksonJsonNodeReaderGenerator(ScruseMethod prototype, AnnotationProcessorUtils utils, Type type, String propertyName, CodeBlock.Builder code, VariableElement parserVariable, LHS lhs, JacksonJsonNodeReaderGenerator parent, boolean stackRelevantType) {
+		super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
 		this.parserVariable = parserVariable;
 	}
 
@@ -151,8 +151,8 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 	}
 
 	@Override
-	protected JacksonJsonNodeReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs) {
-		return new JacksonJsonNodeReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this);
+	protected JacksonJsonNodeReaderGenerator nest(TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType) {
+		return new JacksonJsonNodeReaderGenerator(prototype, utils, utils.tf.getType(type), propertyName, code, parserVariable, lhs, this, stackRelevantType);
 	}
 
 	private TypeElement jsonNode() {
