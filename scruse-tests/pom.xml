@@ -6,42 +6,41 @@
     <groupId>org.tillerino.scruse</groupId>
     <artifactId>scruse-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>scruse-tests</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+      <module>scruse-tests-jackson</module>
+      <module>scruse-tests-jackson-node</module>
+      <module>scruse-tests-base</module>
+      <module>scruse-tests-gson</module>
+    </modules>
 
-  <dependencies>
+    <dependencies>
     <dependency>
       <groupId>org.tillerino.scruse</groupId>
       <artifactId>scruse-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.tillerino.scruse</groupId>
-      <artifactId>scruse-processor</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.28</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
-      <version>3.25.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>net.javacrumbs.json-unit</groupId>
@@ -52,6 +51,25 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <annotationProcessorPaths>
+            <annotationProcessorPath>
+              <groupId>org.tillerino.scruse</groupId>
+              <artifactId>scruse-processor</artifactId>
+              <version>${project.version}</version>
+            </annotationProcessorPath>
+            <annotationProcessorPath>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </annotationProcessorPath>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -95,41 +113,6 @@
                 </fileset>
               </filesets>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>copy-tests</id>
-            <!-- This must run after the compile phase and before the test-compile phase.
-                 The generate-test-sources phase doesn't hold any other meaning for us, so we can use it. -->
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <configuration>
-              <mainClass>org.tillerino.scruse.tests.CopyTests</mainClass>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <executions>
-          <execution>
-            <id>compile-again-for-copied-classes</id>
-            <!-- Since our prototypes are in the main sources, we need to run compile again after copying them.
-                 The process-test-sources phase doesn't hold any other meaning for us, so we can use it. -->
-            <phase>process-test-sources</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

@@ -133,6 +133,7 @@ public class ScruseProcessor extends AbstractProcessor {
 				methodBuilder.addCode(codeGenerator.get().build());
 				methods.add(methodBuilder.build());
 			} catch (Exception e) {
+				e.printStackTrace();
 				logError(e.getMessage(), method.methodElement());
 			}
 		}
@@ -183,7 +184,7 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	private void logError(String msg, Element element) {
-		processingEnv.getMessager().printMessage(ERROR, msg, element);
+		processingEnv.getMessager().printMessage(ERROR, msg != null ? msg : "(null)", element);
 	}
 
 	ScruseBlueprint blueprint(TypeElement element, boolean toBeGenerated) {

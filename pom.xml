@@ -21,6 +21,7 @@
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <gson.version>2.10.1</gson.version>
     <json-unit.version>3.0.0</json-unit.version>
+    <lombok.version>1.18.28</lombok.version>
   </properties>
 
   <dependencyManagement>
@@ -30,6 +31,11 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
       </dependency>
 
       <!-- Processor dependencies -->
@@ -71,6 +77,11 @@
         <groupId>net.javacrumbs.json-unit</groupId>
         <artifactId>json-unit-assertj</artifactId>
         <version>${json-unit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.javaparser</groupId>
+        <artifactId>javaparser-core</artifactId>
+        <version>3.25.5</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
