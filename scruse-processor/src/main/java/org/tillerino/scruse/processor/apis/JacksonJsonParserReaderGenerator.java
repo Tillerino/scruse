@@ -1,6 +1,6 @@
 package org.tillerino.scruse.processor.apis;
 
-import com.fasterxml.jackson.core.JsonToken;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
@@ -29,7 +29,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected void startStringCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token(JsonToken.VALUE_STRING));
+		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
 	}
 
 	@Override
@@ -40,12 +40,12 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected Snippet objectCaseCondition() {
 		importHelper();
-		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token(JsonToken.START_OBJECT));
+		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("START_OBJECT"));
 	}
 
 	@Override
 	protected void startArrayCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token(JsonToken.START_ARRAY));
+		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("START_ARRAY"));
 		advance();
 	}
 
@@ -56,7 +56,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
 	@Override
 	protected void startFieldCase(Branch branch) {
-		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token(JsonToken.FIELD_NAME));
+		branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("FIELD_NAME"));
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected Snippet nullCaseCondition() {
 		importHelper();
-		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token(JsonToken.VALUE_NULL));
+		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("VALUE_NULL"));
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	protected void iterateOverFields() {
 		importHelper();
 		// we immediately skip the END_OBJECT token once we encounter it
-		code.beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token(JsonToken.END_OBJECT));
+		code.beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token("END_OBJECT"));
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	protected void iterateOverElements() {
 		importHelper();
 		// we immediately skip the END_ARRAY token once we encounter it
-		code.beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token(JsonToken.END_ARRAY));
+		code.beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token("END_ARRAY"));
 	}
 
 	@Override
@@ -172,9 +172,9 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 		return JacksonJsonParserReaderHelper.class;
 	}
 
-	private String token(JsonToken t) {
-		generatedClass.fileBuilderMods.add(builder -> builder.addStaticImport(JsonToken.class, "*"));
-		return t.name();
+	private String token(String t) {
+		generatedClass.fileBuilderMods.add(builder -> builder.addStaticImport(ClassName.get("com.fasterxml.jackson.core", "JsonToken"), "*"));
+		return t;
 	}
 
 	private void advance() {
