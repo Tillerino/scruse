@@ -93,10 +93,27 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1), true);
 		SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "item", elemVar, true);
 		startArray();
+		writeCommaMarkerIfNecessary();
 		code.beginControlFlow("for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
+		writeCommaIfNecessary();
 		nested.build();
 		code.endControlFlow();
 		endArray();
+	}
+
+	private void writeCommaMarkerIfNecessary() {
+		if (needsToWriteComma()) {
+			code.addStatement("boolean $L = true", "$" + stackDepth() + "$first");
+		}
+	}
+
+	private void writeCommaIfNecessary() {
+		if (needsToWriteComma()) {
+			code.beginControlFlow("if (!$L)", "$" + stackDepth() + "$first");
+			writeComma();
+			code.endControlFlow();
+			code.addStatement("$L = false", "$" + stackDepth() + "$first");
+		}
 	}
 
 	private void writeMap() {
@@ -211,6 +228,12 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	protected abstract void startObject();
 
 	protected abstract void endObject();
+
+	boolean needsToWriteComma() {
+		return false;
+	}
+
+	protected void writeComma() { }
 
 	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
 

@@ -40,25 +40,12 @@ public class CopyTests {
 	private static final DefaultPrettyPrinter printer = new DefaultPrettyPrinter(configuration);
 
 	public static void main(String[] args) throws Exception {
-		if (args.length > 0) {
-			Path targetRoot = Paths.get(args[0]);
-			String targetPackage = args[1];
-			Class<?> writer = Class.forName(args[2]);
-			Class<?> reader = Class.forName(args[3]);
-			WriterMode writerMode = WriterMode.valueOf(args[4]);
-			copy(targetRoot, targetPackage, writer, reader, Map.of(), writerMode);
-		} else {
-//			copy(null, "org.tillerino.scruse.tests.alt.gson", JsonWriter.class, JsonReader.class, Map.of(
-//					"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatGsonJsonWriterIsEqualToDatabind",
-//					"assertThatJacksonJsonParserIsEqualToDatabind", "assertThatGsonJsonReaderIsEqualToDatabind",
-//					"assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively", "assertThatGsonJsonReaderIsEqualToDatabindComparingRecursively"
-//			), WriterMode.ARGUMENT);
-//			copy(null, "org.tillerino.scruse.tests.alt.jsonnode", JsonNode.class, JsonNode.class, Map.of(
-//					"assertThatJacksonJsonGeneratorIsEqualToDatabind", "assertThatJacksonJsonNodeIsEqualToDatabind",
-//					"assertThatJacksonJsonParserIsEqualToDatabind", "assertThatJacksonJsonNodeIsEqualToDatabind",
-//					"assertThatJacksonJsonParserIsEqualToDatabindComparingRecursively", "assertThatJacksonJsonNodeIsEqualToDatabindComparingRecursively"
-//			), WriterMode.RETURN);
-		}
+		Path targetRoot = Paths.get(args[0]);
+		String targetPackage = args[1];
+		Class<?> writer = Class.forName(args[2]);
+		Class<?> reader = Class.forName(args[3]);
+		WriterMode writerMode = WriterMode.valueOf(args[4]);
+		copy(targetRoot, targetPackage, writer, reader, Map.of(), writerMode);
 	}
 
 	/**
@@ -73,7 +60,7 @@ public class CopyTests {
 	 */
 	public static void copy(Path targetRoot, String targetPackage, Class<?> writer, Class<?> reader, Map<String, String> methodReplacements, WriterMode writerMode) throws IOException {
 		for (String p : List.of("src/main/java", "src/test/java")) {
-			SourceRoot sourceRoot = new SourceRoot(CodeGenerationUtils.mavenModuleRoot(CopyTests.class).resolve("../scruse-tests-jackson/" + p));
+			SourceRoot sourceRoot = new SourceRoot(targetRoot.resolve("../scruse-tests-jackson/" + p));
 			sourceRoot.setParserConfiguration(new ParserConfiguration()
 				.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17));
 

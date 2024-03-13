@@ -159,6 +159,8 @@ public class ScruseProcessor extends AbstractProcessor {
 				return new JacksonJsonGeneratorWriterGenerator(utils, method, generatedClass)::build;
 			} else if (generatorVariable.asType().toString().equals("com.google.gson.stream.JsonWriter")) {
 				return new GsonJsonWriterWriterGenerator(utils, method, generatedClass)::build;
+			} else if (generatorVariable.asType().toString().equals("com.alibaba.fastjson2.JSONWriter")) {
+				return new Fastjson2WriterGenerator(utils, method, generatedClass)::build;
 			}
 		}
 		return null;
@@ -172,12 +174,12 @@ public class ScruseProcessor extends AbstractProcessor {
 			VariableElement parserVariable = method.methodElement().getParameters().get(0);
 			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
 				return new JacksonJsonParserReaderGenerator(utils, method, generatedClass)::build;
-			}
-			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
+			} else if (parserVariable.asType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
 				return new JacksonJsonNodeReaderGenerator(utils, method, generatedClass)::build;
-			}
-			if (parserVariable.asType().toString().equals("com.google.gson.stream.JsonReader")) {
+			} else if (parserVariable.asType().toString().equals("com.google.gson.stream.JsonReader")) {
 				return new GsonJsonReaderReaderGenerator(utils, method, generatedClass)::build;
+			} else if (parserVariable.asType().toString().equals("com.alibaba.fastjson2.JSONReader")) {
+				return new Fastjson2ReaderGenerator(utils, method, generatedClass)::build;
 			}
 		}
 		return null;
