@@ -43,6 +43,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 
 	@Override
 	protected void writeBinary(BinaryKind binaryKind) {
+		addFieldNameIfNeeded();
 		switch (binaryKind) {
 			case BYTE_ARRAY -> code.addStatement("$L.value($T.getEncoder().encodeToString(" + rhs.format() + "))", flatten(writerVariable.getSimpleName(), Base64.class, rhs.args()));
 		}

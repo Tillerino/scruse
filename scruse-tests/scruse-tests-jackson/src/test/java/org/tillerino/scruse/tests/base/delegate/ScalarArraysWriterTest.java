@@ -3,9 +3,10 @@ package org.tillerino.scruse.tests.base.delegate;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.CodeAssertions;
 import org.tillerino.scruse.tests.JavaData;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.TestSettings;
 
 import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
+import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 class ScalarArraysWriterTest {
 	ScalarArraysWriter impl = new ScalarArraysWriterImpl();
@@ -15,9 +16,7 @@ class ScalarArraysWriterTest {
 		for (boolean[] object : JavaData.BOOLEAN_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBooleanArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBooleanArray")
-			.calls("writePrimitiveBooleanX");
+		assertThatCalls("writeBooleanArray", "writePrimitiveBooleanX", !SETTINGS.canWriteBooleanArrayNatively());
 	}
 
 	@Test
@@ -25,9 +24,7 @@ class ScalarArraysWriterTest {
 		for (byte[] object : JavaData.BYTE_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeByteArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeByteArray")
-			.doesNotCall("writePrimitiveByteX");
+		assertThatCalls("writeByteArray", "writePrimitiveByteX", false);
 	}
 
 	@Test
@@ -35,9 +32,7 @@ class ScalarArraysWriterTest {
 		for (short[] object : JavaData.SHORT_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeShortArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeShortArray")
-			.calls("writePrimitiveShortX");
+		assertThatCalls("writeShortArray", "writePrimitiveShortX", !SETTINGS.canWriteShortArrayNatively());
 	}
 
 	@Test
@@ -45,9 +40,7 @@ class ScalarArraysWriterTest {
 		for (int[] object : JavaData.INT_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeIntArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeIntArray")
-			.calls("writePrimitiveIntX");
+		assertThatCalls("writeIntArray", "writePrimitiveIntX", !SETTINGS.canWriteIntArrayNatively());
 	}
 
 	@Test
@@ -55,9 +48,7 @@ class ScalarArraysWriterTest {
 		for (long[] object : JavaData.LONG_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeLongArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeLongArray")
-			.calls("writePrimitiveLongX");
+		assertThatCalls("writeLongArray", "writePrimitiveLongX", !SETTINGS.canWriteLongArrayNatively());
 	}
 
 	@Test
@@ -65,9 +56,7 @@ class ScalarArraysWriterTest {
 		for (float[] object : JavaData.FLOAT_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeFloatArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeFloatArray")
-			.calls("writePrimitiveFloatX");
+		assertThatCalls("writeFloatArray", "writePrimitiveFloatX", !SETTINGS.canWriteFloatArrayNatively());
 	}
 
 	@Test
@@ -75,9 +64,7 @@ class ScalarArraysWriterTest {
 		for (double[] object : JavaData.DOUBLE_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeDoubleArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeDoubleArray")
-			.calls("writePrimitiveDoubleX");
+		assertThatCalls("writeDoubleArray", "writePrimitiveDoubleX", !SETTINGS.canWriteDoubleArrayNatively());
 	}
 
 	@Test
@@ -85,9 +72,7 @@ class ScalarArraysWriterTest {
 		for (Boolean[] object : JavaData.BOXED_BOOLEAN_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedBooleanArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedBooleanArray")
-			.calls("writeBoxedBooleanX");
+		assertThatCalls("writeBoxedBooleanArray", "writeBoxedBooleanX", true);
 	}
 
 	@Test
@@ -95,9 +80,7 @@ class ScalarArraysWriterTest {
 		for (Byte[] object : JavaData.BOXED_BYTE_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedByteArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedByteArray")
-			.calls("writeBoxedByteX");
+		assertThatCalls("writeBoxedByteArray", "writeBoxedByteX", true);
 	}
 
 	@Test
@@ -105,9 +88,7 @@ class ScalarArraysWriterTest {
 		for (Short[] object : JavaData.BOXED_SHORT_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedShortArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedShortArray")
-			.calls("writeBoxedShortX");
+		assertThatCalls("writeBoxedShortArray", "writeBoxedShortX", true);
 	}
 
 	@Test
@@ -115,9 +96,7 @@ class ScalarArraysWriterTest {
 		for (Integer[] object : JavaData.BOXED_INT_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedIntArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedIntArray")
-			.calls("writeBoxedIntX");
+		assertThatCalls("writeBoxedIntArray", "writeBoxedIntX", true);
 	}
 
 	@Test
@@ -125,9 +104,7 @@ class ScalarArraysWriterTest {
 		for (Long[] object : JavaData.BOXED_LONG_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedLongArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedLongArray")
-			.calls("writeBoxedLongX");
+		assertThatCalls("writeBoxedLongArray", "writeBoxedLongX", true);
 	}
 
 	@Test
@@ -135,9 +112,7 @@ class ScalarArraysWriterTest {
 		for (Float[] object : JavaData.BOXED_FLOAT_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedFloatArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedFloatArray")
-			.calls("writeBoxedFloatX");
+		assertThatCalls("writeBoxedFloatArray", "writeBoxedFloatX", true);
 	}
 
 	@Test
@@ -145,9 +120,7 @@ class ScalarArraysWriterTest {
 		for (Double[] object : JavaData.BOXED_DOUBLE_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeBoxedDoubleArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeBoxedDoubleArray")
-			.calls("writeBoxedDoubleX");
+		assertThatCalls("writeBoxedDoubleArray", "writeBoxedDoubleX", true);
 	}
 
 	@Test
@@ -155,8 +128,16 @@ class ScalarArraysWriterTest {
 		for (String[] object : JavaData.STRING_ARRAYS) {
 			assertIsEqualToDatabind(object, impl::writeStringArray);
 		}
-		CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
-			.method("writeStringArray")
-			.calls("writeStringX");
+		assertThatCalls("writeStringArray", "writeStringX", !SETTINGS.canWriteStringArrayNatively());
+	}
+
+	private static void assertThatCalls(String writeBooleanArray, String writePrimitiveBooleanX, boolean doesCall) throws Exception {
+		CodeAssertions.MethodAssert method = CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class)
+				.method(writeBooleanArray);
+		if (doesCall) {
+			method.calls(writePrimitiveBooleanX);
+		} else {
+			method.doesNotCall(writePrimitiveBooleanX);
+		}
 	}
 }

@@ -60,6 +60,7 @@ public class JsonData {
 		"[]",
 		"[true]",
 		"[false]",
+		"[ false,    true, false  ]",
 		asArray(BOOLEANS)
 	};
 	public static final String[] BYTE_ARRAYS = {

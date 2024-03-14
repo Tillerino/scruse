@@ -29,6 +29,25 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 	}
 
 	@Override
+	protected void readNullable(Branch branch) {
+		if (type.isArrayType()) {
+			if (type.getComponentType().isString()) {
+				lhs.assign(code, "$L.readStringArray()", parserVariable.getSimpleName());
+				return;
+			}
+			if (type.getComponentType().getTypeMirror().getKind() == TypeKind.INT) {
+				lhs.assign(code, "$L.readInt32ValueArray()", parserVariable.getSimpleName());
+				return;
+			}
+			if (type.getComponentType().getTypeMirror().getKind() == TypeKind.LONG) {
+				lhs.assign(code, "$L.readInt64ValueArray()", parserVariable.getSimpleName());
+				return;
+			}
+		}
+		super.readNullable(branch);
+	}
+
+	@Override
 	protected void startStringCase(Branch branch) {
 		branch.controlFlow(code, "$L.isString()", parserVariable.getSimpleName());
 	}
@@ -50,12 +69,12 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
 	@Override
 	protected void startBooleanCase(Branch branch) {
-		branch.controlFlow(code, "(((Object) $L.readBool()) instanceof Boolean $L)", parserVariable.getSimpleName(), "$" + stackDepth() + "$bool");
+		branch.controlFlow(code, "$L.current() == 'f' || $L.current() == 't'", parserVariable.getSimpleName(), parserVariable.getSimpleName());
 	}
 
 	@Override
 	protected void startFieldCase(Branch branch) {
-		branch.controlFlow(code, "(((Object) $L.readFieldName()) instanceof String $L)", parserVariable.getSimpleName(), "$" + stackDepth() + "$name");
+		branch.controlFlow(code, "$L.isString()", parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -69,22 +88,17 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
 	@Override
 	protected void readPrimitive(TypeMirror type) {
-		record R(String cast, String method) {
-		}
-		if (type.getKind() == TypeKind.BOOLEAN) {
-			lhs.assign(code, "$L", "$" + stackDepth() + "$bool");
-			return;
-		}
-		R readMethod = switch (type.getKind()) {
-			case BYTE -> new R("(byte) ", "readInt8Value");
-			case SHORT -> new R("(short) ", "readInt16Value");
-			case INT -> new R("", "readInt32Value");
-			case LONG -> new R("", "readInt64Value");
-			case FLOAT -> new R("(float) ", "readFloatValue");
-			case DOUBLE -> new R("", "readDoubleValue");
+		String readMethod = switch (type.getKind()) {
+			case BOOLEAN -> "readBoolValue";
+			case BYTE -> "readInt8Value";
+			case SHORT -> "readInt16Value";
+			case INT -> "readInt32Value";
+			case LONG -> "readInt64Value";
+			case FLOAT -> "readFloatValue";
+			case DOUBLE -> "readDoubleValue";
 			default -> throw new AssertionError(type.getKind());
 		};
-		lhs.assign(code, "$L$L.$L()", readMethod.cast, parserVariable.getSimpleName(), readMethod.method);
+		lhs.assign(code, "$L.$L()", parserVariable.getSimpleName(), readMethod);
 	}
 
 	@Override
@@ -107,7 +121,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
 	@Override
 	protected void readFieldNameInIteration(String propertyName) {
-		code.addStatement("String $L = $L", propertyName, "$" + stackDepth() + "$name");
+		code.addStatement("String $L = $L.readFieldName()", propertyName, parserVariable.getSimpleName());
 	}
 
 	@Override

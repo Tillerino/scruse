@@ -3,10 +3,11 @@ package org.tillerino.scruse.tests.base.delegate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.CodeAssertions;
-import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.JsonData;
+import org.tillerino.scruse.tests.TestSettings;
 
 import static org.tillerino.scruse.tests.InputUtils.assertIsEqualToDatabind;
+import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 class ScalarArraysReaderTest {
 	ScalarArraysReader impl = new ScalarArraysReaderImpl();
@@ -17,9 +18,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBooleanArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBooleanArray")
-			.calls("readPrimitiveBooleanX");
+		assertThatCalls("readBooleanArray", "readPrimitiveBooleanX", true);
 	}
 
 	@Test
@@ -28,9 +27,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readByteArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readByteArray")
-			.calls("readPrimitiveByteX");
+		assertThatCalls("readByteArray", "readPrimitiveByteX", true);
 	}
 
 	@Test
@@ -39,9 +36,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readShortArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readShortArray")
-			.calls("readPrimitiveShortX");
+		assertThatCalls("readShortArray", "readPrimitiveShortX", true);
 	}
 
 	@Test
@@ -50,9 +45,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readIntArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readIntArray")
-			.calls("readPrimitiveIntX");
+		assertThatCalls("readIntArray", "readPrimitiveIntX", !SETTINGS.canReadIntArrayNatively());
 	}
 
 	@Test
@@ -61,9 +54,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readLongArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readLongArray")
-			.calls("readPrimitiveLongX");
+		assertThatCalls("readLongArray", "readPrimitiveLongX", !SETTINGS.canReadLongArrayNatively());
 	}
 
 	@Test
@@ -72,9 +63,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readFloatArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readFloatArray")
-			.calls("readPrimitiveFloatX");
+		assertThatCalls("readFloatArray", "readPrimitiveFloatX", true);
 	}
 
 	@Test
@@ -83,9 +72,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readDoubleArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readDoubleArray")
-			.calls("readPrimitiveDoubleX");
+		assertThatCalls("readDoubleArray", "readPrimitiveDoubleX", true);
 	}
 
 	@Test
@@ -94,9 +81,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedBooleanArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedBooleanArray")
-			.calls("readBoxedBooleanX");
+		assertThatCalls("readBoxedBooleanArray", "readBoxedBooleanX", true);
 	}
 
 	@Test
@@ -105,9 +90,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedByteArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedByteArray")
-			.calls("readBoxedByteX");
+		assertThatCalls("readBoxedByteArray", "readBoxedByteX", true);
 	}
 
 	@Test
@@ -116,9 +99,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedShortArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedShortArray")
-			.calls("readBoxedShortX");
+		assertThatCalls("readBoxedShortArray", "readBoxedShortX", true);
 	}
 
 	@Test
@@ -127,9 +108,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedIntArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedIntArray")
-			.calls("readBoxedIntX");
+		assertThatCalls("readBoxedIntArray", "readBoxedIntX", true);
 	}
 
 	@Test
@@ -138,9 +117,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedLongArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedLongArray")
-			.calls("readBoxedLongX");
+		assertThatCalls("readBoxedLongArray", "readBoxedLongX", true);
 	}
 
 	@Test
@@ -149,9 +126,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedFloatArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedFloatArray")
-			.calls("readBoxedFloatX");
+		assertThatCalls("readBoxedFloatArray", "readBoxedFloatX", true);
 	}
 
 	@Test
@@ -160,9 +135,7 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readBoxedDoubleArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readBoxedDoubleArray")
-			.calls("readBoxedDoubleX");
+		assertThatCalls("readBoxedDoubleArray", "readBoxedDoubleX", true);
 	}
 
 	@Test
@@ -171,8 +144,15 @@ class ScalarArraysReaderTest {
 			assertIsEqualToDatabind(json, impl::readStringArray, new TypeReference<>() {
 			});
 		}
-		CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class)
-			.method("readStringArray")
-			.calls("readStringX");
+		assertThatCalls("readStringArray", "readStringX", !SETTINGS.canReadStringArrayNatively());
+	}
+
+	private static void assertThatCalls(String caller, String callee, boolean doesCall) throws Exception {
+		CodeAssertions.MethodAssert method = CodeAssertions.assertThatCode(ScalarArraysReaderImpl.class).method(caller);
+		if (doesCall) {
+			method.calls(callee);
+		} else {
+			method.doesNotCall(callee);
+		}
 	}
 }

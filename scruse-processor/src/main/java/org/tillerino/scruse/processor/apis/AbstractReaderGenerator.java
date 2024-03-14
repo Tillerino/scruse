@@ -45,16 +45,24 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		if (type.isPrimitive()) {
 			readPrimitive(branch, type.getTypeMirror());
 		} else {
-			Snippet cond = nullCaseCondition();
-			if (canBePolyChild) {
-				branch.controlFlow(code, "!$L.isObjectOpen(false) && " + cond.code, flatten(prototype.contextParameter().get(), cond.args));
-			} else {
-				branch.controlFlow(code, cond.code, cond.args);
-			}
-			lhs.assign(code, "null");
-			readNullCheckedObject();
+			readNullable(branch);
 		}
 		return code;
+	}
+
+	/**
+	 * Reads non-primitive types.
+	 * This is a good method to override if you want to add specializations for some types that work with null values.
+	 */
+	protected void readNullable(Branch branch) {
+		Snippet cond = nullCaseCondition();
+		if (canBePolyChild) {
+			branch.controlFlow(code, "!$L.isObjectOpen(false) && " + cond.code, flatten(prototype.contextParameter().get(), cond.args));
+		} else {
+			branch.controlFlow(code, cond.code, cond.args);
+		}
+		lhs.assign(code, "null");
+		readNullCheckedObject();
 	}
 
 	protected void readPrimitive(Branch branch, TypeMirror type) {
@@ -172,9 +180,6 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		Type componentType = type.getComponentType();
 		startArrayCase(branch);
 		{
-			if (utils.types.isSameType(componentType.getTypeMirror(), utils.commonTypes.boxedChar)) {
-				throw new AssertionError("Please provide a custom reader for " + type);
-			}
 			TypeMirror rawComponentType = componentType.asRawType().getTypeMirror();
 			TypeMirror rawRawComponentType = rawComponentType.getKind().isPrimitive() ? rawComponentType : utils.commonTypes.object;
 			String varName;
@@ -476,7 +481,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		record Setter(String objectVar, String methodName) implements LHS {}
 	}
 
-	enum Branch {
+	protected enum Branch {
 		IF,
 		ELSE_IF,
 		;

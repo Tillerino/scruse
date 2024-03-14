@@ -23,18 +23,20 @@ public class OutputUtils {
 		return out.toString(StandardCharsets.UTF_8);
 	}
 
-	public static <T> void assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
+	public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withJacksonJsonGenerator(generator -> output.accept(obj, generator));
 		System.out.println(ours);
 		assertThatJson(ours).isEqualTo(databind);
+		return ours;
 	}
 
-	public static <T> void assertIsEqualToDatabind(T obj, FailableTriConsumer<T, JsonGenerator, SerializationContext, IOException> output) throws IOException {
+	public static <T> String assertIsEqualToDatabind(T obj, FailableTriConsumer<T, JsonGenerator, SerializationContext, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withJacksonJsonGenerator(generator -> output.accept(obj, generator, new SerializationContext()));
 		System.out.println(ours);
 		assertThatJson(ours).isEqualTo(databind);
+		return ours;
 	}
 
 	public interface FailableTriConsumer<T, U, V, E extends Throwable> {

@@ -19,6 +19,7 @@ import com.github.javaparser.printer.configuration.Indentation.IndentType;
 import com.github.javaparser.printer.configuration.PrinterConfiguration;
 import com.github.javaparser.utils.CodeGenerationUtils;
 import com.github.javaparser.utils.SourceRoot;
+import org.apache.commons.lang3.StringUtils;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 
@@ -73,9 +74,14 @@ public class CopyTests {
 					@Override
 					public Visitable visit(ClassOrInterfaceDeclaration n, Void arg) {
 						if (packageBefore.get() != null) {
-							n.setComment(new BlockComment(" CARE! This file was copied from " + packageBefore.get() + ".\n" +
+							n.setComment(new BlockComment("\n" +
+								StringUtils.repeat(StringUtils.repeat("COPY", " ", 15), "\n", 5) + "\n" +
+								"\n" +
+								"   This file was copied from " + packageBefore.get() + ".\n" +
 								"   This was performed by " + CopyTests.class.getCanonicalName() + ".\n" +
-								"   Do not modify by hand. Run CopyTests to update this file. "));
+								"   Do not modify by hand. Run CopyTests to update this file.\n" +
+								"\n" +
+								StringUtils.repeat(StringUtils.repeat("COPY", " ", 15), "\n", 5) + "\n"));
 						}
 						return super.visit(n, arg);
 					}

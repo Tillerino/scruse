@@ -43,17 +43,13 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 
 	@Override
 	protected void writeString(StringKind stringKind) {
+		String format = stringKind == StringKind.CHAR_ARRAY ? ("new String(" + rhs.format() + ")") : rhs.format();
 		if (lhs instanceof LHS.Return) {
-			switch (stringKind) {
-				case STRING ->
-					code.addStatement("return $T.instance.textNode(" + rhs.format() + ")", flatten(jsonNodeFactory, rhs.args()));
-				case CHAR_ARRAY ->
-					code.addStatement("return $T.instance.textNode(new String(" + rhs.format() + "))", flatten(jsonNodeFactory, rhs.args()));
-			}
+			code.addStatement("return $T.instance.textNode(" + format + ")", flatten(jsonNodeFactory, rhs.args()));
 		} else if (lhs instanceof LHS.Array) {
-			code.addStatement("$L.add(" + rhs.format() + ")", flatten(parent.nodeName(), rhs.args()));
+			code.addStatement("$L.add(" + format + ")", flatten(parent.nodeName(), rhs.args()));
 		} else if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.put(" + f.format() + ", " + rhs.format() + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
+			code.addStatement("$L.put(" + f.format() + ", " + format + ")", flatten(parent.nodeName(), f.args(), rhs.args()));
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
 		}

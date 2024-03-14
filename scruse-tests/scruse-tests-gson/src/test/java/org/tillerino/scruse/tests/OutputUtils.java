@@ -21,16 +21,18 @@ public class OutputUtils {
 		return out.toString();
 	}
 
-	public static <T> void assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
+	public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withGsonJsonWriter(generator -> output.accept(obj, generator));
 		assertThatJson(ours).isEqualTo(databind);
+		return ours;
 	}
 
-	public static <T> void assertIsEqualToDatabind(T obj, FailableTriConsumer<T, JsonWriter, SerializationContext, IOException> output) throws IOException {
+	public static <T> String assertIsEqualToDatabind(T obj, FailableTriConsumer<T, JsonWriter, SerializationContext, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = withGsonJsonWriter(generator -> output.accept(obj, generator, new SerializationContext()));
 		assertThatJson(ours).isEqualTo(databind);
+		return ours;
 	}
 
 	public interface FailableTriConsumer<T, U, V, E extends Throwable> {

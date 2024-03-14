@@ -33,26 +33,26 @@ public class JavaData {
 	public static final AnEnum[] ENUMS = { null, AnEnum.SOME_VALUE, AnEnum.ANOTHER_VALUE };
 
 	// Primitive arrays
-	public static final boolean[][] BOOLEAN_ARRAYS = {null, BOOLEANS};
-	public static final byte[][] BYTE_ARRAYS = {null, BYTES};
-	public static final short[][] SHORT_ARRAYS = {null, SHORTS};
-	public static final int[][] INT_ARRAYS = {null, INTS};
-	public static final long[][] LONG_ARRAYS = {null, LONGS};
-	public static final char[][] CHAR_ARRAYS = {null, CHARS};
-	public static final float[][] FLOAT_ARRAYS = {null, FLOATS};
-	public static final double[][] DOUBLE_ARRAYS = {null, DOUBLES};
+	public static final List<boolean[]> BOOLEAN_ARRAYS = asList(null, BOOLEANS);
+	public static final List<byte[]> BYTE_ARRAYS = asList(null, BYTES);
+	public static final List<short[]> SHORT_ARRAYS = asList(null, SHORTS);
+	public static final List<int[]> INT_ARRAYS = asList(null, INTS);
+	public static final List<long[]> LONG_ARRAYS = asList(null, LONGS);
+	public static final List<char[]> CHAR_ARRAYS = asList(null, CHARS);
+	public static final List<float[]> FLOAT_ARRAYS = asList(null, FLOATS);
+	public static final List<double[]> DOUBLE_ARRAYS = asList(null, DOUBLES);
 
 	// Boxed arrays
-	public static final Boolean[][] BOXED_BOOLEAN_ARRAYS = {null, BOXED_BOOLEANS};
-	public static final Byte[][] BOXED_BYTE_ARRAYS = {null, BOXED_BYTES};
-	public static final Short[][] BOXED_SHORT_ARRAYS = {null, BOXED_SHORTS};
-	public static final Integer[][] BOXED_INT_ARRAYS = {null, BOXED_INTS};
-	public static final Long[][] BOXED_LONG_ARRAYS = {null, BOXED_LONGS};
-	public static final Character[][] BOXED_CHAR_ARRAYS = {null, BOXED_CHARS};
-	public static final Float[][] BOXED_FLOAT_ARRAYS = {null, BOXED_FLOATS};
-	public static final Double[][] BOXED_DOUBLE_ARRAYS = {null, BOXED_DOUBLES};
-	public static final String[][] STRING_ARRAYS = {null, STRINGS};
-	public static final AnEnum[][] ENUM_ARRAYS = {null, ENUMS};
+	public static final List<Boolean[]> BOXED_BOOLEAN_ARRAYS = asList(null, BOXED_BOOLEANS);
+	public static final List<Byte[]> BOXED_BYTE_ARRAYS = asList(null, BOXED_BYTES);
+	public static final List<Short[]> BOXED_SHORT_ARRAYS = asList(null, BOXED_SHORTS);
+	public static final List<Integer[]> BOXED_INT_ARRAYS = asList(null, BOXED_INTS);
+	public static final List<Long[]> BOXED_LONG_ARRAYS = asList(null, BOXED_LONGS);
+	public static final List<Character[]> BOXED_CHAR_ARRAYS = asList(null, BOXED_CHARS);
+	public static final List<Float[]> BOXED_FLOAT_ARRAYS = asList(null, BOXED_FLOATS);
+	public static final List<Double[]> BOXED_DOUBLE_ARRAYS = asList(null, BOXED_DOUBLES);
+	public static final List<String[]> STRING_ARRAYS = asList(null, STRINGS);
+	public static final List<AnEnum[]> ENUM_ARRAYS = asList(null, ENUMS);
 
 	// Scalar lists
 	public static final List<List<Boolean>> BOOLEAN_LISTS = asList(null, asList(BOXED_BOOLEANS));

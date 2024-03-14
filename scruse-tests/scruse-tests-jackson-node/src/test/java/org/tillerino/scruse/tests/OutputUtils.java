@@ -12,16 +12,18 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 public class OutputUtils {
 
-	public static <T> void assertIsEqualToDatabind(T obj, FailableFunction<T, JsonNode, IOException> output) throws IOException {
+	public static <T> String assertIsEqualToDatabind(T obj, FailableFunction<T, JsonNode, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = output.apply(obj).toString();
 		assertThatJson(ours).isEqualTo(databind);
+		return ours;
 	}
 
-	public static <T> void assertIsEqualToDatabind(T obj, FailableBiFunction<T, SerializationContext, JsonNode, IOException> output) throws IOException {
+	public static <T> String assertIsEqualToDatabind(T obj, FailableBiFunction<T, SerializationContext, JsonNode, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
 		String ours = output.apply(obj, new SerializationContext()).toString();
 		assertThatJson(ours).isEqualTo(databind);
+		return ours;
 	}
 
 }

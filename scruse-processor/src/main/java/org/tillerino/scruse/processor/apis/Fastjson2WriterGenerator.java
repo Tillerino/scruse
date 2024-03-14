@@ -26,6 +26,14 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 	}
 
 	@Override
+	protected void writeNullable() {
+		if (writeNatively()) {
+			return;
+		}
+		super.writeNullable();
+	}
+
+	@Override
 	protected void writeNull() {
 		addFieldNameIfNeeded();
 		code.addStatement("$L.writeNull()", writerVariable.getSimpleName());
@@ -42,6 +50,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 
 	@Override
 	protected void writeBinary(BinaryKind binaryKind) {
+		addFieldNameIfNeeded();
 		switch (binaryKind) {
 			case BYTE_ARRAY -> code.addStatement("$L.writeBase64(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
 		}
@@ -116,6 +125,37 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 	@Override
 	protected Fastjson2WriterGenerator nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
 		return new Fastjson2WriterGenerator(prototype, utils, utils.tf.getType(type), code, writerVariable, this, lhs, rhs, propertyName, stackRelevantType);
+	}
+
+	private boolean writeNatively() {
+		if (type.isArrayType() && writeArrayNatively(type.getComponentType().getTypeMirror())) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean writeArrayNatively(TypeMirror componentType) {
+		if (writePrimitiveArrayNatively(componentType.getKind())) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean writePrimitiveArrayNatively(TypeKind kind) {
+		String t = switch (kind) {
+			case BOOLEAN -> "Bool";
+			case SHORT -> "Int16";
+			case INT -> "Int32";
+			case LONG -> "Int64";
+			// for floating point, writes null for non-finite, so we cannot use those
+			default -> null;
+		};
+		if (t != null) {
+			addFieldNameIfNeeded();
+			code.addStatement("$L.write" + t + "(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
+			return true;
+		}
+		return false;
 	}
 
 	private void addFieldNameIfNeeded() {

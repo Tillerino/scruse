@@ -41,31 +41,39 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		if (type.isPrimitive()) {
 			writePrimitive(type.getTypeMirror());
 		} else {
-			if (rhs.nullable()) {
-				if (rhs instanceof RHS.Variable v) {
-					code.beginControlFlow("if ($L != null)", v.name());
-				} else {
-					RHS.Variable nest = new RHS.Variable(property + "$" + (stackDepth() + 1), true);
-					code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
-					nest(type.getTypeMirror(), lhs, null, nest, false).build();
-					return code;
-				}
-			}
-
-			writeNullCheckedObject();
-
-			if (rhs.nullable()) {
-				code.nextControlFlow("else");
-				writeNull();
-				code.endControlFlow();
-			}
+			writeNullable();
 		}
 		return code;
 	}
 
 	/**
-	 * If your implementation has specializations for some types, you can override this method.
-	 * At this point, {@link #rhs} is guaranteed to be non-null and has type {@link #type}.
+	 * Writes non-primitive types.
+	 * This is a good method to override if you want to add specializations for some types that work with null values.
+	 */
+	protected void writeNullable() {
+		if (rhs.nullable()) {
+			if (rhs instanceof RHS.Variable v) {
+				code.beginControlFlow("if ($L != null)", v.name());
+			} else {
+				RHS.Variable nest = new RHS.Variable(property + "$" + (stackDepth() + 1), true);
+				code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
+				nest(type.getTypeMirror(), lhs, null, nest, false).build();
+				return;
+			}
+		}
+
+		writeNullCheckedObject();
+
+		if (rhs.nullable()) {
+			code.nextControlFlow("else");
+			writeNull();
+			code.endControlFlow();
+		}
+	}
+
+	/**
+	 * Writes non-primitive types that are known to be non-null.
+	 * This is a good method to override if you want to add specializations for some types that require a dedicated null check.
 	 */
 	protected void writeNullCheckedObject() {
 		if (utils.isBoxed(type.getTypeMirror())) {
