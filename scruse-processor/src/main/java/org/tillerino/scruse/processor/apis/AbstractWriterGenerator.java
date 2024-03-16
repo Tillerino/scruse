@@ -5,11 +5,11 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,8 +33,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return));
 		if (delegate.isPresent()) {
 			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-			invokeDelegate(delegateField, delegate.get().method().name(),
-				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
+			invokeDelegate(delegateField, delegate.get().method().methodElement());
 			return code;
 		}
 		detectSelfReferencingType();
@@ -169,9 +168,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 				code.addStatement("$L.setPendingDiscriminator($S, $S)", callerContext, polymorphism.discriminator(), child.name());
 				// TODO crude call
 				nest(child.type(), lhs, "instance", casted, true)
-				.invokeDelegate(delegateField, delegate.method().name(),
-				prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
-				.toList());
+					.invokeDelegate(delegateField, delegate.method().methodElement());
 			}, () -> {
 				startObject();
 				code.add("\n");
@@ -243,17 +240,17 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected void writeComma() { }
 
-	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
+	protected abstract void invokeDelegate(String instance, ExecutableElement callee);
 
 	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType);
 
 	sealed interface LHS {
 		record Return() implements LHS { }
 		record Array() implements LHS { }
-		record Field(String format, Object[] args) implements LHS { }
+		record Field(String format, Object[] args) implements LHS, Snippet { }
 	}
 
-	sealed interface RHS {
+	sealed interface RHS extends Snippet {
 		default String format() {
 			if (this instanceof Variable) {
 				return "$L";

@@ -149,40 +149,39 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(ScruseMethod method, GeneratedClass generatedClass) {
-		if (method.parametersWithoutContext().size() == 1) {
-			if (method.methodElement().getReturnType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
-				return new JacksonJsonNodeWriterGenerator(utils, method, generatedClass)::build;
-			}
-		} else if (method.parametersWithoutContext().size() == 2 && method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
-			VariableElement generatorVariable = method.methodElement().getParameters().get(1);
-			if (generatorVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonGenerator")) {
-				return new JacksonJsonGeneratorWriterGenerator(utils, method, generatedClass)::build;
-			} else if (generatorVariable.asType().toString().equals("com.google.gson.stream.JsonWriter")) {
-				return new GsonJsonWriterWriterGenerator(utils, method, generatedClass)::build;
-			} else if (generatorVariable.asType().toString().equals("com.alibaba.fastjson2.JSONWriter")) {
-				return new Fastjson2WriterGenerator(utils, method, generatedClass)::build;
-			}
+		if (!method.methodElement().getParameters().isEmpty()
+				&& method.methodElement().getReturnType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
+			return new JacksonJsonNodeWriterGenerator(utils, method, generatedClass)::build;
 		}
-		return null;
+		if (method.methodElement().getParameters().size() < 2 || method.methodElement().getReturnType().getKind() != TypeKind.VOID) {
+			return null;
+		}
+		return switch (method.methodElement().getParameters().get(1).asType().toString()) {
+			case "com.fasterxml.jackson.core.JsonGenerator" ->
+					new JacksonJsonGeneratorWriterGenerator(utils, method, generatedClass)::build;
+			case "com.google.gson.stream.JsonWriter" ->
+					new GsonJsonWriterWriterGenerator(utils, method, generatedClass)::build;
+			case "com.alibaba.fastjson2.JSONWriter" ->
+					new Fastjson2WriterGenerator(utils, method, generatedClass)::build;
+			default -> null;
+		};
 	}
 
 	private Supplier<CodeBlock.Builder> determineInputCodeGenerator(ScruseMethod method, GeneratedClass generatedClass) {
-		if (method.methodElement().getReturnType().getKind() == TypeKind.VOID) {
+		if (method.methodElement().getParameters().isEmpty()) {
 			return null;
 		}
-		if (method.parametersWithoutContext().size() == 1) {
-			VariableElement parserVariable = method.methodElement().getParameters().get(0);
-			if (parserVariable.asType().toString().equals("com.fasterxml.jackson.core.JsonParser")) {
-				return new JacksonJsonParserReaderGenerator(utils, method, generatedClass)::build;
-			} else if (parserVariable.asType().toString().equals("com.fasterxml.jackson.databind.JsonNode")) {
-				return new JacksonJsonNodeReaderGenerator(utils, method, generatedClass)::build;
-			} else if (parserVariable.asType().toString().equals("com.google.gson.stream.JsonReader")) {
-				return new GsonJsonReaderReaderGenerator(utils, method, generatedClass)::build;
-			} else if (parserVariable.asType().toString().equals("com.alibaba.fastjson2.JSONReader")) {
-				return new Fastjson2ReaderGenerator(utils, method, generatedClass)::build;
-			}
-		}
-		return null;
+		return switch (method.methodElement().getParameters().get(0).asType().toString()) {
+			case "com.fasterxml.jackson.core.JsonParser" ->
+					new JacksonJsonParserReaderGenerator(utils, method, generatedClass)::build;
+			case "com.fasterxml.jackson.databind.JsonNode" ->
+					new JacksonJsonNodeReaderGenerator(utils, method, generatedClass)::build;
+			case "com.google.gson.stream.JsonReader" ->
+					new GsonJsonReaderReaderGenerator(utils, method, generatedClass)::build;
+			case "com.alibaba.fastjson2.JSONReader" ->
+					new Fastjson2ReaderGenerator(utils, method, generatedClass)::build;
+			default -> null;
+		};
 	}
 
 	private void logError(String msg, Element element) {

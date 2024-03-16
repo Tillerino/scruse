@@ -8,6 +8,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.comments.BlockComment;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
@@ -130,6 +131,15 @@ public class CopyTests {
 						if (n.getAnnotationByClass(JsonOutput.class).isPresent()) {
 							if (writerMode == WriterMode.RETURN) {
 								n.setType(writer);
+								n.getBody().ifPresent(body -> {
+									body.getStatements().getLast().ifPresent(last -> {
+										String prefix = "WriterMode.RETURN:";
+										last.getComment().map(c -> c.getContent().trim()).filter(c -> c.startsWith(prefix)).ifPresent(c -> {
+											body.remove(last);
+											body.addStatement(c.substring(prefix.length()));
+										});
+									});
+								});
 								NodeList<Parameter> parameters = n.getParameters();
 								for (int i = 0; i < parameters.size(); i++) {
 									Parameter parameter = parameters.get(i);

@@ -4,10 +4,7 @@ import com.squareup.javapoet.CodeBlock;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.processor.AnnotationProcessorUtils;
-import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.Polymorphism;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -35,7 +32,8 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 		this.generatedClass = Validate.notNull(generatedClass);
 		this.stackRelevantType = stackRelevantType;
 		this.property = property;
-        this.canBePolyChild = prototype.contextParameter().isPresent() && stackDepth() == 1 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
+		this.canBePolyChild = prototype.contextParameter().isPresent() && stackDepth() == 1
+			&& Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
 	}
 
 	protected void detectSelfReferencingType() {
@@ -79,18 +77,8 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 
 	protected static Object[] flatten(Object... all) {
 		List<Object> aggregator = new ArrayList<>();
-		collectInto(all, aggregator);
+		Snippet.collectInto(all, aggregator);
 		return aggregator.toArray();
-	}
-
-	private static void collectInto(Object o, List<Object> aggregator) {
-		if (o instanceof Object[]) {
-			for (Object o2 : (Object[]) o) {
-				collectInto(o2, aggregator);
-			}
-		} else {
-			aggregator.add(o);
-		}
 	}
 
 	enum StringKind {

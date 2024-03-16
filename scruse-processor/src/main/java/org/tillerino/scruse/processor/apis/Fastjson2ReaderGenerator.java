@@ -6,13 +6,14 @@ import org.tillerino.scruse.helpers.Fastjson2ReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.Snippet;
 
 import javax.annotation.Nullable;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
-import java.util.List;
 
 public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2ReaderGenerator> {
 
@@ -59,7 +60,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
 	@Override
 	protected Snippet objectCaseCondition() {
-		return new Snippet("$L.nextIfObjectStart()", parserVariable.getSimpleName());
+		return Snippet.of("$L.nextIfObjectStart()", parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -83,7 +84,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
 	@Override
 	protected Snippet nullCaseCondition() {
-		return new Snippet("$L.nextIfNull()", parserVariable.getSimpleName());
+		return Snippet.of("$L.nextIfNull()", parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -147,8 +148,9 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
-		lhs.assign(code, "$L.$L($L)", instance, methodName, String.join(", ", ownArguments));
+	protected void invokeDelegate(String instance, ExecutableElement callee) {
+		lhs.assign(code, Snippet.of("$L.$L($C)", instance, callee,
+			Snippet.join(prototype.findArguments(callee, 0), ", ")));
 	}
 
 	@Override

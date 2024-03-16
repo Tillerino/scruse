@@ -23,9 +23,17 @@ public class OutputUtils {
 
 	public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
-		String ours = withGsonJsonWriter(generator -> output.accept(obj, generator));
+		String ours = serialize(obj, output);
 		assertThatJson(ours).isEqualTo(databind);
 		return ours;
+	}
+
+	public static <T> String serialize(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
+		return withGsonJsonWriter(generator -> output.accept(obj, generator));
+	}
+
+	public static <T, U> String serialize2(T obj, U obj2, FailableTriConsumer<T, JsonWriter, U, IOException> output) throws IOException {
+		return withGsonJsonWriter(generator -> output.accept(obj, generator, obj2));
 	}
 
 	public static <T> String assertIsEqualToDatabind(T obj, FailableTriConsumer<T, JsonWriter, SerializationContext, IOException> output) throws IOException {

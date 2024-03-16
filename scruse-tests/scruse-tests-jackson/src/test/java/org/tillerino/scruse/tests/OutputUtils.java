@@ -23,17 +23,29 @@ public class OutputUtils {
 		return out.toString(StandardCharsets.UTF_8);
 	}
 
+	public static <T> String serialize(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
+		return withJacksonJsonGenerator(generator -> output.accept(obj, generator));
+	}
+
+	public static <T, U> String serialize2(T obj, U obj2, FailableTriConsumer<T, JsonGenerator, U, IOException> output) throws IOException {
+		return withJacksonJsonGenerator(generator -> output.accept(obj, generator, obj2));
+	}
+
 	public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
-		String ours = withJacksonJsonGenerator(generator -> output.accept(obj, generator));
+		String ours = serialize(obj, output);
 		System.out.println(ours);
 		assertThatJson(ours).isEqualTo(databind);
 		return ours;
 	}
 
 	public static <T> String assertIsEqualToDatabind(T obj, FailableTriConsumer<T, JsonGenerator, SerializationContext, IOException> output) throws IOException {
+		return assertIsEqualToDatabind2(obj, new SerializationContext(), (obj2, generator, context) -> output.accept(obj, generator, context));
+	}
+
+	public static <T, U> String assertIsEqualToDatabind2(T obj, U obj2, FailableTriConsumer<T, JsonGenerator, U, IOException> output) throws IOException {
 		String databind = new ObjectMapper().writeValueAsString(obj);
-		String ours = withJacksonJsonGenerator(generator -> output.accept(obj, generator, new SerializationContext()));
+		String ours = serialize2(obj, obj2, output);
 		System.out.println(ours);
 		assertThatJson(ours).isEqualTo(databind);
 		return ours;

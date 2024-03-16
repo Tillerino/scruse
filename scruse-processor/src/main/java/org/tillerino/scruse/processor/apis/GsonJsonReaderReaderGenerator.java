@@ -6,13 +6,14 @@ import org.tillerino.scruse.helpers.GsonJsonReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.Snippet;
 
 import javax.annotation.Nullable;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
-import java.util.List;
 
 public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJsonReaderReaderGenerator> {
 	private final VariableElement parserVariable;
@@ -39,7 +40,7 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
 	@Override
 	protected Snippet objectCaseCondition() {
-		return new Snippet("$T.isBeginObject($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
+		return Snippet.of("$T.isBeginObject($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
 	}
 
 	@Override
@@ -64,15 +65,11 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
 	@Override
 	protected Snippet nullCaseCondition() {
-		return new Snippet("$T.isNull($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
+		return Snippet.of("$T.isNull($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
 	}
 
 	private TypeElement jsonToken() {
 		return utils.elements.getTypeElement("com.google.gson.stream.JsonToken");
-	}
-
-	private TypeElement jsonReaderHelper() {
-		return utils.elements.getTypeElement("org.tillerino.scruse.libs.gson.JsonReaderHelper");
 	}
 
 	@Override
@@ -142,8 +139,9 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
-		lhs.assign(code, "$L.$L($L)", instance, methodName, String.join(", ", ownArguments));
+	protected void invokeDelegate(String instance, ExecutableElement callee) {
+		lhs.assign(code, Snippet.of("$L.$L($C)", instance, callee,
+			Snippet.join(prototype.findArguments(callee, 0), ", ")));
 	}
 
 	@Override

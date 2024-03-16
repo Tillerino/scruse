@@ -6,15 +6,15 @@ import org.tillerino.scruse.helpers.JacksonJsonNodeReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.Snippet;
 
 import javax.annotation.Nullable;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<JacksonJsonNodeReaderGenerator> {
 	private final VariableElement parserVariable;
@@ -45,7 +45,7 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 
 	@Override
 	protected Snippet objectCaseCondition() {
-		return new Snippet("$L.isObject()", nodeVar());
+		return Snippet.of("$L.isObject()", nodeVar());
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 
 	@Override
 	protected Snippet nullCaseCondition() {
-		return new Snippet("$L.isNull()", nodeVar());
+		return Snippet.of("$L.isNull()", nodeVar());
 	}
 
 	@Override
@@ -146,8 +146,9 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
-		lhs.assign(code, "$L.$L($L" + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining()) + ")", instance, methodName, nodeVar());
+	protected void invokeDelegate(String instance, ExecutableElement callee) {
+		lhs.assign(code, Snippet.of("$L.$L($L$C)", instance, callee, nodeVar(),
+			Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1))));
 	}
 
 	@Override

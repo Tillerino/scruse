@@ -20,12 +20,18 @@ public class InputUtils {
 	}
 
 	public static <T> T assertIsEqualToDatabind(String json, FailableFunction<JSONReader, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
-		return withReader(json, parser -> {
-			T ours = consumer.apply(parser);
-			T databind = new ObjectMapper().readValue(json, typeRef);
-			assertThat(ours).isEqualTo(databind);
-			return ours;
-		});
+		T ours = deserialize(json, consumer);
+		T databind = new ObjectMapper().readValue(json, typeRef);
+		assertThat(ours).isEqualTo(databind);
+		return ours;
+	}
+
+	public static <T> T deserialize(String json, FailableFunction<JSONReader, T, IOException> consumer) throws IOException {
+		return withReader(json, consumer);
+	}
+
+	public static <T, U> T deserialize2(String json, U obj2, FailableBiFunction<JSONReader, U, T, IOException> consumer) throws IOException {
+		return withReader(json, parser -> consumer.apply(parser, obj2));
 	}
 
 	public static <T> T assertIsEqualToDatabind(String json, FailableBiFunction<JSONReader, DeserializationContext, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {

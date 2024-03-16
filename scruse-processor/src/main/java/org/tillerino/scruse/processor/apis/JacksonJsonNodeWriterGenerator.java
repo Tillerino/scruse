@@ -6,11 +6,11 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.Snippet;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<JacksonJsonNodeWriterGenerator> {
 	private final ClassName jsonNodeFactory = ClassName.get("com.fasterxml.jackson.databind.node", "JsonNodeFactory");
@@ -129,15 +129,15 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
-		Object[] invocationArgs = flatten(instance, methodName, rhs.args());
-		String invocation = "$L.$L(" + rhs.format() + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining("")) + ")";
+	protected void invokeDelegate(String instance, ExecutableElement callee) {
+		Snippet invocation = Snippet.of("$L.$L($C$C)", instance, callee, rhs,
+			Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1)));
 		if (lhs instanceof LHS.Return) {
-			code.addStatement("return " + invocation, invocationArgs);
+			Snippet.of("return $C", invocation).addStatementTo(code);
 		} else if (lhs instanceof LHS.Array) {
-			code.addStatement("$L.add(" + invocation + ")", flatten(parent.nodeName(), invocationArgs));
+			Snippet.of("$L.add($C)", parent.nodeName(), invocation).addStatementTo(code);
 		} else if (lhs instanceof LHS.Field f) {
-			code.addStatement("$L.put(" + f.format() + ", " + invocation + ")", flatten(parent.nodeName(), f.args(), invocationArgs));
+			Snippet.of("$L.put($C, $C)", parent.nodeName(), f, invocation).addStatementTo(code);
 		} else {
 			throw new IllegalStateException("Unknown lhs " + lhs);
 		}

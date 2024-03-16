@@ -1,12 +1,13 @@
 package org.tillerino.scruse.processor;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,29 +49,33 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 		return true;
 	}
 
-	public boolean lastParameterIsContext() {
-		if (methodElement.getParameters().isEmpty()) {
-			return false;
-		}
-		TypeMirror lastParameterType = methodElement.getParameters().get(methodElement.getParameters().size() - 1).asType();
-		return utils.types.isAssignable(lastParameterType, switch (type) {
-			case INPUT -> utils.commonTypes.deserializationContext;
-			case OUTPUT -> utils.commonTypes.serializationContext;
-		});
-	}
-
-	public List<? extends VariableElement> parametersWithoutContext() {
-		if (lastParameterIsContext()) {
-			return methodElement.getParameters().subList(0, methodElement.getParameters().size() - 1);
-		}
-		return methodElement.getParameters();
-	}
-
 	public Optional<VariableElement> contextParameter() {
-		if (lastParameterIsContext()) {
-			return Optional.of(methodElement.getParameters().get(methodElement.getParameters().size() - 1));
+		for (VariableElement parameter : methodElement.getParameters()) {
+			if (utils.types.isAssignable(parameter.asType(), switch (type) {
+				case INPUT -> utils.commonTypes.deserializationContext;
+				case OUTPUT -> utils.commonTypes.serializationContext;
+			})) {
+				return Optional.of(parameter);
+			}
 		}
 		return Optional.empty();
+	}
+
+	public List<Snippet> findArguments(ExecutableElement callee, int firstArgument) {
+		List<Snippet> arguments = new ArrayList<>();
+		calleeParameter: for (int i = firstArgument; i < callee.getParameters().size(); i++) {
+			for (int j = 0; j < methodElement.getParameters().size(); j++) {
+				if (utils.types.isAssignable(methodElement.getParameters().get(j).asType(), callee.getParameters().get(i).asType())) {
+					arguments.add(Snippet.of("$L", methodElement.getParameters().get(j)));
+					continue calleeParameter;
+				}
+			}
+			throw new ContextedRuntimeException("Could not find value to pass to method argument")
+					.addContextValue("caller", this.methodElement)
+					.addContextValue("callee", callee)
+					.addContextValue("argument", callee.getParameters().get(i));
+		}
+		return arguments;
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import org.tillerino.scruse.processor.*;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.nextControlFlow("else");
 			}
 			String field = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-			invokeDelegate(field, delegate.get().method().name(), prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString()).toList());
+			invokeDelegate(field, delegate.get().method().methodElement());
 			if (branch != Branch.IF) {
 				code.endControlFlow();
 			}
@@ -57,9 +58,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	protected void readNullable(Branch branch) {
 		Snippet cond = nullCaseCondition();
 		if (canBePolyChild) {
-			branch.controlFlow(code, "!$L.isObjectOpen(false) && " + cond.code, flatten(prototype.contextParameter().get(), cond.args));
+			branch.controlFlow(code, "!$L.isObjectOpen(false) && " + cond.format(),
+				flatten(prototype.contextParameter().get(), cond.args()));
 		} else {
-			branch.controlFlow(code, cond.code, cond.args);
+			branch.controlFlow(code, cond.format(), cond.args());
 		}
 		lhs.assign(code, "null");
 		readNullCheckedObject();
@@ -267,7 +269,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	private void readMap(Branch branch) {
 		Snippet cond = objectCaseCondition();
-		branch.controlFlow(code, cond.code, flatten(cond.args));
+		branch.controlFlow(code, cond.format(), flatten(cond.args()));
 		{
 			Type keyType = type.determineTypeArguments(Map.class).get(0).getTypeBound();
 			if (!utils.types.isSameType(keyType.getTypeMirror(), utils.commonTypes.string)) {
@@ -307,9 +309,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	private void readObject(Branch branch) {
 		Snippet cond = objectCaseCondition();
 		if (canBePolyChild) {
-			branch.controlFlow(code, "$L.isObjectOpen(true) || " + cond.code, flatten(prototype.contextParameter().get(), cond.args));
+			branch.controlFlow(code, "$L.isObjectOpen(true) || " + cond.format(),
+				flatten(prototype.contextParameter().get(), cond.args()));
 		} else {
-			branch.controlFlow(code, cond.code, cond.args);
+			branch.controlFlow(code, cond.format(), cond.args());
 		}
 
 		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
@@ -333,18 +336,16 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
 			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
 				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
-				if (!delegate.method().lastParameterIsContext()) {
+				if (delegate.method().contextParameter().isEmpty()) {
 					throw new IllegalArgumentException("Delegate method must have a context parameter");
 				}
-				if (!prototype.lastParameterIsContext()) {
-					throw new IllegalArgumentException("Prototype method must have a context parameter");
-				}
-				code.addStatement("$L.markObjectOpen()", prototype.contextParameter().orElseThrow());
-				// TODO crude call
+				prototype.contextParameter().ifPresentOrElse(
+					ctx -> code.addStatement("$L.markObjectOpen()", ctx),
+					() -> {
+						throw new IllegalArgumentException("Prototype method must have a context parameter");
+					});
 				nest(child.type(), "instance", lhs, true)
-						.invokeDelegate(delegateField, delegate.method().name(),
-								prototype.methodElement().getParameters().stream().map(e -> e.getSimpleName().toString())
-										.toList());
+					.invokeDelegate(delegateField, delegate.method().methodElement());
 			}, () -> {
 				nest(child.type(), "instance", lhs, true).readObjectFields();
 			});
@@ -448,10 +449,15 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void throwUnexpected(String expected);
 
-	protected abstract void invokeDelegate(String instance, String methodName, List<String> ownArguments);
+	protected abstract void invokeDelegate(String instance, ExecutableElement callee);
 
 	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType);
+
 	sealed interface LHS {
+		default void assign(CodeBlock.Builder code, Snippet s) {
+			assign(code, s.format(), s.args());
+		}
+
 		default void assign(CodeBlock.Builder code, String string, Object... args) {
 			if (this instanceof Return) {
 				code.addStatement("return " + string, args);
@@ -493,6 +499,4 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		}
 	}
 
-	protected record Snippet(String code, Object... args) {
-	}
 }

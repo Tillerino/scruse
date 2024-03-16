@@ -22,5 +22,10 @@
             <artifactId>json-unit-assertj</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

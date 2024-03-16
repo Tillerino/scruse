@@ -78,10 +78,6 @@ public class AnnotationProcessorUtils {
 		return elements;
 	}
 
-	public boolean isVoid(TypeMirror type) {
-		return type.getKind() == javax.lang.model.type.TypeKind.VOID;
-	}
-
 	boolean isJsonIgnore(List<? extends AnnotationMirror> annotationMirrors) {
 		return annotationMirrors.stream().anyMatch(a -> types.isSameType(a.getAnnotationType(), commonTypes.jsonIgnore)
 			&& a.getElementValues().entrySet().stream().anyMatch(e ->

@@ -7,12 +7,13 @@ import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.Snippet;
 
 import javax.annotation.Nullable;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
-import java.util.List;
 
 public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<JacksonJsonParserReaderGenerator> {
 	private final VariableElement parserVariable;
@@ -40,7 +41,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected Snippet objectCaseCondition() {
 		importHelper();
-		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("START_OBJECT"));
+		return Snippet.of("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("START_OBJECT"));
 	}
 
 	@Override
@@ -69,7 +70,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	@Override
 	protected Snippet nullCaseCondition() {
 		importHelper();
-		return new Snippet("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("VALUE_NULL"));
+		return Snippet.of("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("VALUE_NULL"));
 	}
 
 	@Override
@@ -158,8 +159,9 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
-		lhs.assign(code, "$L.$L($L)", instance, methodName, String.join(", ", ownArguments));
+	protected void invokeDelegate(String instance, ExecutableElement callee) {
+		lhs.assign(code, Snippet.of("$L.$L($C)", instance, callee,
+			Snippet.join(prototype.findArguments(callee, 0), ", ")));
 	}
 
 	@Override

@@ -89,6 +89,12 @@
         <artifactId>javaparser-core</artifactId>
         <version>3.25.5</version>
       </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.25.3</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -99,7 +105,11 @@
       <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.25.3</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -5,12 +5,12 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.Snippet;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {
 	private final VariableElement generatorVariable;
@@ -112,10 +112,11 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, String methodName, List<String> ownArguments) {
+	protected void invokeDelegate(String instance, ExecutableElement callee) {
 		addFieldNameIfRequired();
-		code.addStatement("$L.$L(" + rhs.format() + ownArguments.stream().skip(1).map(a -> ", " + a).collect(Collectors.joining("")) + ")",
-			flatten(instance, methodName, rhs.args()));
+		Snippet.of("$L.$L($C$C)", instance, callee, rhs,
+				Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1)))
+			.addStatementTo(code);
 	}
 
 	@Override
