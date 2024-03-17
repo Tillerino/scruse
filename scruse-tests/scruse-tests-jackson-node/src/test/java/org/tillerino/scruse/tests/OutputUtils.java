@@ -19,6 +19,10 @@ public class OutputUtils {
 		return ours;
 	}
 
+	public static <T, U> String assertIsEqualToDatabind2(T obj, U obj2, FailableBiFunction<T, U, JsonNode, IOException> output) throws IOException {
+		return assertIsEqualToDatabind(obj, o -> output.apply(o, obj2));
+	}
+
 	public static <T> String serialize(T obj, FailableFunction<T, JsonNode, IOException> output) throws IOException {
 		return output.apply(obj).toString();
 	}
@@ -33,5 +37,4 @@ public class OutputUtils {
 		assertThatJson(ours).isEqualTo(databind);
 		return ours;
 	}
-
 }

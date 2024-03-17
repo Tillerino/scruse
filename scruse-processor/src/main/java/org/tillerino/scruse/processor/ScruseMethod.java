@@ -3,13 +3,13 @@ package org.tillerino.scruse.processor;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.processor.util.Generics;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or {@link org.tillerino.scruse.annotations.JsonOutput}.
@@ -78,6 +78,19 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 		return arguments;
 	}
 
+	public List<ScruseVariable> parameters() {
+		Map<Generics.TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
+		for (TypeMirror directSupertype : utils.types.directSupertypes(blueprint.typeElement().asType())) {
+			if (directSupertype.toString().equals(Object.class.getName())) {
+				continue;
+			}
+			typeBindings.putAll(Generics.recordTypeBindings(directSupertype));
+		}
+		return methodElement.getParameters().stream()
+			.map(p -> new ScruseVariable(Generics.applyTypeBindings(p.asType(), typeBindings, utils.types), p.getSimpleName().toString()))
+			.toList();
+	}
+
 	@Override
 	public String toString() {
 		return methodElement.toString();
@@ -91,5 +104,8 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 	@Override
 	public boolean equals(Object obj) {
 		throw new NotImplementedException("equals");
+	}
+
+	public record ScruseVariable(TypeMirror type, String name) {
 	}
 }

@@ -28,6 +28,10 @@ public class OutputUtils {
 		return ours;
 	}
 
+	public static <T, U> String assertIsEqualToDatabind2(T obj, U obj2, FailableTriConsumer<T, JsonWriter, U, IOException> output) throws IOException {
+		return assertIsEqualToDatabind(obj, (o, writer) -> output.accept(o, writer, obj2));
+	}
+
 	public static <T> String serialize(T obj, FailableBiConsumer<T, JsonWriter, IOException> output) throws IOException {
 		return withGsonJsonWriter(generator -> output.accept(obj, generator));
 	}

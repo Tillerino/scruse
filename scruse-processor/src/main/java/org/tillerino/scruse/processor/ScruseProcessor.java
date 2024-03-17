@@ -2,9 +2,7 @@ package org.tillerino.scruse.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.*;
-import org.tillerino.scruse.annotations.JsonConfig;
-import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.annotations.*;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
 import org.tillerino.scruse.processor.apis.*;
 
@@ -71,6 +69,9 @@ public class ScruseProcessor extends AbstractProcessor {
 			}
 		});
 		roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
+			if (element.getEnclosingElement().getAnnotation(JsonInterface.class) != null) {
+				return;
+			}
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
 			mapStructSetup(processingEnv, type);
@@ -78,11 +79,24 @@ public class ScruseProcessor extends AbstractProcessor {
 			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.OUTPUT, utils));
 		});
 		roundEnv.getElementsAnnotatedWith(JsonInput.class).forEach(element -> {
+			if (element.getEnclosingElement().getAnnotation(JsonInterface.class) != null) {
+				return;
+			}
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
 			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = blueprint(type, true);
 			blueprint.methods().add(new ScruseMethod(blueprint, method.getSimpleName().toString(), method, ScruseMethod.InputOutput.INPUT, utils));
+		});
+		roundEnv.getElementsAnnotatedWith(JsonImpl.class).forEach(element -> {
+			TypeElement type = (TypeElement) element;
+			ScruseBlueprint blueprint = blueprint(type, true);
+			mapStructSetup(processingEnv, type);
+			for (Element enclosedElement : utils.elements.getAllMembers((TypeElement) element)) {
+				if (enclosedElement instanceof ExecutableElement exec && exec.getAnnotation(JsonOutput.class) != null) {
+					blueprint.methods().add(new ScruseMethod(blueprint, exec.getSimpleName().toString(), exec, ScruseMethod.InputOutput.OUTPUT, utils));
+				}
+			}
 		});
 	}
 
@@ -114,13 +128,10 @@ public class ScruseProcessor extends AbstractProcessor {
 			MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(method.methodElement().getSimpleName().toString())
 				.addAnnotation(Override.class)
 				.addModifiers(Modifier.PUBLIC)
+				.addTypeVariables(method.methodElement().getTypeParameters().stream().map(TypeParameterElement::getSimpleName).map(name -> TypeVariableName.get(name.toString())).toList())
 				.returns(ClassName.get(method.methodElement().getReturnType()));
-			method.methodElement().getParameters().forEach(param -> methodBuilder.addParameter(ClassName.get(param.asType()), param.getSimpleName().toString()));
+			method.parameters().forEach(param -> methodBuilder.addParameter(ClassName.get(param.type()), param.name()));
 			method.methodElement().getThrownTypes().forEach(type -> methodBuilder.addException(ClassName.get(type)));
-			if (!method.methodElement().getTypeParameters().isEmpty()) {
-				logError("Type parameters not yet supported", method.methodElement());
-				continue;
-			}
 			Supplier<CodeBlock.Builder> codeGenerator = switch (method.type()) {
 				case INPUT -> determineInputCodeGenerator(method, generatedClass);
 				case OUTPUT -> determineOutputCodeGenerator(method, generatedClass);

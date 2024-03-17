@@ -2,9 +2,13 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
+import org.tillerino.scruse.processor.util.Generics;
+import org.tillerino.scruse.processor.util.Generics.TypeVar;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -25,8 +29,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		this(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getParameters().get(0).asType()), null, new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true), new LHS.Return(),
-				true);
+		this(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.parameters().get(0).type()), null, new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true), new LHS.Return(),
+			true);
 	}
 
 	public CodeBlock.Builder build() {
@@ -36,6 +40,24 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			invokeDelegate(delegateField, delegate.get().method().methodElement());
 			return code;
 		}
+
+		for (VariableElement parameter : prototype.methodElement().getParameters()) {
+			Map<TypeVar, TypeMirror> typeVariableMapping = Generics.recordTypeBindings(parameter.asType());
+			if (parameter.asType() instanceof DeclaredType t) {
+				for (Element methodPossibly : t.asElement().getEnclosedElements()) {
+					if (methodPossibly instanceof ExecutableElement method
+							&& methodPossibly.getAnnotation(JsonOutput.class) != null
+							&& !method.getParameters().isEmpty()) {
+						TypeMirror writtenType = Generics.applyTypeBindings(method.getParameters().get(0).asType(), typeVariableMapping, utils.types);
+						if (utils.types.isSameType(type.getTypeMirror(), writtenType)) {
+							invokeDelegate(parameter.getSimpleName().toString(), method);
+							return code;
+						}
+					}
+				}
+			}
+		}
+
 		detectSelfReferencingType();
 		if (type.isPrimitive()) {
 			writePrimitive(type.getTypeMirror());
@@ -87,6 +109,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			writeIterable();
 		} else if (type.isMapType()) {
 			writeMap();
+		} else if (type.isTypeVar()) {
+			throw new IllegalArgumentException("Missing serializer for type variable " + type.getTypeMirror());
 		} else {
 			writeObjectAsMap();
 		}
@@ -196,9 +220,6 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			code.endControlFlow();
 		}
 		DeclaredType t = (DeclaredType) type.getTypeMirror();
-		if (!t.getTypeArguments().isEmpty()) {
-			throw new IllegalArgumentException(stack().toString() + " Type parameters not yet supported");
-		}
 
 		type.getPropertyReadAccessors().forEach((propertyName, accessor) -> {
 			LHS lhs = new LHS.Field("$S", new Object[] { propertyName });
