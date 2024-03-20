@@ -6,8 +6,8 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -89,10 +89,10 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, ExecutableElement callee) {
+	protected void invokeDelegate(String instance, InstantiatedMethod callee) {
 		addFieldNameIfNeeded();
 		Snippet.of("$L.$L($C$C)", instance, callee, rhs,
-				Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1)))
+				Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass)))
 			.addStatementTo(code);
 	}
 

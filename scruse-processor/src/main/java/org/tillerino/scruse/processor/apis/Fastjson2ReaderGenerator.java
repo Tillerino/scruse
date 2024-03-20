@@ -7,9 +7,9 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 import javax.annotation.Nullable;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -148,9 +148,9 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, ExecutableElement callee) {
+	protected void invokeDelegate(String instance, InstantiatedMethod callee) {
 		lhs.assign(code, Snippet.of("$L.$L($C)", instance, callee,
-			Snippet.join(prototype.findArguments(callee, 0), ", ")));
+			Snippet.join(prototype.findArguments(callee, 0, generatedClass), ", ")));
 	}
 
 	@Override

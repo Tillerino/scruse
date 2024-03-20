@@ -10,6 +10,7 @@ import org.mapstruct.ap.internal.util.AnnotationProcessorContext;
 import org.mapstruct.ap.internal.util.RoundContext;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
+import org.tillerino.scruse.processor.util.Generics;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -31,12 +32,14 @@ public class AnnotationProcessorUtils {
 	public final CommonTypes commonTypes;
 	public final TypeFactory tf;
 	public final PrototypeFinder prototypeFinder;
+	public final Generics generics;
 
 	public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement, PrototypeFinder prototypeFinder) {
 		elements = processingEnv.getElementUtils();
 		types = processingEnv.getTypeUtils();
 		commonTypes = new CommonTypes();
 		this.prototypeFinder = prototypeFinder;
+		this.generics = new Generics(this);
 
 		AnnotationProcessorContext apc = new AnnotationProcessorContext(processingEnv.getElementUtils(),
 			processingEnv.getTypeUtils(), processingEnv.getMessager(), false, false);

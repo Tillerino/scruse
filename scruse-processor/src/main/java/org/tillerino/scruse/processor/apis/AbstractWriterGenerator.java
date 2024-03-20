@@ -5,11 +5,9 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
-import org.tillerino.scruse.processor.util.Generics;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
+import org.tillerino.scruse.processor.util.InstantiatedVariable;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -29,7 +27,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	protected AbstractWriterGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		this(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.parameters().get(0).type()), null, new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true), new LHS.Return(),
+		this(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.instantiatedParameters().get(0).type()), null, new RHS.Variable(prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true), new LHS.Return(),
 			true);
 	}
 
@@ -37,23 +35,17 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return));
 		if (delegate.isPresent()) {
 			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-			invokeDelegate(delegateField, delegate.get().method().methodElement());
+			invokeDelegate(delegateField, delegate.get().method());
 			return code;
 		}
 
-		for (VariableElement parameter : prototype.methodElement().getParameters()) {
-			Map<TypeVar, TypeMirror> typeVariableMapping = Generics.recordTypeBindings(parameter.asType());
-			if (parameter.asType() instanceof DeclaredType t) {
-				for (Element methodPossibly : t.asElement().getEnclosedElements()) {
-					if (methodPossibly instanceof ExecutableElement method
-							&& methodPossibly.getAnnotation(JsonOutput.class) != null
-							&& !method.getParameters().isEmpty()) {
-						TypeMirror writtenType = Generics.applyTypeBindings(method.getParameters().get(0).asType(), typeVariableMapping, utils.types);
-						if (utils.types.isSameType(type.getTypeMirror(), writtenType)) {
-							invokeDelegate(parameter.getSimpleName().toString(), method);
-							return code;
-						}
-					}
+		for (InstantiatedVariable parameter : prototype.instantiatedParameters()) {
+			for (InstantiatedMethod method : utils.generics.instantiateMethods(parameter.type())) {
+				if (method.element().getAnnotation(JsonOutput.class) != null
+						&& !method.parameters().isEmpty()
+						&& utils.types.isSameType(method.parameters().get(0).type(), type.getTypeMirror())) {
+					invokeDelegate(parameter.name(), method);
+					return code;
 				}
 			}
 		}
@@ -184,7 +176,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
 				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
-				VariableElement calleeContext = delegate.method().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
+				VariableElement calleeContext = delegate.prototype().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
 				VariableElement callerContext = prototype.contextParameter().orElseThrow(() -> new IllegalArgumentException("Prototype method must have a context parameter"));
 				if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
 				throw new IllegalArgumentException("Context types must be compatible");
@@ -192,7 +184,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 				code.addStatement("$L.setPendingDiscriminator($S, $S)", callerContext, polymorphism.discriminator(), child.name());
 				// TODO crude call
 				nest(child.type(), lhs, "instance", casted, true)
-					.invokeDelegate(delegateField, delegate.method().methodElement());
+					.invokeDelegate(delegateField, delegate.method());
 			}, () -> {
 				startObject();
 				code.add("\n");
@@ -261,7 +253,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	protected void writeComma() { }
 
-	protected abstract void invokeDelegate(String instance, ExecutableElement callee);
+	protected abstract void invokeDelegate(String instance, InstantiatedMethod callee);
 
 	protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType);
 

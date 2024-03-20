@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor;
 
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 import javax.lang.model.util.Types;
 import java.util.LinkedHashSet;
@@ -15,8 +16,11 @@ public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprin
 
 	private Optional<Prototype> findPrototype(Type type, ScruseMethod signatureReference, String root, Set<String> visited, ScruseBlueprint blueprint, boolean allowSelfCall) {
 		for (ScruseMethod method : blueprint.methods()) {
-			if ((method != signatureReference || allowSelfCall) && method.matches(types, signatureReference, type)) {
-				return Optional.of(new Prototype(blueprint, method));
+			if (method != signatureReference || allowSelfCall) {
+				InstantiatedMethod match = method.matches(signatureReference, type);
+				if (match != null) {
+					return Optional.of(new Prototype(blueprint, method, match));
+				}
 			}
 		}
 		for (ScruseBlueprint use : blueprint.uses()) {
@@ -33,7 +37,7 @@ public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprin
 		return Optional.empty();
 	}
 
-	public record Prototype(ScruseBlueprint blueprint, ScruseMethod method) {
+	public record Prototype(ScruseBlueprint blueprint, ScruseMethod prototype, InstantiatedMethod method) {
 
 	}
 }

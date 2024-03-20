@@ -7,8 +7,8 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScruseMethod;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -129,9 +129,9 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
 	}
 
 	@Override
-	protected void invokeDelegate(String instance, ExecutableElement callee) {
+	protected void invokeDelegate(String instance, InstantiatedMethod callee) {
 		Snippet invocation = Snippet.of("$L.$L($C$C)", instance, callee, rhs,
-			Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1)));
+			Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass)));
 		if (lhs instanceof LHS.Return) {
 			Snippet.of("return $C", invocation).addStatementTo(code);
 		} else if (lhs instanceof LHS.Array) {

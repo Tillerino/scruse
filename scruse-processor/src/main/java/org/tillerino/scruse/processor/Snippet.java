@@ -2,13 +2,19 @@ package org.tillerino.scruse.processor;
 
 import com.squareup.javapoet.CodeBlock;
 import org.apache.commons.lang3.Validate;
+import org.tillerino.scruse.processor.util.Named;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Element;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The purpose of this interface is to provide a way to carry both the format and the arguments for {@link CodeBlock.Builder} methods.
+ * We add a few convenience feature for the format on top:
+ * E.g. you can use $C to insert a nested snippet.
+ * Using {@link Element} or {@link Named} as arguments will automatically extract the name.
+ */
 public interface Snippet{
 	String format();
 
@@ -86,11 +92,11 @@ public interface Snippet{
 	}
 
 	static void collectInto(Object o, List<Object> aggregator) {
-		if (o instanceof ExecutableElement e) {
+		if (o instanceof Element e) {
 			aggregator.add(e.getSimpleName());
 		}
-		else if (o instanceof VariableElement e) {
-			aggregator.add(e.getSimpleName());
+		else if (o instanceof Named e) {
+			aggregator.add(e.name());
 		}
 		else if (o instanceof Object[] oa) {
 			for (Object o2 : oa) {

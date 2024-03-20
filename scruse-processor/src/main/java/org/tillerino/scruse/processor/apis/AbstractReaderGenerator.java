@@ -6,10 +6,10 @@ import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 				code.nextControlFlow("else");
 			}
 			String field = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-			invokeDelegate(field, delegate.get().method().methodElement());
+			invokeDelegate(field, delegate.get().method());
 			if (branch != Branch.IF) {
 				code.endControlFlow();
 			}
@@ -336,7 +336,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
 			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
 				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
-				if (delegate.method().contextParameter().isEmpty()) {
+				if (delegate.prototype().contextParameter().isEmpty()) {
 					throw new IllegalArgumentException("Delegate method must have a context parameter");
 				}
 				prototype.contextParameter().ifPresentOrElse(
@@ -345,7 +345,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 						throw new IllegalArgumentException("Prototype method must have a context parameter");
 					});
 				nest(child.type(), "instance", lhs, true)
-					.invokeDelegate(delegateField, delegate.method().methodElement());
+					.invokeDelegate(delegateField, delegate.method());
 			}, () -> {
 				nest(child.type(), "instance", lhs, true).readObjectFields();
 			});
@@ -449,7 +449,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
 	protected abstract void throwUnexpected(String expected);
 
-	protected abstract void invokeDelegate(String instance, ExecutableElement callee);
+	protected abstract void invokeDelegate(String instance, InstantiatedMethod callee);
 
 	protected abstract SELF nest(TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType);
 

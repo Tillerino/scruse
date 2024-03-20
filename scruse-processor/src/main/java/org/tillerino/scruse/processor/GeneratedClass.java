@@ -18,9 +18,13 @@ public class GeneratedClass {
 	Map<String, EnumValuesField> enumFields = new LinkedHashMap<>();
 	public final TypeSpec.Builder typeBuilder;
 	public final List<Consumer<JavaFile.Builder>> fileBuilderMods = new ArrayList<>();
+	private final AnnotationProcessorUtils utils;
+	private final ScruseBlueprint blueprint;
 
-	public GeneratedClass(TypeSpec.Builder typeBuilder) {
+	public GeneratedClass(TypeSpec.Builder typeBuilder, AnnotationProcessorUtils utils, ScruseBlueprint blueprint) {
 		this.typeBuilder = typeBuilder;
+		this.utils = utils;
+		this.blueprint = blueprint;
 	}
 
 	/**
@@ -37,6 +41,23 @@ public class GeneratedClass {
 		return delegateeFields.computeIfAbsent(callee.className().importName(),
 			__ -> new DelegateeField(StringUtils.uncapitalize(callee.className().className()) + "$" + delegateeFields.size() + "$delegate", callee))
 			.name();
+	}
+
+	public String getOrCreateUsedBlueprintWithTypeField(TypeMirror targetType) {
+		return getOrCreateUsedBlueprintWithTypeField(targetType, blueprint);
+	}
+
+	private String getOrCreateUsedBlueprintWithTypeField(TypeMirror targetType, ScruseBlueprint calleeBlueprint) {
+		if (utils.types.isAssignable(calleeBlueprint.typeElement().asType(), targetType)) {
+			return getOrCreateDelegateeField(this.blueprint, calleeBlueprint);
+		}
+		for (ScruseBlueprint use : calleeBlueprint.uses()) {
+			String found = getOrCreateUsedBlueprintWithTypeField(targetType, use);
+			if (found != null) {
+				return found;
+			}
+		}
+		return null;
 	}
 
 	public String getOrCreateEnumField(TypeMirror enumType) {
