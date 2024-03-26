@@ -38,8 +38,8 @@ public class GeneratedClass {
 		if (caller == callee) {
 			return "this";
 		}
-		return delegateeFields.computeIfAbsent(callee.className().importName(),
-			__ -> new DelegateeField(StringUtils.uncapitalize(callee.className().className()) + "$" + delegateeFields.size() + "$delegate", callee))
+		return delegateeFields.computeIfAbsent(callee.className.importName(),
+			__ -> new DelegateeField(StringUtils.uncapitalize(callee.className.className()) + "$" + delegateeFields.size() + "$delegate", callee))
 			.name();
 	}
 
@@ -48,10 +48,10 @@ public class GeneratedClass {
 	}
 
 	private String getOrCreateUsedBlueprintWithTypeField(TypeMirror targetType, ScruseBlueprint calleeBlueprint) {
-		if (utils.types.isAssignable(calleeBlueprint.typeElement().asType(), targetType)) {
+		if (utils.types.isAssignable(calleeBlueprint.typeElement.asType(), targetType)) {
 			return getOrCreateDelegateeField(this.blueprint, calleeBlueprint);
 		}
-		for (ScruseBlueprint use : calleeBlueprint.uses()) {
+		for (ScruseBlueprint use : calleeBlueprint.config.uses()) {
 			String found = getOrCreateUsedBlueprintWithTypeField(targetType, use);
 			if (found != null) {
 				return found;
@@ -73,8 +73,8 @@ public class GeneratedClass {
 
 	record DelegateeField(String name, ScruseBlueprint blueprint) {
 		private void writeField(TypeSpec.Builder classBuilder) {
-			TopLevelClassName impl = this.blueprint().className().impl();
-			FieldSpec.Builder field = FieldSpec.builder(TypeName.get(this.blueprint().typeElement().asType()), this.name())
+			TopLevelClassName impl = this.blueprint().className.impl();
+			FieldSpec.Builder field = FieldSpec.builder(TypeName.get(this.blueprint().typeElement.asType()), this.name())
 				.initializer("new $T()", ClassName.get(impl.packageName(), impl.className()));
 			classBuilder.addField(field.build());
 		}

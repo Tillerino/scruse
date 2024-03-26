@@ -4,18 +4,12 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 import javax.lang.model.util.Types;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprints)  {
 	public Optional<Prototype> findPrototype(Type type, ScruseMethod signatureReference, boolean allowSelfCall) {
-		return findPrototype(type, signatureReference, signatureReference.blueprint().className().importName(), new LinkedHashSet<>(), signatureReference.blueprint(), allowSelfCall);
-	}
-
-	private Optional<Prototype> findPrototype(Type type, ScruseMethod signatureReference, String root, Set<String> visited, ScruseBlueprint blueprint, boolean allowSelfCall) {
-		for (ScruseMethod method : blueprint.methods()) {
+		ScruseBlueprint blueprint = signatureReference.blueprint();
+		for (ScruseMethod method : blueprint.methods) {
 			if (method != signatureReference || allowSelfCall) {
 				InstantiatedMethod match = method.matches(signatureReference, type);
 				if (match != null) {
@@ -23,14 +17,14 @@ public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprin
 				}
 			}
 		}
-		for (ScruseBlueprint use : blueprint.uses()) {
-			if (use.className().importName().equals(root)) {
-				throw new StackOverflowError("circular dependency: " + root);
-			}
-			if (visited.add(use.className().importName())) {
-				Optional<Prototype> prototype = findPrototype(type, signatureReference, root, visited, use, allowSelfCall);
-				if (prototype.isPresent()) {
-					return prototype;
+		List<ScruseBlueprint> uses = new ArrayList<>(blueprint.config.uses());
+		// reverse for correct precedence
+		Collections.reverse(uses);
+		for (ScruseBlueprint use : uses) {
+			for (ScruseMethod method : use.methods) {
+				InstantiatedMethod match = method.matches(signatureReference, type);
+				if (match != null) {
+					return Optional.of(new Prototype(use, method, match));
 				}
 			}
 		}

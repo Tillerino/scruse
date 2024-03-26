@@ -1,7 +1,7 @@
 package org.tillerino.scruse.tests.base.generics;
 
-import org.tillerino.scruse.annotations.JsonImpl;
+import org.tillerino.scruse.annotations.JsonConfig;
 
-@JsonImpl
+@JsonConfig(implement = JsonConfig.ImplementationMode.DO_IMPLEMENT)
 public interface StringSerde extends GenericSerde<String> {
 }

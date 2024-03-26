@@ -3,7 +3,6 @@ package org.tillerino.scruse.processor;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.*;
 import org.tillerino.scruse.annotations.*;
-import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
 import org.tillerino.scruse.processor.apis.*;
 
 import javax.annotation.processing.*;
@@ -14,7 +13,6 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static javax.tools.Diagnostic.Kind.ERROR;
@@ -27,7 +25,6 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 @AutoService(Processor.class)
 public class ScruseProcessor extends AbstractProcessor {
-	Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
 
 	AnnotationProcessorUtils utils;
 
@@ -39,7 +36,7 @@ public class ScruseProcessor extends AbstractProcessor {
 	private void mapStructSetup(ProcessingEnvironment processingEnv, TypeElement typeElement) {
 		if (utils == null) {
 			// AFAICT, the typeElement is only used for type resolution, so the first processed type should do fine
-			utils = new AnnotationProcessorUtils(processingEnv, typeElement, new PrototypeFinder(processingEnv.getTypeUtils(), blueprints));
+			utils = new AnnotationProcessorUtils(processingEnv, typeElement);
 		}
 	}
 
@@ -57,54 +54,40 @@ public class ScruseProcessor extends AbstractProcessor {
 		roundEnv.getElementsAnnotatedWith(JsonConfig.class).forEach(element -> {
 			TypeElement type = (TypeElement) element;
 			mapStructSetup(processingEnv, type);
-			ScruseBlueprint blueprint = blueprint(type, true);
-			for (AnnotationMirror annotation : type.getAnnotationMirrors()) {
-				if (FullyQualifiedClassName.of((TypeElement) annotation.getAnnotationType().asElement()).importName().equals(JsonConfig.class.getName())) {
-					annotation.getElementValues().forEach((name, value) -> {
-						if (name.getSimpleName().toString().equals("uses")) {
-							utils.getTypeElementsFromAnnotationValue(value).forEach(e -> blueprint.uses().add(blueprint(e, false)));
-						}
-					});
+			ScruseBlueprint blueprint = utils.blueprint(type);
+			for (Element enclosedElement : utils.elements.getAllMembers((TypeElement) element)) {
+				if (enclosedElement instanceof ExecutableElement exec
+						&& exec.getAnnotation(JsonOutput.class) != null
+						&& !enclosedElement.getEnclosingElement().equals(element)) {
+					// should actually check if super method is not being generated and THIS is being generated
+					ScruseMethod method = ScruseMethod.of(blueprint, exec, ScruseMethod.InputOutput.OUTPUT, utils);
+					if (method.config().implement().shouldImplement()) {
+						blueprint.methods.add(method);
+					}
 				}
 			}
 		});
 		roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
-			if (element.getEnclosingElement().getAnnotation(JsonInterface.class) != null) {
-				return;
-			}
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
 			mapStructSetup(processingEnv, type);
-			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(ScruseMethod.of(blueprint, method, ScruseMethod.InputOutput.OUTPUT, utils));
+			ScruseBlueprint blueprint = utils.blueprint(type);
+			blueprint.methods.add(ScruseMethod.of(blueprint, method, ScruseMethod.InputOutput.OUTPUT, utils));
 		});
 		roundEnv.getElementsAnnotatedWith(JsonInput.class).forEach(element -> {
-			if (element.getEnclosingElement().getAnnotation(JsonInterface.class) != null) {
-				return;
-			}
 			ExecutableElement method = (ExecutableElement) element;
 			TypeElement type = (TypeElement) method.getEnclosingElement();
 			mapStructSetup(processingEnv, type);
-			ScruseBlueprint blueprint = blueprint(type, true);
-			blueprint.methods().add(ScruseMethod.of(blueprint, method, ScruseMethod.InputOutput.INPUT, utils));
-		});
-		roundEnv.getElementsAnnotatedWith(JsonImpl.class).forEach(element -> {
-			TypeElement type = (TypeElement) element;
-			ScruseBlueprint blueprint = blueprint(type, true);
-			mapStructSetup(processingEnv, type);
-			for (Element enclosedElement : utils.elements.getAllMembers((TypeElement) element)) {
-				if (enclosedElement instanceof ExecutableElement exec && exec.getAnnotation(JsonOutput.class) != null) {
-					blueprint.methods().add(ScruseMethod.of(blueprint, exec, ScruseMethod.InputOutput.OUTPUT, utils));
-				}
-			}
+			ScruseBlueprint blueprint = utils.blueprint(type);
+			blueprint.methods.add(ScruseMethod.of(blueprint, method, ScruseMethod.InputOutput.INPUT, utils));
 		});
 	}
 
 	private void generateCode() {
-		for (ScruseBlueprint blueprint : blueprints.values()) {
-			if (blueprint.toBeGenerated().get()) {
+		for (ScruseBlueprint blueprint : utils.blueprints.values()) {
+			if (blueprint.methods.stream().anyMatch(method -> method.config().implement().shouldImplement())) {
 				try {
-					mapStructSetup(processingEnv, blueprint.typeElement());
+					mapStructSetup(processingEnv, blueprint.typeElement);
 					generateCode(blueprint);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -115,13 +98,13 @@ public class ScruseProcessor extends AbstractProcessor {
 	}
 
 	private void generateCode(ScruseBlueprint blueprint) throws IOException {
-		TypeSpec.Builder classBuilder = TypeSpec.classBuilder(blueprint.className().nameInCompilationUnit() + "Impl")
+		TypeSpec.Builder classBuilder = TypeSpec.classBuilder(blueprint.className.nameInCompilationUnit() + "Impl")
 			.addModifiers(Modifier.PUBLIC)
-			.addSuperinterface(blueprint.typeElement().asType());
+			.addSuperinterface(blueprint.typeElement.asType());
 		List<MethodSpec> methods = new ArrayList<>();
 		GeneratedClass generatedClass = new GeneratedClass(classBuilder, utils, blueprint);
-		for (ScruseMethod method : blueprint.methods()) {
-			if (!method.methodElement().getModifiers().contains(Modifier.ABSTRACT)) {
+		for (ScruseMethod method : blueprint.methods) {
+			if (!method.methodElement().getModifiers().contains(Modifier.ABSTRACT) || !method.config().implement().shouldImplement()) {
 				// method is implemented by user and can be used by us
 				continue;
 			}
@@ -150,9 +133,9 @@ public class ScruseProcessor extends AbstractProcessor {
 		}
 		generatedClass.buildFields(classBuilder);
 		methods.forEach(classBuilder::addMethod);
-		JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(blueprint.className().fileName().replace("/", ".") + "Impl");
+		JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(blueprint.className.fileName().replace("/", ".") + "Impl");
 		try (Writer writer = sourceFile.openWriter()) {
-			JavaFile.Builder builder = JavaFile.builder(blueprint.className().packageName(), classBuilder.build());
+			JavaFile.Builder builder = JavaFile.builder(blueprint.className.packageName(), classBuilder.build());
 			generatedClass.fileBuilderMods.forEach(mod -> mod.accept(builder));
 			JavaFile file = builder.build();
 			file.writeTo(writer);
@@ -197,15 +180,6 @@ public class ScruseProcessor extends AbstractProcessor {
 
 	private void logError(String msg, Element element) {
 		processingEnv.getMessager().printMessage(ERROR, msg != null ? msg : "(null)", element);
-	}
-
-	ScruseBlueprint blueprint(TypeElement element, boolean toBeGenerated) {
-		ScruseBlueprint blueprint = blueprints.computeIfAbsent(element.getQualifiedName().toString(),
-			name -> ScruseBlueprint.of(new AtomicBoolean(toBeGenerated), element, new ArrayList<>(), new ArrayList<>(), utils));
-		if (toBeGenerated) {
-			blueprint.toBeGenerated().set(true);
-		}
-		return blueprint;
 	}
 
 }

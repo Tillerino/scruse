@@ -21,10 +21,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleAnnotationValueVisitor14;
 import javax.lang.model.util.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AnnotationProcessorUtils {
 	public final Elements elements;
@@ -33,12 +30,13 @@ public class AnnotationProcessorUtils {
 	public final TypeFactory tf;
 	public final PrototypeFinder prototypeFinder;
 	public final Generics generics;
+	public final Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
 
-	public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement, PrototypeFinder prototypeFinder) {
+	public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement) {
 		elements = processingEnv.getElementUtils();
 		types = processingEnv.getTypeUtils();
 		commonTypes = new CommonTypes();
-		this.prototypeFinder = prototypeFinder;
+		this.prototypeFinder = new PrototypeFinder(processingEnv.getTypeUtils(), blueprints);
 		this.generics = new Generics(this);
 
 		AnnotationProcessorContext apc = new AnnotationProcessorContext(processingEnv.getElementUtils(),
@@ -63,22 +61,12 @@ public class AnnotationProcessorUtils {
 		return type.isArrayType() && type.getComponentType().getTypeMirror().getKind() == kind;
 	}
 
-	public ArrayList<TypeElement> getTypeElementsFromAnnotationValue(AnnotationValue value) {
-		ArrayList<TypeElement> elements = new ArrayList<>();
-		value.accept(new SimpleAnnotationValueVisitor14<Object, List<TypeElement>>() {
-			@Override
-			public Object visitArray(List<? extends AnnotationValue> vals, List<TypeElement> o) {
-				vals.forEach(val -> val.accept(this, o));
-				return null;
-			}
-
-			@Override
-			public Object visitType(TypeMirror t, List<TypeElement> o) {
-				o.add(AnnotationProcessorUtils.this.elements.getTypeElement(t.toString()));
-				return null;
-			}
-		}, elements);
-		return elements;
+	public static class GetAnnotationValues<R, P> extends SimpleAnnotationValueVisitor14<R, P> {
+		@Override
+		public R visitArray(List<? extends AnnotationValue> vals, P o) {
+			vals.forEach(val -> val.accept(this, o));
+			return null;
+		}
 	}
 
 	boolean isJsonIgnore(List<? extends AnnotationMirror> annotationMirrors) {
@@ -90,6 +78,15 @@ public class AnnotationProcessorUtils {
 
 	public boolean isBoxed(TypeMirror type) {
 		return commonTypes.boxedTypes.contains(type.toString());
+	}
+
+	public ScruseBlueprint blueprint(TypeElement element) {
+		// cannot use computeIfAbsent because this can recurse
+		ScruseBlueprint blueprint = blueprints.get(element.getQualifiedName().toString());
+		if (blueprint == null) {
+			blueprints.put(element.getQualifiedName().toString(), blueprint = ScruseBlueprint.of(element, this));
+		}
+		return blueprint;
 	}
 
 	public class CommonTypes {

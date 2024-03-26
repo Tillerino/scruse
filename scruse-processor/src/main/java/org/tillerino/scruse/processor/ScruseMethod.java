@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.processor.util.Config;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
@@ -21,27 +22,28 @@ import java.util.stream.Collectors;
  */
 public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableElement methodElement, InputOutput direction,
 		AnnotationProcessorUtils utils, TypeMirror instantiatedReturnType, List<InstantiatedVariable> instantiatedParameters,
-		TypeMirror jsonType, TypeMirror javaType) {
+		TypeMirror jsonType, TypeMirror javaType, Config config) {
 
 	enum InputOutput {
 		INPUT, OUTPUT;
 	}
 
 	static ScruseMethod of(ScruseBlueprint blueprint, ExecutableElement methodElement, InputOutput type, AnnotationProcessorUtils utils) {
-		TypeMirror instantiatedReturnType = utils.generics.applyTypeBindings(methodElement.getReturnType(), blueprint.typeBindings());
+		TypeMirror instantiatedReturnType = utils.generics.applyTypeBindings(methodElement.getReturnType(), blueprint.typeBindings);
 		List<InstantiatedVariable> instantiatedParameters = methodElement.getParameters().stream()
-				.map(p -> new InstantiatedVariable(utils.generics.applyTypeBindings(p.asType(), blueprint.typeBindings()), p.getSimpleName().toString()))
+				.map(p -> new InstantiatedVariable(utils.generics.applyTypeBindings(p.asType(), blueprint.typeBindings), p.getSimpleName().toString()))
 				.toList();
 
 		TypeMirror javaType = type == InputOutput.INPUT ? instantiatedReturnType : instantiatedParameters.get(0).type();
 		TypeMirror jsonType = type == InputOutput.INPUT ? instantiatedParameters.get(0).type()
 				: methodElement.getReturnType().getKind() != TypeKind.VOID ? instantiatedReturnType : instantiatedParameters.get(1).type();
 
+		Config config = Config.defaultConfig(methodElement, utils).merge(blueprint.config);
+
 		return new ScruseMethod(blueprint, methodElement.getSimpleName().toString(), methodElement, type, utils,
-			instantiatedReturnType,
-			instantiatedParameters,
-			jsonType,
-			javaType);
+			instantiatedReturnType, instantiatedParameters,
+			jsonType, javaType,
+			config);
 	}
 
 	/**
