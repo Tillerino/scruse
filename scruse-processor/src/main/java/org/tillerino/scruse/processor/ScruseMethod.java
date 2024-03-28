@@ -49,7 +49,7 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 	/**
 	 * Checks if reads/writes the given type and matches the signature of a reference method.
 	 */
-	public InstantiatedMethod matches(ScruseMethod referenceSignature, Type targetType) {
+	public InstantiatedMethod matches(ScruseMethod referenceSignature, Type targetType, boolean allowExact) {
 		if(direction != referenceSignature.direction || !utils.types.isSameType(jsonType, referenceSignature.jsonType)) {
 			return null;
 		}
@@ -61,6 +61,9 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 		LinkedHashMap<TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
 
 		if (isSameTypeWithBindings(javaType, targetType.getTypeMirror(), localTypeVars, typeBindings)) {
+			if (!allowExact && typeBindings.isEmpty()) {
+				return null;
+			}
 			return utils.generics.applyTypeBindings(typeBindings, this.asInstantiatedMethod());
 		}
 		return null;

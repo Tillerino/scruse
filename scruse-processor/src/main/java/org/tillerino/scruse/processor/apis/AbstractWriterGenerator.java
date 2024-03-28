@@ -32,7 +32,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	public CodeBlock.Builder build() {
-		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return));
+		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1);
 		if (delegate.isPresent()) {
 			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(delegateField, delegate.get().method());
@@ -174,7 +174,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 			RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
 			code.addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
 
-			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
+			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, false, true).ifPresentOrElse(delegate -> {
 				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
 				VariableElement calleeContext = delegate.prototype().contextParameter().orElseThrow(() -> new IllegalArgumentException("Delegate method must have a context parameter"));
 				VariableElement callerContext = prototype.contextParameter().orElseThrow(() -> new IllegalArgumentException("Prototype method must have a context parameter"));

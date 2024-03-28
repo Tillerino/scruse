@@ -52,7 +52,9 @@ public class ScruseProcessor extends AbstractProcessor {
 
 	private void collectElements(RoundEnvironment roundEnv) {
 		roundEnv.getElementsAnnotatedWith(JsonConfig.class).forEach(element -> {
-			TypeElement type = (TypeElement) element;
+			if (!(element instanceof TypeElement type)) {
+				return;
+			}
 			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = utils.blueprint(type);
 			for (Element enclosedElement : utils.elements.getAllMembers((TypeElement) element)) {

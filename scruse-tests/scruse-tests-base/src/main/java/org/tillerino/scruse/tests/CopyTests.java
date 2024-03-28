@@ -2,13 +2,15 @@ package org.tillerino.scruse.tests;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.comments.BlockComment;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
@@ -18,7 +20,6 @@ import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration.C
 import com.github.javaparser.printer.configuration.Indentation;
 import com.github.javaparser.printer.configuration.Indentation.IndentType;
 import com.github.javaparser.printer.configuration.PrinterConfiguration;
-import com.github.javaparser.utils.CodeGenerationUtils;
 import com.github.javaparser.utils.SourceRoot;
 import org.apache.commons.lang3.StringUtils;
 import org.tillerino.scruse.annotations.JsonInput;
@@ -29,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -74,7 +76,7 @@ public class CopyTests {
 				cu.accept(new ModifierVisitor<Void>() {
 					@Override
 					public Visitable visit(ClassOrInterfaceDeclaration n, Void arg) {
-						if (packageBefore.get() != null) {
+						if (packageBefore.get() != null && n.getParentNode().filter(CompilationUnit.class::isInstance).isPresent()) {
 							n.setComment(new BlockComment("\n" +
 								StringUtils.repeat(StringUtils.repeat("COPY", " ", 15), "\n", 5) + "\n" +
 								"\n" +
@@ -84,6 +86,9 @@ public class CopyTests {
 								"\n" +
 								StringUtils.repeat(StringUtils.repeat("COPY", " ", 15), "\n", 5) + "\n"));
 						}
+						n.getChildNodes().stream()
+							.filter(node -> node.getComment().filter(c -> c.getContent().contains("NOCOPY")).isPresent()).toList()
+							.forEach(n::remove);
 						return super.visit(n, arg);
 					}
 
@@ -101,6 +106,10 @@ public class CopyTests {
 							n.setName(writer.getCanonicalName());
 						} else if (n.getNameAsString().equals("com.fasterxml.jackson.core.JsonParser")) {
 							n.setName(reader.getCanonicalName());
+						} else if (p.endsWith("src/main/java")
+								&& n.getNameAsString().startsWith("com.fasterxml.jackson.core")
+								&& !writer.getCanonicalName().startsWith("com.fasterxml.jackson")) {
+							return null;
 						} else {
 							n.setName(n.getName().asString().replace(originalPackage, targetPackage));
 							// for static imports
@@ -132,13 +141,12 @@ public class CopyTests {
 							if (writerMode == WriterMode.RETURN) {
 								n.setType(writer);
 								n.getBody().ifPresent(body -> {
-									body.getStatements().getLast().ifPresent(last -> {
-										String prefix = "WriterMode.RETURN:";
-										last.getComment().map(c -> c.getContent().trim()).filter(c -> c.startsWith(prefix)).ifPresent(c -> {
-											body.remove(last);
-											body.addStatement(c.substring(prefix.length()));
-										});
-									});
+									body.accept(new ModifierVisitor<Void>() {
+										@Override
+										public Visitable visit(ExpressionStmt n, Void arg) {
+											return statementReplacement(n).orElse(n);
+										}
+									}, null);
 								});
 								NodeList<Parameter> parameters = n.getParameters();
 								for (int i = 0; i < parameters.size(); i++) {
@@ -157,6 +165,14 @@ public class CopyTests {
 							}
 						}
 						return super.visit(n, arg);
+					}
+
+					private static Optional<Statement> statementReplacement(Statement statement) {
+						String prefix = "WriterMode.RETURN:";
+						Optional<Statement> replacement = statement.getComment().map(c -> c.getContent().trim()).filter(c -> c.startsWith(prefix))
+							.map(c -> c.substring(prefix.length()))
+							.map(StaticJavaParser::parseStatement);
+						return replacement;
 					}
 				}, null);
 				cu.getStorage().get().save(printer::print);

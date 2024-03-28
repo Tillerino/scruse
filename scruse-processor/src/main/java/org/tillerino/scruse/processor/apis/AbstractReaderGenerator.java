@@ -30,7 +30,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	public CodeBlock.Builder build(Branch branch) {
-		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return));
+		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1);
 		if (delegate.isPresent()) {
 			if (branch != Branch.IF) {
 				code.nextControlFlow("else");
@@ -334,7 +334,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 		Branch branch = Branch.IF;
 		for (Polymorphism.Child child : polymorphism.children()) {
 			branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
-			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, !(lhs instanceof LHS.Return)).ifPresentOrElse(delegate -> {
+			utils.prototypeFinder.findPrototype(utils.tf.getType(child.type()), prototype, false, true).ifPresentOrElse(delegate -> {
 				String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.blueprint());
 				if (delegate.prototype().contextParameter().isEmpty()) {
 					throw new IllegalArgumentException("Delegate method must have a context parameter");
