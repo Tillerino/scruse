@@ -55,8 +55,9 @@ public class CodeAssertions {
 	}
 
 	public record MethodAssert(CompileUnitAssert cu, MethodDeclaration decl) {
-		public void calls(String name) {
+		public MethodAssert calls(String name) {
 			allCalls().contains(name);
+			return this;
 		}
 
 		private AbstractListAssert<?, List<? extends String>, String, ObjectAssert<String>> allCalls() {
@@ -65,8 +66,15 @@ public class CodeAssertions {
 				.extracting(MethodCallExpr::getNameAsString);
 		}
 
-		public void doesNotCall(String name) {
+		public MethodAssert doesNotCall(String name) {
 			allCalls().doesNotContain(name);
+			return this;
+		}
+
+		public MethodAssert bodyContains(String code) {
+			assertThat(decl.getBody().orElseThrow(() -> new AssertionError("No body in " + decl.getNameAsString())).toString())
+				.contains(code);
+			return this;
 		}
 	}
 }

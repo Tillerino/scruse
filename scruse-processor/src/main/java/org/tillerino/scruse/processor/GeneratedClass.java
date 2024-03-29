@@ -2,13 +2,19 @@ package org.tillerino.scruse.processor;
 
 import com.squareup.javapoet.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.tillerino.scruse.helpers.EnumHelper;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName.TopLevelClassName;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Keeps track of the delegate readers/writers that are collected while processing a blueprint.
@@ -55,6 +61,35 @@ public class GeneratedClass {
 			String found = getOrCreateUsedBlueprintWithTypeField(targetType, use);
 			if (found != null) {
 				return found;
+			}
+		}
+		return null;
+	}
+
+	public Pair<String, String> getOrCreateLambda(TypeMirror targetType) {
+		if (!(targetType instanceof DeclaredType d)) {
+			return null;
+		}
+		TypeElement typeElement = (TypeElement) d.asElement();
+		if (!typeElement.getKind().isInterface()) {
+			return null;
+		}
+		Stream<ExecutableElement> methods = ElementFilter.methodsIn(utils.elements.getAllMembers(typeElement))
+			.stream().filter(method -> !method.getEnclosingElement().toString().equals("java.lang.Object"));
+		if (methods.count() != 1) {
+			return null;
+		}
+		InstantiatedMethod targetMethod = utils.generics.instantiateMethods(d).get(0);
+		for (ScruseMethod method : blueprint.methods) {
+			if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
+				return Pair.of(getOrCreateDelegateeField(blueprint, blueprint), method.name());
+			}
+		}
+		for (ScruseBlueprint use : blueprint.config.uses()) {
+			for (ScruseMethod method : use.methods) {
+				if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
+					return Pair.of(getOrCreateDelegateeField(blueprint, use), method.name());
+				}
 			}
 		}
 		return null;

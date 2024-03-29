@@ -33,12 +33,14 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
 	public CodeBlock.Builder build() {
 		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1);
+		// delegate to any of the used blueprints
 		if (delegate.isPresent()) {
 			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
 			invokeDelegate(delegateField, delegate.get().method());
 			return code;
 		}
 
+		// delegate to any of the interfaces passed to the prototype
 		for (InstantiatedVariable parameter : prototype.instantiatedParameters()) {
 			for (InstantiatedMethod method : utils.generics.instantiateMethods(parameter.type())) {
 				if (method.element().getAnnotation(JsonOutput.class) != null

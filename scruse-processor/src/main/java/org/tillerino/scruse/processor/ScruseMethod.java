@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.util.Config;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
@@ -128,6 +129,12 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 			String delegateeInField = generatedClass.getOrCreateUsedBlueprintWithTypeField(calleeParameterType);
 			if (delegateeInField != null) {
 				arguments.add(Snippet.of("$L", delegateeInField));
+				continue calleeParameter;
+			}
+			// see if we can instantiate a lambda from our list of used blueprints
+			Pair<String, String> lambda = generatedClass.getOrCreateLambda(calleeParameterType);
+			if (lambda != null) {
+				arguments.add(Snippet.of("$L::$L", lambda.getLeft(), lambda.getRight()));
 				continue calleeParameter;
 			}
 			throw new ContextedRuntimeException("Could not find value to pass to method argument")

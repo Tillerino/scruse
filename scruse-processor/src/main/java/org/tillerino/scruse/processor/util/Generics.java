@@ -8,6 +8,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -50,20 +51,19 @@ public record Generics(AnnotationProcessorUtils utils) {
 	}
 
 	public List<InstantiatedMethod> instantiateMethods(TypeMirror tm) {
+		if (!(tm instanceof DeclaredType d)) {
+			return List.of();
+		}
 		// TODO: do this eagerly, since it is probably not too cheap
 		List<InstantiatedMethod> methods = new ArrayList<>();
-		if (tm instanceof DeclaredType t) {
-			Map<TypeVar, TypeMirror> typeVariableMapping = recordTypeBindings(t);
-			for (Element methodPossibly : t.asElement().getEnclosedElements()) {
-				if (methodPossibly instanceof ExecutableElement method) {
-					methods.add(new InstantiatedMethod(method.getSimpleName().toString(),
-						applyTypeBindings(method.getReturnType(), typeVariableMapping),
-						method.getParameters().stream().map(p -> new InstantiatedVariable(
-							applyTypeBindings(p.asType(), typeVariableMapping), p.getSimpleName().toString()
-						)).toList(),
-						method));
-				}
-			}
+		Map<TypeVar, TypeMirror> typeVariableMapping = recordTypeBindings(d);
+		for (ExecutableElement method : ElementFilter.methodsIn(d.asElement().getEnclosedElements())) {
+			methods.add(new InstantiatedMethod(method.getSimpleName().toString(),
+				applyTypeBindings(method.getReturnType(), typeVariableMapping),
+				method.getParameters().stream().map(p -> new InstantiatedVariable(
+						applyTypeBindings(p.asType(), typeVariableMapping), p.getSimpleName().toString()
+				)).toList(),
+				method));
 		}
 		return methods;
 	}

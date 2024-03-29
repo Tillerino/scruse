@@ -9,6 +9,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
@@ -57,10 +58,8 @@ public class ScruseProcessor extends AbstractProcessor {
 			}
 			mapStructSetup(processingEnv, type);
 			ScruseBlueprint blueprint = utils.blueprint(type);
-			for (Element enclosedElement : utils.elements.getAllMembers((TypeElement) element)) {
-				if (enclosedElement instanceof ExecutableElement exec
-						&& exec.getAnnotation(JsonOutput.class) != null
-						&& !enclosedElement.getEnclosingElement().equals(element)) {
+			for (ExecutableElement exec : ElementFilter.methodsIn(utils.elements.getAllMembers((TypeElement) element))) {
+				if (exec.getAnnotation(JsonOutput.class) != null && !exec.getEnclosingElement().equals(element)) {
 					// should actually check if super method is not being generated and THIS is being generated
 					ScruseMethod method = ScruseMethod.of(blueprint, exec, ScruseMethod.InputOutput.OUTPUT, utils);
 					if (method.config().implement().shouldImplement()) {

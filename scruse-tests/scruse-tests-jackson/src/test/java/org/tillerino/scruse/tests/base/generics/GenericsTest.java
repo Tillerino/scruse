@@ -5,15 +5,15 @@ import org.tillerino.scruse.tests.CodeAssertions;
 import org.tillerino.scruse.tests.OutputUtils;
 import org.tillerino.scruse.tests.model.GenericRecord;
 
-import java.io.IOException;
-
 class GenericsTest {
 	GenericRecordSerde genericRecordSerde = new GenericRecordSerdeImpl();
 
 	StringRecordSerde stringRecordSerde = new StringRecordSerdeImpl();
 
+	IntegerRecordSerde integerRecordSerde = new IntegerRecordSerdeImpl();
+
 	@Test
-	void genericFieldOutput() throws Exception {
+	void passGenericImplExplicitly() throws Exception {
 		OutputUtils.assertIsEqualToDatabind2(new GenericRecord<>("x"),
 			new StringSerdeImpl(),
 			genericRecordSerde::writeGenericRecord);
@@ -24,12 +24,21 @@ class GenericsTest {
 	}
 
 	@Test
-	void perDelegateedFieldOutput() throws Exception {
-		OutputUtils.assertIsEqualToDatabind(new GenericRecord<>("x"),
-			stringRecordSerde::writeStringRecord);
+	void takeGenericImplFromDelegatees() throws Exception {
+		OutputUtils.assertIsEqualToDatabind(new GenericRecord<>("x"), stringRecordSerde::writeStringRecord);
 
 		CodeAssertions.assertThatCode(StringRecordSerdeImpl.class)
 			.method("writeStringRecord")
 			.calls("writeGenericRecord");
+	}
+
+	@Test
+	void createLambdaFromDelegatees() throws Exception {
+		OutputUtils.assertIsEqualToDatabind(new GenericRecord<>(1), integerRecordSerde::writeIntegerRecord);
+
+		CodeAssertions.assertThatCode(IntegerRecordSerdeImpl.class)
+			.method("writeIntegerRecord")
+				.calls("writeGenericRecord")
+				.bodyContains("::writeBoxedIntX");
 	}
 }
