@@ -58,14 +58,18 @@ public record Generics(AnnotationProcessorUtils utils) {
 		List<InstantiatedMethod> methods = new ArrayList<>();
 		Map<TypeVar, TypeMirror> typeVariableMapping = recordTypeBindings(d);
 		for (ExecutableElement method : ElementFilter.methodsIn(d.asElement().getEnclosedElements())) {
-			methods.add(new InstantiatedMethod(method.getSimpleName().toString(),
-				applyTypeBindings(method.getReturnType(), typeVariableMapping),
-				method.getParameters().stream().map(p -> new InstantiatedVariable(
-						applyTypeBindings(p.asType(), typeVariableMapping), p.getSimpleName().toString()
-				)).toList(),
-				method));
+			methods.add(instantiateMethod(method, typeVariableMapping));
 		}
 		return methods;
+	}
+
+	public InstantiatedMethod instantiateMethod(ExecutableElement methodElement, Map<TypeVar, TypeMirror> typeBindings) {
+		List<InstantiatedVariable> parameters = methodElement.getParameters().stream()
+			.map(p -> new InstantiatedVariable(applyTypeBindings(p.asType(), typeBindings), p.getSimpleName().toString()))
+			.toList();
+		return new InstantiatedMethod(methodElement.getSimpleName().toString(),
+			applyTypeBindings(methodElement.getReturnType(), typeBindings),
+			parameters, methodElement);
 	}
 
 	/**

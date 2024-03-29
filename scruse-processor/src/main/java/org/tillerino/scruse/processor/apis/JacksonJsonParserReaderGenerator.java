@@ -19,7 +19,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 	private final VariableElement parserVariable;
 
 	public JacksonJsonParserReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getReturnType()), true, null, new LHS.Return());
+		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.instantiatedReturnType()), true, null, new LHS.Return());
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 

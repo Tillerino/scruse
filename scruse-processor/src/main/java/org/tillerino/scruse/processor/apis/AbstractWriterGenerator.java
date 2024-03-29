@@ -2,11 +2,9 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
-import org.tillerino.scruse.processor.util.InstantiatedVariable;
 
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -32,24 +30,14 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 	}
 
 	public CodeBlock.Builder build() {
-		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1);
-		// delegate to any of the used blueprints
+		Optional<Delegatee> delegate = utils.prototypeFinder
+			// delegate to any of the used blueprints
+			.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1)
+			.map(d -> new Delegatee(generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
+			.or(this::findDelegateeInMethodParameters);
 		if (delegate.isPresent()) {
-			String delegateField = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-			invokeDelegate(delegateField, delegate.get().method());
+			invokeDelegate(delegate.get().fieldOrParameter(), delegate.get().method());
 			return code;
-		}
-
-		// delegate to any of the interfaces passed to the prototype
-		for (InstantiatedVariable parameter : prototype.instantiatedParameters()) {
-			for (InstantiatedMethod method : utils.generics.instantiateMethods(parameter.type())) {
-				if (method.element().getAnnotation(JsonOutput.class) != null
-						&& !method.parameters().isEmpty()
-						&& utils.types.isSameType(method.parameters().get(0).type(), type.getTypeMirror())) {
-					invokeDelegate(parameter.name(), method);
-					return code;
-				}
-			}
 		}
 
 		detectSelfReferencingType();

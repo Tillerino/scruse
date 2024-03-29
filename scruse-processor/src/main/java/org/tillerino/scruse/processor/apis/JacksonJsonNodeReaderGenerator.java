@@ -24,7 +24,7 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
 	private String fieldVar;
 
 	public JacksonJsonNodeReaderGenerator(AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
-		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.methodElement().getReturnType()), true, null, new LHS.Return());
+		super(utils, generatedClass, prototype, CodeBlock.builder(), null, utils.tf.getType(prototype.instantiatedReturnType()), true, null, new LHS.Return());
 		parserVariable = prototype.methodElement().getParameters().get(0);
 	}
 

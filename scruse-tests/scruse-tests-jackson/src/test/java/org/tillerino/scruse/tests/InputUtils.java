@@ -44,6 +44,12 @@ public class InputUtils {
 		});
 	}
 
+	public static <T, U> void assertIsEqualToDatabind2(String json, U arg2, FailableBiFunction<JsonParser, U, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		T ours = deserialize2(json, arg2, consumer);
+		T databind = new ObjectMapper().readValue(json, typeRef);
+		assertThat(ours).isEqualTo(databind);
+	}
+
 	public static <T> T assertIsEqualToDatabindComparingRecursively(String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
 		return withJacksonJsonParser(json, parser -> {
 			T ours = consumer.apply(parser);

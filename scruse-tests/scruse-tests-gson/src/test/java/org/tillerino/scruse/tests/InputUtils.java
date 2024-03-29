@@ -27,6 +27,12 @@ public class InputUtils {
 		return ours;
 	}
 
+	public static <T, U> void assertIsEqualToDatabind2(String json, U arg2, FailableBiFunction<JsonReader, U, T, IOException> consumer, TypeReference<T> typeRef) throws IOException {
+		T ours = deserialize2(json, arg2, consumer);
+		T databind = new ObjectMapper().readValue(json, typeRef);
+		assertThat(ours).isEqualTo(databind);
+	}
+
 	public static <T> T deserialize(String json, FailableFunction<JsonReader, T, IOException> consumer) throws IOException {
 		return withGsonJsonReader(json, consumer);
 	}

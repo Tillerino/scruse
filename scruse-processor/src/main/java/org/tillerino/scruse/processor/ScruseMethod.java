@@ -4,10 +4,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.processor.util.Config;
+import org.tillerino.scruse.processor.util.*;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
-import org.tillerino.scruse.processor.util.InstantiatedMethod;
-import org.tillerino.scruse.processor.util.InstantiatedVariable;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -18,40 +16,23 @@ import java.util.stream.Collectors;
 
 /**
  * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or {@link org.tillerino.scruse.annotations.JsonOutput}.
- * @param jsonType the reader or writer type from the underlying json parser/formatter library
- * @param javaType the java type that is converted to/from json
  */
-public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableElement methodElement, InputOutput direction,
+public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableElement methodElement, PrototypeKind kind,
 		AnnotationProcessorUtils utils, TypeMirror instantiatedReturnType, List<InstantiatedVariable> instantiatedParameters,
-		TypeMirror jsonType, TypeMirror javaType, Config config) {
+		Config config) {
 
-	enum InputOutput {
-		INPUT, OUTPUT;
-	}
+	static ScruseMethod of(ScruseBlueprint blueprint, InstantiatedMethod instantiated, PrototypeKind kind, AnnotationProcessorUtils utils) {
+		Config config = Config.defaultConfig(instantiated.element(), utils).merge(blueprint.config);
 
-	static ScruseMethod of(ScruseBlueprint blueprint, ExecutableElement methodElement, InputOutput type, AnnotationProcessorUtils utils) {
-		TypeMirror instantiatedReturnType = utils.generics.applyTypeBindings(methodElement.getReturnType(), blueprint.typeBindings);
-		List<InstantiatedVariable> instantiatedParameters = methodElement.getParameters().stream()
-				.map(p -> new InstantiatedVariable(utils.generics.applyTypeBindings(p.asType(), blueprint.typeBindings), p.getSimpleName().toString()))
-				.toList();
-
-		TypeMirror javaType = type == InputOutput.INPUT ? instantiatedReturnType : instantiatedParameters.get(0).type();
-		TypeMirror jsonType = type == InputOutput.INPUT ? instantiatedParameters.get(0).type()
-				: methodElement.getReturnType().getKind() != TypeKind.VOID ? instantiatedReturnType : instantiatedParameters.get(1).type();
-
-		Config config = Config.defaultConfig(methodElement, utils).merge(blueprint.config);
-
-		return new ScruseMethod(blueprint, methodElement.getSimpleName().toString(), methodElement, type, utils,
-			instantiatedReturnType, instantiatedParameters,
-			jsonType, javaType,
-			config);
+		return new ScruseMethod(blueprint, instantiated.name(), instantiated.element(), kind, utils,
+				instantiated.returnType(), instantiated.parameters(), config);
 	}
 
 	/**
 	 * Checks if reads/writes the given type and matches the signature of a reference method.
 	 */
 	public InstantiatedMethod matches(ScruseMethod referenceSignature, Type targetType, boolean allowExact) {
-		if(direction != referenceSignature.direction || !utils.types.isSameType(jsonType, referenceSignature.jsonType)) {
+		if(kind.direction() != referenceSignature.kind().direction() || !utils.types.isSameType(kind().jsonType(), referenceSignature.kind().jsonType())) {
 			return null;
 		}
 
@@ -61,7 +42,7 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 			.map(TypeVar::of).collect(Collectors.toCollection(LinkedHashSet::new));
 		LinkedHashMap<TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
 
-		if (isSameTypeWithBindings(javaType, targetType.getTypeMirror(), localTypeVars, typeBindings)) {
+		if (isSameTypeWithBindings(kind().javaType(), targetType.getTypeMirror(), localTypeVars, typeBindings)) {
 			if (!allowExact && typeBindings.isEmpty()) {
 				return null;
 			}
@@ -104,7 +85,7 @@ public record ScruseMethod(ScruseBlueprint blueprint, String name, ExecutableEle
 
 	public Optional<VariableElement> contextParameter() {
 		for (VariableElement parameter : methodElement.getParameters()) {
-			if (utils.types.isAssignable(parameter.asType(), switch (direction) {
+			if (utils.types.isAssignable(parameter.asType(), switch (kind.direction()) {
 				case INPUT -> utils.commonTypes.deserializationContext;
 				case OUTPUT -> utils.commonTypes.serializationContext;
 			})) {

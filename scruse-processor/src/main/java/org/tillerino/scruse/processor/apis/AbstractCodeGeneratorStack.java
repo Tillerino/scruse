@@ -5,10 +5,14 @@ import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
+import org.tillerino.scruse.processor.util.InstantiatedVariable;
+import org.tillerino.scruse.processor.util.PrototypeKind;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
 	protected final AnnotationProcessorUtils utils;
@@ -81,6 +85,19 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 		return aggregator.toArray();
 	}
 
+	protected Optional<Delegatee> findDelegateeInMethodParameters() {
+		for (InstantiatedVariable parameter : prototype.kind().otherParameters()) {
+			for (InstantiatedMethod method : utils.generics.instantiateMethods(parameter.type())) {
+				Optional<PrototypeKind> prototypeKind = PrototypeKind.of(method)
+						.filter(kind -> kind.matchesWithJavaType(prototype.kind(), type.getTypeMirror(), utils));
+				if (prototypeKind.isPresent()) {
+					return Optional.of(new Delegatee(parameter.name(), method));
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
 	enum StringKind {
 		STRING,
 		CHAR_ARRAY
@@ -89,5 +106,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 	enum BinaryKind {
 		BYTE_ARRAY
 	}
+
+	record Delegatee(String fieldOrParameter, InstantiatedMethod method) { }
 }
 

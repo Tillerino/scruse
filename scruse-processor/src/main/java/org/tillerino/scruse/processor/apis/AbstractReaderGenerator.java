@@ -6,10 +6,12 @@ import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -30,13 +32,14 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	}
 
 	public CodeBlock.Builder build(Branch branch) {
-		Optional<PrototypeFinder.Prototype> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1);
+		Optional<Delegatee> delegate = utils.prototypeFinder.findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1)
+			.map(d -> new Delegatee(generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
+			.or(this::findDelegateeInMethodParameters);
 		if (delegate.isPresent()) {
 			if (branch != Branch.IF) {
 				code.nextControlFlow("else");
 			}
-			String field = generatedClass.getOrCreateDelegateeField(prototype.blueprint(), delegate.get().blueprint());
-			invokeDelegate(field, delegate.get().method());
+			invokeDelegate(delegate.get().fieldOrParameter(), delegate.get().method());
 			if (branch != Branch.IF) {
 				code.endControlFlow();
 			}
@@ -315,7 +318,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 			branch.controlFlow(code, cond.format(), cond.args());
 		}
 
-		Optional<Polymorphism> polymorphismMaybe = Polymorphism.of(type.getTypeElement(), utils.elements);
+		Optional<Polymorphism> polymorphismMaybe = Optional.ofNullable(type.getTypeElement())
+			.flatMap(t -> Polymorphism.of(t, utils.elements));
 		if (polymorphismMaybe.isPresent()) {
 			readPolymorphicObject(polymorphismMaybe.get());
 		} else {
@@ -394,9 +398,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 	private List<SELF> findProperties() {
 		List<SELF> nested = new ArrayList<>();
 		if (type.isRecord()) {
+			Map<TypeVar, TypeMirror> typeBindings = utils.generics.recordTypeBindings((DeclaredType) type.getTypeMirror());
 			for (Element component : type.getRecordComponents()) {
+				TypeMirror instantiatedComponentType = utils.generics.applyTypeBindings(component.asType(), typeBindings);
 				String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
-				SELF nest = nest(component.asType(), component.getSimpleName().toString(), new LHS.Variable(varName), true);
+				SELF nest = nest(instantiatedComponentType, component.getSimpleName().toString(), new LHS.Variable(varName), true);
 				nested.add(nest);
 			}
 		} else {
