@@ -18,6 +18,15 @@
       <module>scruse-tests-fastjson2</module>
     </modules>
 
+    <properties>
+      <maven.build.cache.input>../scruse-tests-jackson/src</maven.build.cache.input>
+      <copy.skip>true</copy.skip>
+      <copy.package>-</copy.package>
+      <copy.writer>-</copy.writer>
+      <copy.reader>-</copy.reader>
+      <copy.writerMode>-</copy.writerMode>
+    </properties>
+
     <dependencies>
     <dependency>
       <groupId>org.tillerino.scruse</groupId>
@@ -113,6 +122,63 @@
                   </includes>
                 </fileset>
               </filesets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-tests</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <skip>${copy.skip}</skip>
+              <classpathScope>test</classpathScope>
+              <mainClass>org.tillerino.scruse.tests.CopyTests</mainClass>
+              <arguments>
+                <argument>${project.basedir}</argument>
+                <argument>${copy.package}</argument>
+                <argument>${copy.writer}</argument>
+                <argument>${copy.reader}</argument>
+                <argument>${copy.writerMode}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>add-copied-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-sources/copied</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-test-source</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-test-sources/copied</source>
+              </sources>
             </configuration>
           </execution>
         </executions>

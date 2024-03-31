@@ -96,7 +96,12 @@ public class CopyTests {
 					public Visitable visit(PackageDeclaration n, Void arg) {
 						packageBefore.set(n.getNameAsString());
 						n.setName(n.getName().asString().replace(originalPackage, targetPackage));
-						cu.setStorage(fileName(targetRoot != null ? targetRoot.resolve(p) : sourceRoot.getRoot(), n.getNameAsString(), cu.getPrimaryTypeName().get()));
+						String targetRel = switch (p) {
+							case "src/main/java" -> "target/generated-sources/copied";
+							case "src/test/java" -> "target/generated-test-sources/copied";
+							default -> throw new AssertionError();
+						};
+						cu.setStorage(fileName(targetRoot.resolve(targetRel), n.getNameAsString(), cu.getPrimaryTypeName().get()));
 						return super.visit(n, arg);
 					}
 

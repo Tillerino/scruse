@@ -11,6 +11,14 @@
 
     <artifactId>scruse-tests-fastjson2</artifactId>
 
+    <properties>
+        <copy.skip>false</copy.skip>
+        <copy.package>org.tillerino.scruse.tests.alt.fastjson2</copy.package>
+        <copy.writer>com.alibaba.fastjson2.JSONWriter</copy.writer>
+        <copy.reader>com.alibaba.fastjson2.JSONReader</copy.reader>
+        <copy.writerMode>ARGUMENT</copy.writerMode>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.tillerino.scruse</groupId>
@@ -22,35 +30,5 @@
             <artifactId>fastjson2</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-tests</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <classpathScope>test</classpathScope>
-                            <mainClass>org.tillerino.scruse.tests.CopyTests</mainClass>
-                            <arguments>
-                                <argument>${project.basedir}</argument>
-                                <argument>org.tillerino.scruse.tests.alt.fastjson2</argument>
-                                <argument>com.alibaba.fastjson2.JSONWriter</argument>
-                                <argument>com.alibaba.fastjson2.JSONReader</argument>
-                                <argument>ARGUMENT</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

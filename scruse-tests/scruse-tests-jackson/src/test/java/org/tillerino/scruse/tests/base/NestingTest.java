@@ -1,14 +1,9 @@
 package org.tillerino.scruse.tests.base;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
-import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.tests.InputUtils;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.model.NestingModel;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,9 +38,9 @@ import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
 class NestingTest {
 	@Test
 	void testOuterObject() throws IOException {
-		OuterRecord.Serde recordImpl = new NestingTest$OuterRecord$SerdeImpl();
-		OuterFields.Serde fieldsImpl = new NestingTest$OuterFields$SerdeImpl();
-		OuterAccessors.Serde accessorsImpl = new NestingTest$OuterAccessors$SerdeImpl();
+		NestingSerde.OuterRecordSerde recordImpl = new NestingSerde$OuterRecordSerdeImpl();
+		NestingSerde.OuterFieldsSerde fieldsImpl = new NestingSerde$OuterFieldsSerdeImpl();
+		NestingSerde.OuterAccessorsSerde accessorsImpl = new NestingSerde$OuterAccessorsSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -64,15 +59,15 @@ class NestingTest {
 		};
 
 		for (String json : jsons) {
-			OuterRecord outerRecord = InputUtils.assertIsEqualToDatabindComparingRecursively(json, recordImpl::read, new TypeReference<>() {
+			NestingModel.OuterRecord outerRecord = InputUtils.assertIsEqualToDatabindComparingRecursively(json, recordImpl::read, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(outerRecord, recordImpl::write);
 
-			OuterFields outerFields = InputUtils.assertIsEqualToDatabindComparingRecursively(json, fieldsImpl::read, new TypeReference<>() {
+			NestingModel.OuterFields outerFields = InputUtils.assertIsEqualToDatabindComparingRecursively(json, fieldsImpl::read, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(outerFields, fieldsImpl::write);
 
-			OuterAccessors outerAccessors = InputUtils.assertIsEqualToDatabindComparingRecursively(json, accessorsImpl::read, new TypeReference<>() {
+			NestingModel.OuterAccessors outerAccessors = InputUtils.assertIsEqualToDatabindComparingRecursively(json, accessorsImpl::read, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(outerAccessors, accessorsImpl::write);
 		}
@@ -80,8 +75,8 @@ class NestingTest {
 
 	@Test
 	void testDoubleArrayArray() throws IOException {
-		ArraySerde arrayImpl = new NestingTest$ArraySerdeImpl();
-		ListSerde listImpl = new NestingTest$ListSerdeImpl();
+		NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
+		NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -118,8 +113,8 @@ class NestingTest {
 
 	@Test
 	void testStringDoubleMapArray() throws IOException {
-		ArraySerde arrayImpl = new NestingTest$ArraySerdeImpl();
-		ListSerde listImpl = new NestingTest$ListSerdeImpl();
+		NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
+		NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -148,7 +143,7 @@ class NestingTest {
 
 	@Test
 	void testStringInnerObjectMap() throws IOException {
-		MapSerde mapImpl = new NestingTest$MapSerdeImpl();
+		NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -167,15 +162,15 @@ class NestingTest {
 		};
 
 		for (String json : jsons) {
-			Map<String, InnerRecord> stringRecordMap = InputUtils.assertIsEqualToDatabindComparingRecursively(json, mapImpl::readStringRecordMap, new TypeReference<>() {
+			Map<String, NestingModel.InnerRecord> stringRecordMap = InputUtils.assertIsEqualToDatabindComparingRecursively(json, mapImpl::readStringRecordMap, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(stringRecordMap, mapImpl::writeStringRecordMap);
 
-			Map<String, InnerAccessors> stringAccessorsMap = InputUtils.assertIsEqualToDatabindComparingRecursively(json, mapImpl::readStringAccessorsMap, new TypeReference<>() {
+			Map<String, NestingModel.InnerAccessors> stringAccessorsMap = InputUtils.assertIsEqualToDatabindComparingRecursively(json, mapImpl::readStringAccessorsMap, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(stringAccessorsMap, mapImpl::writeStringAccessorsMap);
 
-			Map<String, InnerFields> stringFieldsMap = InputUtils.assertIsEqualToDatabindComparingRecursively(json, mapImpl::readStringFieldsMap, new TypeReference<>() {
+			Map<String, NestingModel.InnerFields> stringFieldsMap = InputUtils.assertIsEqualToDatabindComparingRecursively(json, mapImpl::readStringFieldsMap, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(stringFieldsMap, mapImpl::writeStringFieldsMap);
 		}
@@ -183,8 +178,8 @@ class NestingTest {
 
 	@Test
 	void testInnerObjectArray() throws IOException {
-		ArraySerde arrayImpl = new NestingTest$ArraySerdeImpl();
-		ListSerde listImpl = new NestingTest$ListSerdeImpl();
+		NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
+		NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -203,27 +198,27 @@ class NestingTest {
 		};
 
 		for (String json : jsons) {
-			InnerRecord[] innerRecordArray = InputUtils.assertIsEqualToDatabindComparingRecursively(json, arrayImpl::readInnerRecordArray, new TypeReference<>() {
+			NestingModel.InnerRecord[] innerRecordArray = InputUtils.assertIsEqualToDatabindComparingRecursively(json, arrayImpl::readInnerRecordArray, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(innerRecordArray, arrayImpl::writeInnerRecordArray);
 
-			InnerFields[] innerFieldsArray = InputUtils.assertIsEqualToDatabindComparingRecursively(json, arrayImpl::readInnerFieldsArray, new TypeReference<>() {
+			NestingModel.InnerFields[] innerFieldsArray = InputUtils.assertIsEqualToDatabindComparingRecursively(json, arrayImpl::readInnerFieldsArray, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(innerFieldsArray, arrayImpl::writeInnerFieldsArray);
 
-			InnerAccessors[] innerAccessorsArray = InputUtils.assertIsEqualToDatabindComparingRecursively(json, arrayImpl::readInnerAccessorsArray, new TypeReference<>() {
+			NestingModel.InnerAccessors[] innerAccessorsArray = InputUtils.assertIsEqualToDatabindComparingRecursively(json, arrayImpl::readInnerAccessorsArray, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(innerAccessorsArray, arrayImpl::writeInnerAccessorsArray);
 
-			List<InnerRecord> innerRecordList = InputUtils.assertIsEqualToDatabindComparingRecursively(json, listImpl::readInnerRecordList, new TypeReference<>() {
+			List<NestingModel.InnerRecord> innerRecordList = InputUtils.assertIsEqualToDatabindComparingRecursively(json, listImpl::readInnerRecordList, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(innerRecordList, listImpl::writeInnerRecordList);
 
-			List<InnerFields> innerFieldsList = InputUtils.assertIsEqualToDatabindComparingRecursively(json, listImpl::readInnerFieldsList, new TypeReference<>() {
+			List<NestingModel.InnerFields> innerFieldsList = InputUtils.assertIsEqualToDatabindComparingRecursively(json, listImpl::readInnerFieldsList, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(innerFieldsList, listImpl::writeInnerFieldsList);
 
-			List<InnerAccessors> innerAccessorsList = InputUtils.assertIsEqualToDatabindComparingRecursively(json, listImpl::readInnerAccessorsList, new TypeReference<>() {
+			List<NestingModel.InnerAccessors> innerAccessorsList = InputUtils.assertIsEqualToDatabindComparingRecursively(json, listImpl::readInnerAccessorsList, new TypeReference<>() {
 			});
 			assertIsEqualToDatabind(innerAccessorsList, listImpl::writeInnerAccessorsList);
 		}
@@ -231,7 +226,7 @@ class NestingTest {
 
 	@Test
 	void testStringStringDoubleMapMap() throws IOException {
-		MapSerde mapImpl = new NestingTest$MapSerdeImpl();
+		NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -256,7 +251,7 @@ class NestingTest {
 
 	@Test
 	void testStringDoubleArrayMap() throws IOException {
-		MapSerde mapImpl = new NestingTest$MapSerdeImpl();
+		NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
 
 		String[] jsons = {
 			"null",
@@ -283,233 +278,4 @@ class NestingTest {
 		}
 	}
 
-	record OuterRecord(Double[] doubleArray, List<Double> doubleList, Map<String, Double> doubleMap, InnerRecord innerRecord, InnerFields innerFields, InnerAccessors innerAccessors) {
-		interface Serde {
-			@JsonOutput
-			void write(OuterRecord obj, JsonGenerator out) throws IOException;
-
-			@JsonInput
-			OuterRecord read(JsonParser parser) throws IOException;
-		}
-	}
-
-	record InnerRecord(Double d) {
-	}
-
-	@EqualsAndHashCode
-	static class OuterFields {
-		public Double[] doubleArray;
-		public List<Double> doubleList;
-		public Map<String, Double> doubleMap;
-		public InnerRecord innerRecord;
-		public InnerFields innerFields;
-		public InnerAccessors innerAccessors;
-
-		interface Serde {
-			@JsonOutput
-			void write(OuterFields obj, JsonGenerator out) throws IOException;
-
-			@JsonInput
-			OuterFields read(JsonParser parser) throws IOException;
-		}
-	}
-
-	@EqualsAndHashCode
-	static class InnerFields {
-		public Double d;
-	}
-
-	@EqualsAndHashCode
-	static class OuterAccessors {
-		private Double[] doubleArray;
-		private List<Double> doubleList;
-		private Map<String, Double> doubleMap;
-		private InnerRecord innerRecord;
-		private InnerFields innerFields;
-		private InnerAccessors innerAccessors;
-
-		public Double[] getDoubleArray() {
-			return doubleArray;
-		}
-
-		public void setDoubleArray(Double[] doubleArray) {
-			this.doubleArray = doubleArray;
-		}
-
-		public List<Double> getDoubleList() {
-			return doubleList;
-		}
-
-		public void setDoubleList(List<Double> doubleList) {
-			this.doubleList = doubleList;
-		}
-
-		public Map<String, Double> getDoubleMap() {
-			return doubleMap;
-		}
-
-		public void setDoubleMap(Map<String, Double> doubleMap) {
-			this.doubleMap = doubleMap;
-		}
-
-		public InnerRecord getInnerRecord() {
-			return innerRecord;
-		}
-
-		public void setInnerRecord(InnerRecord innerRecord) {
-			this.innerRecord = innerRecord;
-		}
-
-		public InnerFields getInnerFields() {
-			return innerFields;
-		}
-
-		public void setInnerFields(InnerFields innerFields) {
-			this.innerFields = innerFields;
-		}
-
-		public InnerAccessors getInnerAccessors() {
-			return innerAccessors;
-		}
-
-		public void setInnerAccessors(InnerAccessors innerAccessors) {
-			this.innerAccessors = innerAccessors;
-		}
-
-		interface Serde {
-			@JsonOutput
-			void write(OuterAccessors obj, JsonGenerator out) throws IOException;
-
-			@JsonInput
-			OuterAccessors read(JsonParser parser) throws IOException;
-		}
-	}
-
-	@EqualsAndHashCode
-	static class InnerAccessors {
-		private Double d;
-
-		public Double getD() {
-			return d;
-		}
-
-		public void setD(Double d) {
-			this.d = d;
-		}
-	}
-
-	interface ArraySerde {
-		@JsonOutput
-		void writeDoubleArrayArray(Double[][] obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		Double[][] readDoubleArrayArray(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeDoubleListArray(List<Double>[] obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<Double>[] readDoubleListArray(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeStringDoubleMapArray(Map<String, Double>[] obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		Map<String, Double>[] readStringDoubleMapArray(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeInnerRecordArray(InnerRecord[] obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		InnerRecord[] readInnerRecordArray(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeInnerFieldsArray(InnerFields[] obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		InnerFields[] readInnerFieldsArray(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeInnerAccessorsArray(InnerAccessors[] obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		InnerAccessors[] readInnerAccessorsArray(JsonParser parser) throws IOException;
-	}
-
-	interface ListSerde {
-		@JsonOutput
-		void writeDoubleArrayList(List<Double[]> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<Double[]> readDoubleArrayList(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeDoubleListList(List<List<Double>> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<List<Double>> readDoubleListList(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeStringDoubleMapList(List<Map<String, Double>> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<Map<String, Double>> readStringDoubleMapList(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeInnerRecordList(List<InnerRecord> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<InnerRecord> readInnerRecordList(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeInnerFieldsList(List<InnerFields> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<InnerFields> readInnerFieldsList(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeInnerAccessorsList(List<InnerAccessors> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		List<InnerAccessors> readInnerAccessorsList(JsonParser parser) throws IOException;
-	}
-
-	interface MapSerde {
-
-		@JsonInput
-		Map<String, Map<String, Double>> readStringStringDoubleMapMap(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeStringStringDoubleMapMap(Map<String, Map<String, Double>> obj, JsonGenerator out) throws IOException;
-
-		@JsonOutput
-		void writeStringDoubleArrayMap(Map<String, Double[]> obj, JsonGenerator out) throws IOException;
-
-		@JsonOutput
-		void writeStringDoubleListMap(Map<String, List<Double>> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		Map<String, List<Double>> readStringDoubleListMap(JsonParser parser) throws IOException;
-
-		@JsonInput
-		Map<String, Double[]> readStringDoubleArrayMap(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeStringRecordMap(Map<String, InnerRecord> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		Map<String, InnerRecord> readStringRecordMap(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeStringAccessorsMap(Map<String, InnerAccessors> obj, JsonGenerator out) throws IOException;
-
-		@JsonInput
-		Map<String, InnerAccessors> readStringAccessorsMap(JsonParser parser) throws IOException;
-
-		@JsonInput
-		Map<String, InnerFields> readStringFieldsMap(JsonParser parser) throws IOException;
-
-		@JsonOutput
-		void writeStringFieldsMap(Map<String, InnerFields> obj, JsonGenerator out) throws IOException;
-	}
 }

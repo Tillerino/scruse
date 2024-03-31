@@ -12,6 +12,14 @@
 
     <artifactId>scruse-tests-jackson-node</artifactId>
 
+    <properties>
+        <copy.skip>false</copy.skip>
+        <copy.package>org.tillerino.scruse.tests.alt.jsonnode</copy.package>
+        <copy.writer>com.fasterxml.jackson.databind.JsonNode</copy.writer>
+        <copy.reader>com.fasterxml.jackson.databind.JsonNode</copy.reader>
+        <copy.writerMode>RETURN</copy.writerMode>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.tillerino.scruse</groupId>
@@ -23,34 +31,4 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-tests</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <classpathScope>test</classpathScope>
-                            <mainClass>org.tillerino.scruse.tests.CopyTests</mainClass>
-                            <arguments>
-                                <argument>${project.basedir}</argument>
-                                <argument>org.tillerino.scruse.tests.alt.jsonnode</argument>
-                                <argument>com.fasterxml.jackson.databind.JsonNode</argument>
-                                <argument>com.fasterxml.jackson.databind.JsonNode</argument>
-                                <argument>RETURN</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
