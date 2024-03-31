@@ -9,8 +9,7 @@ import java.util.stream.Collectors;
 public class EnumHelper {
     public static <T extends Enum<T>> Map<String, T> buildValuesMap(Class<T> enumType, Function<T, String> keyMapper) {
         return Arrays.stream(enumType.getEnumConstants())
-            .collect(Collectors.collectingAndThen(
-                Collectors.toMap(keyMapper, Function.identity()),
-                Collections::unmodifiableMap));
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(keyMapper, Function.identity()), Collections::unmodifiableMap));
     }
 }

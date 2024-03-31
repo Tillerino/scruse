@@ -7,3 +7,7 @@ mvn := `if command -v mvnd &> /dev/null; then echo mvnd; else echo mvn; fi`
 # install all without build cache
 no-cache:
   {{mvn}} clean install -Dmaven.build.cache.skipCache=true
+
+# apply spotless format
+format:
+  {{mvn}} spotless:apply -Dmaven.build.cache.skipCache=true

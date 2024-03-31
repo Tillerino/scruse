@@ -2,7 +2,6 @@ package org.tillerino.scruse.helpers;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-
 import java.io.IOException;
 
 public class GsonJsonReaderHelper {
@@ -12,7 +11,8 @@ public class GsonJsonReaderHelper {
         }
         String fieldName = parser.nextName();
         if (!fieldName.equals(descriminatorName)) {
-            throw new IOException("Expected field name " + descriminatorName + ", got " + fieldName + " at " + parser.getPath());
+            throw new IOException(
+                    "Expected field name " + descriminatorName + ", got " + fieldName + " at " + parser.getPath());
         } else if (parser.peek() != JsonToken.STRING) {
             throw new IOException("Expected string, got " + parser.peek() + " at " + parser.getPath());
         } else {

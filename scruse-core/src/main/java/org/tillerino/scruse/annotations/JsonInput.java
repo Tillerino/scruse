@@ -8,5 +8,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 // runtime retention for reflection bridge
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JsonInput {
-}
+public @interface JsonInput {}

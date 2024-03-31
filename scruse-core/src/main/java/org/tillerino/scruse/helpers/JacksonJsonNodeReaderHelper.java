@@ -1,9 +1,6 @@
 package org.tillerino.scruse.helpers;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.IOException;
 
 public class JacksonJsonNodeReaderHelper {

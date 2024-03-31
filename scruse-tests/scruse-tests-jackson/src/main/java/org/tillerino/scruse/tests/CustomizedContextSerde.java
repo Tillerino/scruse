@@ -2,15 +2,14 @@ package org.tillerino.scruse.tests;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import java.io.IOException;
+import java.util.List;
 import org.apache.commons.lang3.Validate;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
-
-import java.io.IOException;
-import java.util.List;
 
 @JsonConfig(uses = CustomizedContextSerde.WeirdIntSerde.class)
 public interface CustomizedContextSerde {
@@ -28,8 +27,7 @@ public interface CustomizedContextSerde {
         int counter = 0;
     }
 
-    record MyObj(int i) {
-    }
+    record MyObj(int i) {}
 
     interface WeirdIntSerde {
         @JsonInput

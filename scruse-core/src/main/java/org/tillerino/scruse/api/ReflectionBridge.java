@@ -1,20 +1,18 @@
 package org.tillerino.scruse.api;
 
-import org.apache.commons.lang3.function.Failable;
-import org.apache.commons.lang3.reflect.MethodUtils;
-import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.annotations.JsonOutput;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.function.Failable;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.tillerino.scruse.annotations.JsonInput;
+import org.tillerino.scruse.annotations.JsonOutput;
 
 /**
- * This class acts as a bridge between reflection-based frameworks and Scruse.
- * Wherever you are doing reflection to find a serializer or deserializer, you can use this class to
- * get the corresponding implementation.
+ * This class acts as a bridge between reflection-based frameworks and Scruse. Wherever you are doing reflection to find
+ * a serializer or deserializer, you can use this class to get the corresponding implementation.
  */
 public class ReflectionBridge {
     static {
@@ -24,15 +22,14 @@ public class ReflectionBridge {
             throw new RuntimeException("Cannot find MethodUtils. Add commons-lang3 to your classpath.");
         }
     }
+
     private final List<Object> instances;
 
     public ReflectionBridge(List<Object> instances) {
         this.instances = new ArrayList<>(instances);
     }
 
-    /**
-     * Cache the returned value. This is slow.
-     */
+    /** Cache the returned value. This is slow. */
     public <T> Optional<DeserializerDescription<T>> findDeserializer(Type type, Class<T> parserClass) {
         for (Object instance : instances) {
             for (Method method : instance.getClass().getMethods()) {
@@ -43,7 +40,8 @@ public class ReflectionBridge {
                     continue;
                 }
                 if (method.getParameterTypes()[0].isAssignableFrom(parserClass)) {
-                    return Optional.of(new DeserializerDescription<>(instance, method, method.getParameterCount() == 2));
+                    return Optional.of(
+                            new DeserializerDescription<>(instance, method, method.getParameterCount() == 2));
                 }
             }
         }
@@ -59,7 +57,8 @@ public class ReflectionBridge {
                 if (MethodUtils.getAnnotation(method, JsonOutput.class, true, false) == null) {
                     continue;
                 }
-                if (method.getParameterTypes()[0].equals(type) && method.getParameterTypes()[1].isAssignableFrom(writerClass)) {
+                if (method.getParameterTypes()[0].equals(type)
+                        && method.getParameterTypes()[1].isAssignableFrom(writerClass)) {
                     return Optional.of(new SerializerDescription<>(instance, method, method.getParameterCount() == 3));
                 }
             }
@@ -77,7 +76,8 @@ public class ReflectionBridge {
                     continue;
                 }
                 if (type.equals(method.getGenericParameterTypes()[0])) {
-                    return Optional.of(new ReturningSerializerDescription<>(instance, method, method.getParameterCount() == 2));
+                    return Optional.of(
+                            new ReturningSerializerDescription<>(instance, method, method.getParameterCount() == 2));
                 }
             }
         }
@@ -98,8 +98,7 @@ public class ReflectionBridge {
         /**
          * Invoke the method with the given reader.
          *
-         * <p>
-         * Will throw any exception thrown by the method, even if not declared.
+         * <p>Will throw any exception thrown by the method, even if not declared.
          *
          * @param reader The reader to pass to the method.
          * @return the deserialized object.

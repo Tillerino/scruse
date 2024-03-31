@@ -2,13 +2,10 @@ package org.tillerino.scruse.tests;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import org.apache.commons.lang3.Validate;
-import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.annotations.JsonOutput;
-
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import org.tillerino.scruse.annotations.JsonInput;
+import org.tillerino.scruse.annotations.JsonOutput;
 
 interface CustomizedSerialization {
     @JsonOutput
@@ -29,7 +26,5 @@ interface CustomizedSerialization {
         return parse;
     }
 
-    record MyObj(OffsetDateTime t) {
-
-    }
+    record MyObj(OffsetDateTime t) {}
 }
