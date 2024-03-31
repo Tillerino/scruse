@@ -24,6 +24,7 @@
         <fastjson2.version>2.0.48</fastjson2.version>
         <junit.version>5.10.2</junit.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <moshi.version>1.15.1</moshi.version>
     </properties>
 
     <dependencyManagement>
@@ -82,6 +83,11 @@
                 <groupId>com.alibaba.fastjson2</groupId>
                 <artifactId>fastjson2</artifactId>
                 <version>${fastjson2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.moshi</groupId>
+                <artifactId>moshi</artifactId>
+                <version>${moshi.version}</version>
             </dependency>
 
             <!-- Testing -->

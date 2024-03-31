@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.tillerino.scruse</groupId>
+        <artifactId>scruse-tests</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>scruse-tests-moshi</artifactId>
+
+    <properties>
+        <copy.skip>false</copy.skip>
+        <copy.package>org.tillerino.scruse.tests.alt.moshi</copy.package>
+        <copy.writer>com.squareup.moshi.JsonWriter</copy.writer>
+        <copy.reader>com.squareup.moshi.JsonReader</copy.reader>
+        <copy.writerMode>ARGUMENT</copy.writerMode>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.tillerino.scruse</groupId>
+            <artifactId>scruse-tests-base</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.moshi</groupId>
+            <artifactId>moshi</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

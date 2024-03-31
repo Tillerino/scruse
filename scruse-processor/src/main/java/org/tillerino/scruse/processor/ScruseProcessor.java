@@ -186,6 +186,7 @@ public class ScruseProcessor extends AbstractProcessor {
                     ::build;
             case PrototypeKind.FASTJSON_2_JSONWRITER -> new Fastjson2WriterGenerator(utils, method, generatedClass)
                     ::build;
+            case PrototypeKind.MOSHI_JSON_WRITER -> new MoshiJsonWriterGenerator(utils, method, generatedClass)::build;
             default -> throw new IllegalStateException(
                     "Unknown output type: " + method.kind().jsonType());
         };
@@ -202,6 +203,7 @@ public class ScruseProcessor extends AbstractProcessor {
                     ::build;
             case PrototypeKind.FASTJSON_2_JSONREADER -> new Fastjson2ReaderGenerator(utils, method, generatedClass)
                     ::build;
+            case PrototypeKind.MOSHI_JSON_READER -> new MoshiJsonReaderGenerator(utils, method, generatedClass)::build;
             default -> throw new IllegalStateException(
                     "Unknown input type: " + method.kind().jsonType());
         };
