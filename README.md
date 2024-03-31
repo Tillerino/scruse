@@ -1,17 +1,23 @@
 # Scruse
 
-Scruse is an annotation-processor that maps between Java and JSON objects.
+Scruse is an annotation-processor that generates databind classes to map JSON (and similar formats) to Java classes and vice versa.
 It is intended for two contexts:
 
 1) Reflection is not possible or is discouraged, e.g. when working with GraalVM native images or when static code analysis is important.
 2) A tiny footprint is required, i.e. jars like jackson-databind are too big.
 
-Scruse does not include a JSON parser or formatter and requires an external one.
+Scruse does not include any parsers or formatters and requires external ones.
 Various JSON libraries are supported out-of-the-box, including:
 - Jackson streaming (`JsonParser` and `JsonGenerator`) - note that this gives you support of many additional input and output formats
   through existing extensions of these classes including YAML, CBOR, and Smile.
 - Jackson objects (`JsonNode`)
 - Gson (`JsonParser` and `JsonWriter`)
+- Fastjson2 (`JSONReader` and `JSONWriter`)
+
+Note that Scruse is not a beginner-friendly library.
+It optimizes for constraints that are not common in most applications.
+If you _just_ want to serialize and deserialize JSON and don't have any of the constraints above, you are probably better off with Jackson.
+
 
 ## Usage
 
@@ -61,7 +67,7 @@ The tests are written for the `jackson-core` backend and copied/adapted to the o
 The jar of each test module is shaded with the `minimizeJar` flag for each test module to estimate the overhead of each backend.
 In many cases, this can be optimized further, but we provide this number as a baseline.
 
-### Jackson (streaming)
+### Jackson Core (streaming)
 
 `jackson-core` provides `JsonParser` and `JsonGenerator` for reading and writing JSON.
 We consider this the default backend and use it for most examples.
@@ -77,7 +83,7 @@ The required dependency is:
 
 Overhead: 650kB
 
-### Jackson (objects)
+### Jackson Databind (objects)
 
 `jackson-databind` provides `JsonNode` for reading and writing JSON.
 You would only use this instead of `jackson-core` if you have some special requirements, e.g.
