@@ -13,7 +13,7 @@ import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguratio
 import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
-    public static <T> T withJacksonJsonParser(String json, FailableFunction<JsonParser, T, IOException> consumer)
+    public static <T> T withJsonParser(String json, FailableFunction<JsonParser, T, IOException> consumer)
             throws IOException {
         try (JsonParser parser = new JsonFactory().createParser(json)) {
             return consumer.apply(parser);
@@ -31,12 +31,12 @@ public class InputUtils {
 
     public static <T> T deserialize(String json, FailableFunction<JsonParser, T, IOException> consumer)
             throws IOException {
-        return withJacksonJsonParser(json, consumer::apply);
+        return withJsonParser(json, consumer);
     }
 
     public static <T, U> T deserialize2(String json, U obj2, FailableBiFunction<JsonParser, U, T, IOException> consumer)
             throws IOException {
-        return withJacksonJsonParser(json, parser -> consumer.apply(parser, obj2));
+        return withJsonParser(json, parser -> consumer.apply(parser, obj2));
     }
 
     public static <T> T assertIsEqualToDatabind(
@@ -44,7 +44,7 @@ public class InputUtils {
             FailableBiFunction<JsonParser, DeserializationContext, T, IOException> consumer,
             TypeReference<T> typeRef)
             throws IOException {
-        return withJacksonJsonParser(json, parser -> {
+        return withJsonParser(json, parser -> {
             T ours = consumer.apply(parser, new DeserializationContext());
             T databind = new ObjectMapper().readValue(json, typeRef);
             assertThat(ours).isEqualTo(databind);
@@ -52,18 +52,19 @@ public class InputUtils {
         });
     }
 
-    public static <T, U> void assertIsEqualToDatabind2(
+    public static <T, U> T assertIsEqualToDatabind2(
             String json, U arg2, FailableBiFunction<JsonParser, U, T, IOException> consumer, TypeReference<T> typeRef)
             throws IOException {
         T ours = deserialize2(json, arg2, consumer);
         T databind = new ObjectMapper().readValue(json, typeRef);
         assertThat(ours).isEqualTo(databind);
+        return ours;
     }
 
     public static <T> T assertIsEqualToDatabindComparingRecursively(
             String json, FailableFunction<JsonParser, T, IOException> consumer, TypeReference<T> typeRef)
             throws IOException {
-        return withJacksonJsonParser(json, parser -> {
+        return withJsonParser(json, parser -> {
             T ours = consumer.apply(parser);
             T databind = new ObjectMapper().readValue(json, typeRef);
             assertEqualsComparingRecursively(ours, databind);

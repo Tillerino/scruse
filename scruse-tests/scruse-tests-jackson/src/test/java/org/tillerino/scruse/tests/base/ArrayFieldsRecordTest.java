@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.OutputUtils;
 import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.model.PrimitiveArrayFieldsRecord;
@@ -15,18 +14,22 @@ class ArrayFieldsRecordTest {
     @Test
     void roundtripPrimitive() throws IOException {
         for (PrimitiveArrayFieldsRecord record : PrimitiveArrayFieldsRecord.instances(TestSettings.SETTINGS)) {
-            String json = OutputUtils.assertIsEqualToDatabind(record, serde::writePrimitive);
-            InputUtils.assertIsEqualToDatabindComparingRecursively(
-                    json, serde::readPrimitive, new TypeReference<PrimitiveArrayFieldsRecord>() {});
+            OutputUtils.roundTripRecursive(
+                    record,
+                    serde::writePrimitive,
+                    serde::readPrimitive,
+                    new TypeReference<PrimitiveArrayFieldsRecord>() {});
         }
     }
 
     @Test
     void roundtripReference() throws IOException {
         for (ReferenceArrayFieldsRecord record : ReferenceArrayFieldsRecord.instances(TestSettings.SETTINGS)) {
-            String json = OutputUtils.assertIsEqualToDatabind(record, serde::writeReference);
-            InputUtils.assertIsEqualToDatabindComparingRecursively(
-                    json, serde::readReference, new TypeReference<ReferenceArrayFieldsRecord>() {});
+            OutputUtils.roundTripRecursive(
+                    record,
+                    serde::writeReference,
+                    serde::readReference,
+                    new TypeReference<ReferenceArrayFieldsRecord>() {});
         }
     }
 }

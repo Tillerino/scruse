@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -39,5 +40,36 @@ public class OutputUtils {
         String ours = output.apply(obj, new SerializationContext()).toString();
         assertThatJson(ours).isEqualTo(databind);
         return ours;
+    }
+
+    public static <T> T roundTrip(
+            T obj,
+            FailableFunction<T, JsonNode, IOException> output,
+            FailableFunction<JsonNode, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind(obj, output);
+        return InputUtils.assertIsEqualToDatabind(json, input, typeRef);
+    }
+
+    public static <T, U> T roundTrip2(
+            T obj,
+            U obj2,
+            FailableBiFunction<T, U, JsonNode, IOException> output,
+            FailableBiFunction<JsonNode, U, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind2(obj, obj2, output);
+        return InputUtils.assertIsEqualToDatabind2(json, obj2, input, typeRef);
+    }
+
+    public static <T> T roundTripRecursive(
+            T obj,
+            FailableFunction<T, JsonNode, IOException> output,
+            FailableFunction<JsonNode, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind(obj, output);
+        return InputUtils.assertIsEqualToDatabindComparingRecursively(json, input, typeRef);
     }
 }

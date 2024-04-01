@@ -2,13 +2,17 @@ package org.tillerino.scruse.tests;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
+import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.function.FailableBiConsumer;
+import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableConsumer;
+import org.apache.commons.lang3.function.FailableFunction;
 import org.tillerino.scruse.api.SerializationContext;
 
 public class OutputUtils {
@@ -52,6 +56,37 @@ public class OutputUtils {
         System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);
         return ours;
+    }
+
+    public static <T> T roundTrip(
+            T obj,
+            FailableBiConsumer<T, JSONWriter, IOException> output,
+            FailableFunction<JSONReader, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind(obj, output);
+        return InputUtils.assertIsEqualToDatabind(json, input, typeRef);
+    }
+
+    public static <T, U> T roundTrip2(
+            T obj,
+            U obj2,
+            FailableTriConsumer<T, JSONWriter, U, IOException> output,
+            FailableBiFunction<JSONReader, U, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind2(obj, obj2, output);
+        return InputUtils.assertIsEqualToDatabind2(json, obj2, input, typeRef);
+    }
+
+    public static <T> T roundTripRecursive(
+            T obj,
+            FailableBiConsumer<T, JSONWriter, IOException> output,
+            FailableFunction<JSONReader, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind(obj, output);
+        return InputUtils.assertIsEqualToDatabindComparingRecursively(json, input, typeRef);
     }
 
     public interface FailableTriConsumer<T, U, V, E extends Throwable> {

@@ -6,14 +6,12 @@ import java.io.IOException;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.base.BoxedScalarsReader;
 import org.tillerino.scruse.tests.base.delegate.BoxedScalarsWriter;
 import org.tillerino.scruse.tests.model.GenericRecord;
 
 @JsonConfig(
         uses = {
             BoxedScalarsWriter.class,
-            BoxedScalarsReader.class,
             GenericRecordSerde.class,
         })
 public interface IntegerRecordSerde {

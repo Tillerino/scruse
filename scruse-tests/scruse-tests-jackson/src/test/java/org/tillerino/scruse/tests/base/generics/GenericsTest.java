@@ -1,9 +1,9 @@
 package org.tillerino.scruse.tests.base.generics;
 
+import static org.tillerino.scruse.tests.CodeAssertions.assertThatCode;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.CodeAssertions;
-import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.OutputUtils;
 import org.tillerino.scruse.tests.model.GenericRecord;
 
@@ -15,63 +15,46 @@ class GenericsTest {
     IntegerRecordSerde integerRecordSerde = new IntegerRecordSerdeImpl();
 
     @Test
-    void passGenericImplExplicitlyOutput() throws Exception {
-        OutputUtils.assertIsEqualToDatabind2(
-                new GenericRecord<>("x"), new StringSerdeImpl(), genericRecordSerde::writeGenericRecord);
-
-        CodeAssertions.assertThatCode(GenericRecordSerdeImpl.class)
-                .method("writeGenericRecord")
-                .calls("writeOnGenericInterface");
-    }
-
-    @Test
-    void passGenericImplExplicitlyInput() throws Exception {
-        InputUtils.assertIsEqualToDatabind2(
-                "{ \"f\": \"x\" }",
+    void passGenericImplExplicitly() throws Exception {
+        OutputUtils.roundTrip2(
+                new GenericRecord<>("x"),
                 new StringSerdeImpl(),
+                genericRecordSerde::writeGenericRecord,
                 genericRecordSerde::readGenericRecord,
                 new TypeReference<>() {});
 
-        CodeAssertions.assertThatCode(GenericRecordSerdeImpl.class)
-                .method("readGenericRecord")
-                .calls("readOnGenericInterface");
+        assertThatCode(GenericRecordSerdeImpl.class)
+                .method("writeGenericRecord")
+                .calls("writeOnGenericInterface");
+
+        assertThatCode(GenericRecordSerdeImpl.class).method("readGenericRecord").calls("readOnGenericInterface");
     }
 
     @Test
-    void takeGenericImplFromDelegateesOutput() throws Exception {
-        OutputUtils.assertIsEqualToDatabind(new GenericRecord<>("x"), stringRecordSerde::writeStringRecord);
+    void takeGenericImplFromDelegatees() throws Exception {
+        OutputUtils.roundTrip(
+                new GenericRecord<>("x"),
+                stringRecordSerde::writeStringRecord,
+                stringRecordSerde::readStringRecord,
+                new TypeReference<>() {});
 
-        CodeAssertions.assertThatCode(StringRecordSerdeImpl.class)
-                .method("writeStringRecord")
-                .calls("writeGenericRecord");
+        assertThatCode(StringRecordSerdeImpl.class).method("writeStringRecord").calls("writeGenericRecord");
+        assertThatCode(StringRecordSerdeImpl.class).method("readStringRecord").calls("readGenericRecord");
     }
 
     @Test
-    void takeGenericImplFromDelegateesInput() throws Exception {
-        InputUtils.assertIsEqualToDatabind(
-                "{ \"f\": \"x\" }", stringRecordSerde::readStringRecord, new TypeReference<>() {});
+    void createLambdaFromDelegatees() throws Exception {
+        OutputUtils.roundTrip(
+                new GenericRecord<>(1),
+                integerRecordSerde::writeIntegerRecord,
+                integerRecordSerde::readIntegerRecord,
+                new TypeReference<>() {});
 
-        CodeAssertions.assertThatCode(StringRecordSerdeImpl.class)
-                .method("readStringRecord")
-                .calls("readGenericRecord");
-    }
-
-    @Test
-    void createLambdaFromDelegateesOutput() throws Exception {
-        OutputUtils.assertIsEqualToDatabind(new GenericRecord<>(1), integerRecordSerde::writeIntegerRecord);
-
-        CodeAssertions.assertThatCode(IntegerRecordSerdeImpl.class)
+        assertThatCode(IntegerRecordSerdeImpl.class)
                 .method("writeIntegerRecord")
                 .calls("writeGenericRecord")
                 .bodyContains("::writeBoxedIntX");
-    }
-
-    @Test
-    void createLambdaFromDelegateesInput() throws Exception {
-        InputUtils.assertIsEqualToDatabind(
-                "{ \"f\": 1 }", integerRecordSerde::readIntegerRecord, new TypeReference<>() {});
-
-        CodeAssertions.assertThatCode(IntegerRecordSerdeImpl.class)
+        assertThatCode(IntegerRecordSerdeImpl.class)
                 .method("readIntegerRecord")
                 .calls("readGenericRecord")
                 .bodyContains("::readBoxedInt");

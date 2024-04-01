@@ -74,17 +74,15 @@ public final class TestSettingsBase {
             }
         }
 
-        public final Double[] BOXED_DOUBLES = {
-            Double.MIN_VALUE,
-            -1d,
-            0d,
-            1d,
-            Double.MAX_VALUE,
-            Double.NaN,
-            Double.NEGATIVE_INFINITY,
-            Double.POSITIVE_INFINITY,
-            null
-        };
+        // one longer, last will be null
+        public final Double[] BOXED_DOUBLES = new Double[DOUBLES.length + 1];
+
+        {
+            for (int i = 0; i < DOUBLES.length; i++) {
+                BOXED_DOUBLES[i] = DOUBLES[i];
+            }
+        }
+
         public final String[] STRINGS = new String[] {
             "",
             " ",
@@ -107,44 +105,44 @@ public final class TestSettingsBase {
         public final AnEnum[] ENUMS = {null, AnEnum.SOME_VALUE, AnEnum.ANOTHER_VALUE};
 
         // Primitive arrays
-        public final List<boolean[]> BOOLEAN_ARRAYS = asList(null, BOOLEANS);
-        public final List<byte[]> BYTE_ARRAYS = asList(null, BYTES);
-        public final List<short[]> SHORT_ARRAYS = asList(null, SHORTS);
-        public final List<int[]> INT_ARRAYS = asList(null, INTS);
-        public final List<long[]> LONG_ARRAYS = asList(null, LONGS);
-        public final List<char[]> CHAR_ARRAYS = asList(null, CHARS);
+        public final List<boolean[]> BOOLEAN_ARRAYS = asList(null, new boolean[0], BOOLEANS);
+        public final List<byte[]> BYTE_ARRAYS = asList(null, new byte[0], BYTES);
+        public final List<short[]> SHORT_ARRAYS = asList(null, new short[0], SHORTS);
+        public final List<int[]> INT_ARRAYS = asList(null, new int[0], INTS);
+        public final List<long[]> LONG_ARRAYS = asList(null, new long[0], LONGS);
+        public final List<char[]> CHAR_ARRAYS = asList(null, new char[0], CHARS);
 
-        public final List<float[]> floatArrays = asList(null, floats);
+        public final List<float[]> floatArrays = asList(null, new float[0], floats);
 
-        public final List<double[]> DOUBLE_ARRAYS = asList(null, DOUBLES);
+        public final List<double[]> DOUBLE_ARRAYS = asList(null, new double[0], DOUBLES);
 
         // Boxed arrays
-        public final List<Boolean[]> BOXED_BOOLEAN_ARRAYS = asList(null, BOXED_BOOLEANS);
-        public final List<Byte[]> BOXED_BYTE_ARRAYS = asList(null, BOXED_BYTES);
-        public final List<Short[]> BOXED_SHORT_ARRAYS = asList(null, BOXED_SHORTS);
-        public final List<Integer[]> BOXED_INT_ARRAYS = asList(null, BOXED_INTS);
-        public final List<Long[]> BOXED_LONG_ARRAYS = asList(null, BOXED_LONGS);
-        public final List<Character[]> BOXED_CHAR_ARRAYS = asList(null, BOXED_CHARS);
+        public final List<Boolean[]> BOXED_BOOLEAN_ARRAYS = asList(null, new Boolean[0], BOXED_BOOLEANS);
+        public final List<Byte[]> BOXED_BYTE_ARRAYS = asList(null, new Byte[0], BOXED_BYTES);
+        public final List<Short[]> BOXED_SHORT_ARRAYS = asList(null, new Short[0], BOXED_SHORTS);
+        public final List<Integer[]> BOXED_INT_ARRAYS = asList(null, new Integer[0], BOXED_INTS);
+        public final List<Long[]> BOXED_LONG_ARRAYS = asList(null, new Long[0], BOXED_LONGS);
+        public final List<Character[]> BOXED_CHAR_ARRAYS = asList(null, new Character[0], BOXED_CHARS);
 
-        public final List<Float[]> boxedFloatArrays = asList(null, boxedFloats);
+        public final List<Float[]> boxedFloatArrays = asList(null, new Float[0], boxedFloats);
 
-        public final List<Double[]> BOXED_DOUBLE_ARRAYS = asList(null, BOXED_DOUBLES);
-        public final List<String[]> STRING_ARRAYS = asList(null, STRINGS);
-        public final List<AnEnum[]> ENUM_ARRAYS = asList(null, ENUMS);
+        public final List<Double[]> BOXED_DOUBLE_ARRAYS = asList(null, new Double[0], BOXED_DOUBLES);
+        public final List<String[]> STRING_ARRAYS = asList(null, new String[0], STRINGS);
+        public final List<AnEnum[]> ENUM_ARRAYS = asList(null, new AnEnum[0], ENUMS);
 
         // Scalar lists
-        public final List<List<Boolean>> BOOLEAN_LISTS = asList(null, asList(BOXED_BOOLEANS));
-        public final List<List<Byte>> BYTE_LISTS = asList(null, asList(BOXED_BYTES));
-        public final List<List<Short>> SHORT_LISTS = asList(null, asList(BOXED_SHORTS));
-        public final List<List<Integer>> INT_LISTS = asList(null, asList(BOXED_INTS));
-        public final List<List<Long>> LONG_LISTS = asList(null, asList(BOXED_LONGS));
-        public final List<List<Character>> CHAR_LISTS = asList(null, asList(BOXED_CHARS));
+        public final List<List<Boolean>> BOOLEAN_LISTS = asList(null, List.of(), asList(BOXED_BOOLEANS));
+        public final List<List<Byte>> BYTE_LISTS = asList(null, List.of(), asList(BOXED_BYTES));
+        public final List<List<Short>> SHORT_LISTS = asList(null, List.of(), asList(BOXED_SHORTS));
+        public final List<List<Integer>> INT_LISTS = asList(null, List.of(), asList(BOXED_INTS));
+        public final List<List<Long>> LONG_LISTS = asList(null, List.of(), asList(BOXED_LONGS));
+        public final List<List<Character>> CHAR_LISTS = asList(null, List.of(), asList(BOXED_CHARS));
 
-        public final List<List<Float>> floatLists = asList(null, asList(boxedFloats));
+        public final List<List<Float>> floatLists = asList(null, List.of(), asList(boxedFloats));
 
-        public final List<List<Double>> DOUBLE_LISTS = asList(null, asList(BOXED_DOUBLES));
-        public final List<List<String>> STRING_LISTS = asList(null, asList(STRINGS));
-        public final List<List<AnEnum>> ENUM_LISTS = asList(null, asList(ENUMS));
+        public final List<List<Double>> DOUBLE_LISTS = asList(null, List.of(), asList(BOXED_DOUBLES));
+        public final List<List<String>> STRING_LISTS = asList(null, List.of(), asList(STRINGS));
+        public final List<List<AnEnum>> ENUM_LISTS = asList(null, List.of(), asList(ENUMS));
 
         // Scalar maps
         public final List<Map<String, Boolean>> STRING_BOOLEAN_MAPS =

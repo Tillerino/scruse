@@ -1,0 +1,120 @@
+package org.tillerino.scruse.tests.base;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.tillerino.scruse.tests.OutputUtils.roundTrip;
+import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.model.AnEnum;
+
+class ScalarListsSerdeTest {
+    ScalarListsSerde impl = new ScalarListsSerdeImpl();
+
+    @Test
+    void testBooleanList() throws IOException {
+        for (List<Boolean> object : SETTINGS.javaData().BOOLEAN_LISTS) {
+            List<Boolean> list =
+                    roundTrip(object, impl::writeBooleanList, impl::readBooleanList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testByteList() throws IOException {
+        for (List<Byte> object : SETTINGS.javaData().BYTE_LISTS) {
+            List<Byte> list = roundTrip(object, impl::writeByteList, impl::readByteList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testShortList() throws IOException {
+        for (List<Short> object : SETTINGS.javaData().SHORT_LISTS) {
+            List<Short> list = roundTrip(object, impl::writeShortList, impl::readShortList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testIntList() throws IOException {
+        for (List<Integer> object : SETTINGS.javaData().INT_LISTS) {
+            List<Integer> list = roundTrip(object, impl::writeIntList, impl::readIntegerList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testLongList() throws IOException {
+        for (List<Long> object : SETTINGS.javaData().LONG_LISTS) {
+            List<Long> list = roundTrip(object, impl::writeLongList, impl::readLongList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testCharList() throws IOException {
+        for (List<Character> object : SETTINGS.javaData().CHAR_LISTS) {
+            List<Character> list =
+                    roundTrip(object, impl::writeCharList, impl::readCharacterList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testFloatList() throws IOException {
+        for (List<Float> object : SETTINGS.javaData().floatLists) {
+            List<Float> list = roundTrip(object, impl::writeFloatList, impl::readFloatList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testDoubleList() throws IOException {
+        for (List<Double> object : SETTINGS.javaData().DOUBLE_LISTS) {
+            List<Double> list =
+                    roundTrip(object, impl::writeDoubleList, impl::readDoubleList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testStringList() throws IOException {
+        for (List<String> object : SETTINGS.javaData().STRING_LISTS) {
+            List<String> list =
+                    roundTrip(object, impl::writeStringList, impl::readStringList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+
+    @Test
+    void testEnumList() throws IOException {
+        for (List<AnEnum> object : SETTINGS.javaData().ENUM_LISTS) {
+            List<AnEnum> list = roundTrip(object, impl::writeEnumList, impl::readEnumList, new TypeReference<>() {});
+            if (list != null) {
+                assertThat(list).isInstanceOf(ArrayList.class);
+            }
+        }
+    }
+}

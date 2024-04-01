@@ -13,14 +13,14 @@ class CustomizedContextTest {
 
     @Test
     void testCustomizedContextSerialization() throws IOException {
-        String json = OutputUtils.withJacksonJsonGenerator(generator ->
+        String json = OutputUtils.withJsonGenerator(generator ->
                 serde.writeMyObj(List.of(new MyObj(10), new MyObj(20)), generator, new CustomSerializationContext()));
         Assertions.assertThat(json).isEqualTo("[{\"i\":10},{\"i\":21}]");
     }
 
     @Test
     void testCustomizedContextDeserialization() throws IOException {
-        List<MyObj> myObjs = InputUtils.withJacksonJsonParser(
+        List<MyObj> myObjs = InputUtils.withJsonParser(
                 "[{\"i\":10},{\"i\":20}]", parser -> serde.readMyObj(parser, new CustomDeserializationContext()));
         Assertions.assertThat(myObjs).containsExactly(new MyObj(10), new MyObj(21));
     }

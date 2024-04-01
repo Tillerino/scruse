@@ -12,15 +12,14 @@ class CustomizedSerializationTest {
 
     @Test
     void offsetDateTimeSerializationExample() throws IOException {
-        String json = OutputUtils.withJacksonJsonGenerator(generator ->
+        String json = OutputUtils.withJsonGenerator(generator ->
                 serde.writeMyObj(new MyObj(OffsetDateTime.of(2021, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)), generator));
         Assertions.assertThat(json).isEqualTo("{\"t\":\"2021-01-01T00:00Z\"}");
     }
 
     @Test
     void offsetDateTimeDeserializationExample() throws IOException {
-        MyObj myObj =
-                InputUtils.withJacksonJsonParser("{\"t\":\"2021-01-01T00:00Z\"}", parser -> serde.readMyObj(parser));
+        MyObj myObj = InputUtils.withJsonParser("{\"t\":\"2021-01-01T00:00Z\"}", parser -> serde.readMyObj(parser));
         Assertions.assertThat(myObj).isEqualTo(new MyObj(OffsetDateTime.of(2021, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)));
     }
 }
