@@ -20,3 +20,24 @@ updates:
   {{mvn}} -q versions:display-property-updates {{ignored-versions}} -Dversions.outputFile=updates.txt && cat updates.txt */updates.txt */*/updates.txt | grep -- "->" | sort | uniq
   {{mvn}} -q versions:display-dependency-updates {{ignored-versions}} -Dversions.outputFile=updates.txt && cat updates.txt */updates.txt */*/updates.txt | grep -- "->" | sort | uniq
   rm updates.txt */updates.txt */*/updates.txt
+
+# estimate size of shaded libraries
+shaded-sizes:
+  #!/bin/sh
+  cd scruse-tests
+  for f in */target/scruse-tests-*.jar; do
+    dir=$(dirname $f)
+    name=$(basename $f)
+    if [ -f $dir/original-$name ]; then
+      # size of shaded jar
+      size=$(du -b $f | cut -f1)
+      # size of generated classes
+      orig=$(du -b $dir/original-$name | cut -f1)
+      # difference in KiB
+      eff=$(($(($size - $orig)) / 1024))
+
+      name=$(dirname $dir)
+      name=${name#scruse-tests-}
+      echo "$name: $eff KiB"
+    fi
+  done

@@ -20,6 +20,9 @@ public sealed interface PrototypeKind {
     String FASTJSON_2_JSONREADER = "com.alibaba.fastjson2.JSONReader";
     String FASTJSON_2_JSONWRITER = "com.alibaba.fastjson2.JSONWriter";
 
+    String JAKARTA_JSON_PARSER = "org.tillerino.scruse.helpers.JakartaJsonParserHelper.JsonParserWrapper";
+    String JAKARTA_JSON_GENERATOR = "jakarta.json.stream.JsonGenerator";
+
     record Input(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
             implements PrototypeKind {}
 
@@ -33,7 +36,12 @@ public sealed interface PrototypeKind {
         if (m.element().getAnnotation(JsonInput.class) != null
                 && m.returnType().getKind() != TypeKind.VOID
                 && !m.parameters().isEmpty()
-                && List.of(JACKSON_JSON_PARSER, JACKSON_JSON_NODE, GSON_JSON_READER, FASTJSON_2_JSONREADER)
+                && List.of(
+                                JACKSON_JSON_PARSER,
+                                JACKSON_JSON_NODE,
+                                GSON_JSON_READER,
+                                FASTJSON_2_JSONREADER,
+                                JAKARTA_JSON_PARSER)
                         .contains(m.parameters().get(0).type().toString())) {
             return Optional.of(new Input(
                     m.parameters().get(0).type(),
@@ -43,7 +51,7 @@ public sealed interface PrototypeKind {
         if (m.element().getAnnotation(JsonOutput.class) != null
                 && m.returnType().getKind() == TypeKind.VOID
                 && m.parameters().size() >= 2
-                && List.of(JACKSON_JSON_GENERATOR, GSON_JSON_WRITER, FASTJSON_2_JSONWRITER)
+                && List.of(JACKSON_JSON_GENERATOR, GSON_JSON_WRITER, FASTJSON_2_JSONWRITER, JAKARTA_JSON_GENERATOR)
                         .contains(m.parameters().get(1).type().toString())) {
             return Optional.of(new Output(
                     m.parameters().get(1).type(),

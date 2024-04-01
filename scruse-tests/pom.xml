@@ -15,6 +15,8 @@
         <module>scruse-tests-base</module>
         <module>scruse-tests-gson</module>
         <module>scruse-tests-fastjson2</module>
+        <module>scruse-tests-jakarta-glassfish</module>
+        <module>scruse-tests-jakarta-johnzon</module>
     </modules>
 
     <properties>
@@ -89,6 +91,7 @@
                         <phase>package</phase>
                         <configuration>
                             <minimizeJar>true</minimizeJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>

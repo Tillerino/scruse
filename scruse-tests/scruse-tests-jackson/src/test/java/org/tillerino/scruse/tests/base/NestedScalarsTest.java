@@ -1,7 +1,7 @@
 package org.tillerino.scruse.tests.base;
 
-import static org.tillerino.scruse.tests.JavaData.map;
 import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
+import static org.tillerino.scruse.tests.TestSettingsBase.JavaData.map;
 
 import java.io.IOException;
 import java.util.Arrays;

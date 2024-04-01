@@ -186,6 +186,8 @@ public class ScruseProcessor extends AbstractProcessor {
                     ::build;
             case PrototypeKind.FASTJSON_2_JSONWRITER -> new Fastjson2WriterGenerator(utils, method, generatedClass)
                     ::build;
+            case PrototypeKind.JAKARTA_JSON_GENERATOR -> new JakartaJsonGeneratorGenerator(
+                    utils, method, generatedClass)::build;
             default -> throw new IllegalStateException(
                     "Unknown output type: " + method.kind().jsonType());
         };
@@ -201,6 +203,8 @@ public class ScruseProcessor extends AbstractProcessor {
             case PrototypeKind.GSON_JSON_READER -> new GsonJsonReaderReaderGenerator(utils, method, generatedClass)
                     ::build;
             case PrototypeKind.FASTJSON_2_JSONREADER -> new Fastjson2ReaderGenerator(utils, method, generatedClass)
+                    ::build;
+            case PrototypeKind.JAKARTA_JSON_PARSER -> new JakartaJsonParserGenerator(utils, method, generatedClass)
                     ::build;
             default -> throw new IllegalStateException(
                     "Unknown input type: " + method.kind().jsonType());

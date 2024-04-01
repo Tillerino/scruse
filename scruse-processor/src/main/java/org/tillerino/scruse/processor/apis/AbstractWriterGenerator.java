@@ -1,12 +1,16 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import lombok.Builder;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
@@ -70,7 +74,19 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
         detectSelfReferencingType();
         if (type.isPrimitive()) {
-            writePrimitive(type.getTypeMirror());
+            PrimitiveType pt = (PrimitiveType) type.getTypeMirror();
+            if (List.of(TypeKind.FLOAT, TypeKind.DOUBLE).contains(pt.getKind())
+                    && features().onlySupportsFiniteNumbers()) {
+                TypeMirror boxedType = utils.types.boxedClass(pt).asType();
+                code.beginControlFlow("if ($T.isFinite(" + rhs.format() + "))", flatten(boxedType, rhs.args()));
+                writePrimitive(type.getTypeMirror());
+                code.nextControlFlow("else");
+                RHS asString = new RHS.AnySnippet(Snippet.of("$T.toString($C)", boxedType, rhs), false);
+                nest(utils.commonTypes.string, lhs, null, asString, false).build();
+                code.endControlFlow();
+            } else {
+                writePrimitive(type.getTypeMirror());
+            }
         } else {
             writeNullable();
         }
@@ -280,6 +296,10 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         nest(utils.commonTypes.string, lhs, null, enumValue, false).build();
     }
 
+    protected Features features() {
+        return Features.builder().build();
+    }
+
     protected abstract void writeNull();
 
     protected abstract void writeString(StringKind stringKind);
@@ -307,7 +327,16 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
     protected abstract SELF nest(TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType);
 
+    Snippet base64Encode(Snippet snippet) {
+        return Snippet.of("$T.getEncoder().encodeToString($C)", Base64.class, snippet);
+    }
+
+    Snippet charArrayToString(Snippet snippet) {
+        return Snippet.of("new $T($C)", String.class, snippet);
+    }
+
     sealed interface LHS {
+
         record Return() implements LHS {}
 
         record Array() implements LHS {}
@@ -323,6 +352,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 return a.object().format() + ".$L";
             } else if (this instanceof StringLiteral s) {
                 return "$S";
+            } else if (this instanceof AnySnippet a) {
+                return a.snippet().format();
             } else {
                 throw new IllegalArgumentException();
             }
@@ -335,6 +366,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 return new Object[] {a.object().args(), a.accessorLiteral()};
             } else if (this instanceof StringLiteral s) {
                 return new Object[] {s.value()};
+            } else if (this instanceof AnySnippet a) {
+                return a.snippet().args();
             } else {
                 throw new IllegalArgumentException();
             }
@@ -352,5 +385,10 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 return false;
             }
         }
+
+        record AnySnippet(Snippet snippet, boolean nullable) implements RHS {}
     }
+
+    @Builder
+    record Features(boolean onlySupportsFiniteNumbers) {}
 }

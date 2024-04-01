@@ -45,8 +45,8 @@ public class CopyTests {
     public static void main(String[] args) throws Exception {
         Path targetRoot = Paths.get(args[0]);
         String targetPackage = args[1];
-        Class<?> writer = Class.forName(args[2]);
-        Class<?> reader = Class.forName(args[3]);
+        String writer = args[2];
+        String reader = args[3];
         WriterMode writerMode = WriterMode.valueOf(args[4]);
         copy(targetRoot, targetPackage, writer, reader, Map.of(), writerMode);
     }
@@ -64,8 +64,8 @@ public class CopyTests {
     public static void copy(
             Path targetRoot,
             String targetPackage,
-            Class<?> writer,
-            Class<?> reader,
+            String writer,
+            String reader,
             Map<String, String> methodReplacements,
             WriterMode writerMode)
             throws IOException {
@@ -129,12 +129,12 @@ public class CopyTests {
                             @Override
                             public Node visit(ImportDeclaration n, Void arg) {
                                 if (n.getNameAsString().equals("com.fasterxml.jackson.core.JsonGenerator")) {
-                                    n.setName(writer.getCanonicalName());
+                                    n.setName(writer);
                                 } else if (n.getNameAsString().equals("com.fasterxml.jackson.core.JsonParser")) {
-                                    n.setName(reader.getCanonicalName());
+                                    n.setName(reader);
                                 } else if (p.endsWith("src/main/java")
                                         && n.getNameAsString().startsWith("com.fasterxml.jackson.core")
-                                        && !writer.getCanonicalName().startsWith("com.fasterxml.jackson")) {
+                                        && !writer.startsWith("com.fasterxml.jackson")) {
                                     return null;
                                 } else {
                                     n.setName(n.getName().asString().replace(originalPackage, targetPackage));

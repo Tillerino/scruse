@@ -1,8 +1,7 @@
 package org.tillerino.scruse.tests.model;
 
 import java.util.ArrayList;
-import java.util.List;
-import org.tillerino.scruse.tests.JavaData;
+import org.tillerino.scruse.tests.TestSettingsBase;
 import org.tillerino.scruse.tests.function.Zip;
 
 public record PrimitiveArrayFieldsRecord(
@@ -14,19 +13,20 @@ public record PrimitiveArrayFieldsRecord(
         long[] longArray,
         float[] floatArray,
         double[] doubleArray) {
-    public static List<PrimitiveArrayFieldsRecord> INSTANCES = new ArrayList<>();
 
-    static {
-        INSTANCES.add(null);
-        INSTANCES.addAll(Zip.instantiate8(
-                JavaData.BOOLEAN_ARRAYS,
-                JavaData.BYTE_ARRAYS,
-                JavaData.CHAR_ARRAYS,
-                JavaData.SHORT_ARRAYS,
-                JavaData.INT_ARRAYS,
-                JavaData.LONG_ARRAYS,
-                JavaData.FLOAT_ARRAYS,
-                JavaData.DOUBLE_ARRAYS,
+    public static ArrayList<PrimitiveArrayFieldsRecord> instances(TestSettingsBase settings) {
+        ArrayList<PrimitiveArrayFieldsRecord> instances = new ArrayList<>();
+        instances.add(null);
+        instances.addAll(Zip.instantiate8(
+                settings.javaData().BOOLEAN_ARRAYS,
+                settings.javaData().BYTE_ARRAYS,
+                settings.javaData().CHAR_ARRAYS,
+                settings.javaData().SHORT_ARRAYS,
+                settings.javaData().INT_ARRAYS,
+                settings.javaData().LONG_ARRAYS,
+                settings.javaData().floatArrays,
+                settings.javaData().DOUBLE_ARRAYS,
                 PrimitiveArrayFieldsRecord::new));
+        return instances;
     }
 }

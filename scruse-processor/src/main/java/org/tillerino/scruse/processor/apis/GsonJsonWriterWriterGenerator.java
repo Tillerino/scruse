@@ -1,7 +1,6 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
-import java.util.Base64;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -57,9 +56,8 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
     protected void writeBinary(BinaryKind binaryKind) {
         addFieldNameIfNeeded();
         switch (binaryKind) {
-            case BYTE_ARRAY -> code.addStatement(
-                    "$L.value($T.getEncoder().encodeToString(" + rhs.format() + "))",
-                    flatten(writerVariable.getSimpleName(), Base64.class, rhs.args()));
+            case BYTE_ARRAY -> Snippet.of("$L.value($C)", writerVariable, base64Encode(rhs))
+                    .addStatementTo(code);
         }
     }
 

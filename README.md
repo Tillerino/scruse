@@ -81,7 +81,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 650kB
+Overhead: 850kiB
 
 ### Jackson Databind (objects)
 
@@ -98,7 +98,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 2.1MB
+Overhead: 2250kiB
 
 ### Gson
 
@@ -113,7 +113,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 300kB
+Overhead: 350kiB
 
 ### fastjson2
 
@@ -130,7 +130,46 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 2MB
+Overhead: 2000kiB
+
+### Jakarta JSON-P
+
+`jakarta.json-api` is an API definition which provides `JsonParser` and `JsonGenerator` for reading and writing JSON.
+`JsonParser#currentToken` is fairly new and not supported by all implementations.
+Additionally, `JsonParser` does not allow us to properly save the state of _the input has ended_.
+This is why we wrap `JsonParserWrapper` around it.
+
+The required dependency is:
+
+```xml
+<dependency>
+  <groupId>jakarta.json</groupId>
+  <artifactId>jakarta.json-api</artifactId>
+  <version>${jakarta.json.version}</version>
+</dependency>
+```
+
+In addition to the API, you need to include an implementation. There are several available.
+
+```xml
+<dependency>
+  <groupId>org.apache.johnzon</groupId>
+  <artifactId>johnzon-core</artifactId>
+  <version>${johnzon.version}</version>
+</dependency>
+```
+
+Johnzon and the API have an overhead of 260kiB.
+
+```xml
+<dependency>
+  <groupId>org.glassfish</groupId>
+  <artifactId>jakarta.json</artifactId>
+  <version>${glassfish.json.version}</version>
+</dependency>
+```
+
+The Glassfish implementation has an overhead of 210kiB.
 
 ## Escape hatches (hacking Scruse)
 
@@ -239,4 +278,4 @@ Escape hatches: fucky mechanisms to work around missing features, e.g. ghetto in
 - [x] Deserialize record components, setters, fields
 
 - [x] Delegate to other readers/writers
-- [ ] enums
+- [x] enums
