@@ -8,6 +8,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.comments.BlockComment;
+import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -27,7 +28,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
@@ -48,7 +54,9 @@ public class CopyTests {
         String writer = args[2];
         String reader = args[3];
         WriterMode writerMode = WriterMode.valueOf(args[4]);
-        copy(targetRoot, targetPackage, writer, reader, Map.of(), writerMode);
+        Set<String> features =
+                Stream.of(args[5].split(",")).filter(s -> !s.isEmpty()).collect(Collectors.toSet());
+        copy(targetRoot, targetPackage, writer, reader, Map.of(), writerMode, features);
     }
 
     /**
@@ -60,6 +68,7 @@ public class CopyTests {
      * @param reader class of the reader, e.g. {@link JsonReader}
      * @param methodReplacements replacements for the methods in InputUtils and OutputUtils
      * @param writerMode see {@link WriterMode}
+     * @param features features required by the implementation
      */
     public static void copy(
             Path targetRoot,
@@ -67,7 +76,8 @@ public class CopyTests {
             String writer,
             String reader,
             Map<String, String> methodReplacements,
-            WriterMode writerMode)
+            WriterMode writerMode,
+            Set<String> features)
             throws IOException {
         for (String p : List.of("src/main/java", "src/test/java")) {
             SourceRoot sourceRoot = new SourceRoot(targetRoot.resolve("../scruse-tests-jackson/" + p));
@@ -102,11 +112,21 @@ public class CopyTests {
                                 }
                                 n.getChildNodes().stream()
                                         .filter(node -> node.getComment()
-                                                .filter(c -> c.getContent().contains("NOCOPY"))
+                                                .filter(c -> preventCopy(c, features))
                                                 .isPresent())
                                         .toList()
                                         .forEach(n::remove);
                                 return super.visit(n, arg);
+                            }
+
+                            private static boolean preventCopy(Comment c, Set<String> features) {
+                                Matcher m = Pattern.compile("FEATURE-(\\w+)").matcher(c.getContent());
+                                while (m.find()) {
+                                    if (!features.contains(m.group(1))) {
+                                        return true;
+                                    }
+                                }
+                                return c.getContent().contains("NOCOPY");
                             }
 
                             @Override

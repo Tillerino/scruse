@@ -20,10 +20,12 @@ class InjectionTest {
 
     List<SelfReferencingRecord> list = List.of(b, a, b, a);
 
+    /** FEATURE-JSON */
     String json = """
 		[{"prop":"b","self":null},{"prop":"a","self":"b"},"b","a"]
 		""";
 
+    /** FEATURE-JSON */
     @Test
     void testInjectionOutput() throws IOException {
         assertThatJson(OutputUtils.serialize2(list, new InjectionSerializationContext(), serde::writeList))

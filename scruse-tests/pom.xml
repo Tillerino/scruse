@@ -26,6 +26,7 @@
         <copy.writer>-</copy.writer>
         <copy.reader>-</copy.reader>
         <copy.writerMode>-</copy.writerMode>
+        <copy.features>JSON</copy.features>
     </properties>
 
     <dependencies>
@@ -145,6 +146,7 @@
                                 <argument>${copy.writer}</argument>
                                 <argument>${copy.reader}</argument>
                                 <argument>${copy.writerMode}</argument>
+                                <argument>${copy.features}</argument>
                             </arguments>
                         </configuration>
                     </execution>
