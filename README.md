@@ -100,6 +100,21 @@ The required dependency is:
 
 Overhead: 2250kiB
 
+### Jackson Smile
+
+`jackson-dataformat-smile` provides `SmileParser` and `SmileGenerator` for reading and writing Smile - a binary variant of JSON.
+The required dependency is:
+
+```xml
+<dependency>
+  <groupId>com.fasterxml.jackson.dataformat</groupId>
+  <artifactId>jackson-dataformat-smile</artifactId>
+  <version>${jackson.version}</version>
+</dependency>
+```
+
+Overhead: 680kiB
+
 ### Gson
 
 `gson` provides `JsonParser` and `JsonWriter` for reading and writing JSON.

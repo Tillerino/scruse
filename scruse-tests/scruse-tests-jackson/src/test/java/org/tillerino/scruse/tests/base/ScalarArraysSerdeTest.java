@@ -151,6 +151,7 @@ class ScalarArraysSerdeTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testReadingLargeIntArray() throws IOException {
         String json =

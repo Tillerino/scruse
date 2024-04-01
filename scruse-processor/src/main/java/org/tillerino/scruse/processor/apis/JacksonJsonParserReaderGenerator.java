@@ -5,6 +5,7 @@ import com.squareup.javapoet.CodeBlock;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
@@ -47,6 +48,19 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
     }
 
     @Override
+    protected void readNullCheckedObject() {
+        if (type.isArrayType() && type.getComponentType().getTypeMirror().getKind() == TypeKind.BYTE) {
+            code.nextControlFlow("else");
+            importHelper();
+            Snippet rhs = Snippet.of("readBinary($L)", parserVariable);
+            assignAndAdvance(byte[].class, rhs);
+            code.endControlFlow();
+        } else {
+            super.readNullCheckedObject();
+        }
+    }
+
+    @Override
     protected void startStringCase(Branch branch) {
         branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
     }
@@ -64,8 +78,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
 
     @Override
     protected void startArrayCase(Branch branch) {
-        branch.controlFlow(code, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("START_ARRAY"));
-        advance();
+        importHelper();
+        branch.controlFlow(code, "nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("START_ARRAY"));
     }
 
     @Override
@@ -104,15 +118,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
                     case DOUBLE -> "getDoubleValue";
                     default -> throw new AssertionError(type.getKind());
                 };
-        if (lhs instanceof LHS.Return) {
-            String tmp = "tmp$" + stackDepth();
-            code.addStatement("$T $L = $L.$L()", type, tmp, parserVariable.getSimpleName(), readMethod);
-            advance();
-            code.addStatement("return $L", tmp);
-        } else {
-            lhs.assign(code, "$L.$L()", parserVariable.getSimpleName(), readMethod);
-            advance();
-        }
+        assignAndAdvance(type, Snippet.of("$L.$L()", parserVariable, readMethod));
     }
 
     @Override
@@ -122,20 +128,9 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
                     case STRING -> "";
                     case CHAR_ARRAY -> ".toCharArray()";
                 };
-        if (lhs instanceof LHS.Return) {
-            String tmp = "tmp$" + stackDepth();
-            code.addStatement(
-                    "$T $L = $L.getText()$L",
-                    stringKind == StringKind.STRING ? String.class : char[].class,
-                    tmp,
-                    parserVariable.getSimpleName(),
-                    conversion);
-            advance();
-            code.addStatement("return $L", tmp);
-        } else {
-            lhs.assign(code, "$L.getText()$L", parserVariable.getSimpleName(), conversion);
-            advance();
-        }
+        assignAndAdvance(
+                stringKind == StringKind.STRING ? String.class : char[].class,
+                Snippet.of("$L.getText()$L", parserVariable, conversion));
     }
 
     @Override
@@ -209,6 +204,18 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
                 lhs,
                 this,
                 stackRelevantType);
+    }
+
+    void assignAndAdvance(Object type, Snippet value) {
+        if (lhs instanceof LHS.Return) {
+            String tmp = "tmp$" + stackDepth();
+            Snippet.of("$T $L = $C", type, tmp, value).addStatementTo(code);
+            advance();
+            code.addStatement("return $L", tmp);
+        } else {
+            lhs.assign(code, value);
+            advance();
+        }
     }
 
     private Class<JacksonJsonParserReaderHelper> importHelper() {

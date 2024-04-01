@@ -35,6 +35,7 @@ import org.tillerino.scruse.tests.model.NestingModel;
  * </ul>
  */
 class NestingTest {
+    /** FEATURE-JSON */
     @Test
     void testOuterObject() throws IOException {
         NestingSerde.OuterRecordSerde recordImpl = new NestingSerde$OuterRecordSerdeImpl();
@@ -72,6 +73,7 @@ class NestingTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testDoubleArrayArray() throws IOException {
         NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
@@ -110,6 +112,7 @@ class NestingTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testStringDoubleMapArray() throws IOException {
         NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
@@ -140,6 +143,7 @@ class NestingTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testStringInnerObjectMap() throws IOException {
         NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
@@ -178,6 +182,7 @@ class NestingTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testInnerObjectArray() throws IOException {
         NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
@@ -227,6 +232,7 @@ class NestingTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testStringStringDoubleMapMap() throws IOException {
         NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
@@ -253,6 +259,7 @@ class NestingTest {
         }
     }
 
+    /** FEATURE-JSON */
     @Test
     void testStringDoubleArrayMap() throws IOException {
         NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();

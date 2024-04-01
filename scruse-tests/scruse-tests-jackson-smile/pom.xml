@@ -8,14 +8,15 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>scruse-tests-jackson-node</artifactId>
+    <artifactId>scruse-tests-jackson-smile</artifactId>
 
     <properties>
         <copy.skip>false</copy.skip>
-        <copy.package>org.tillerino.scruse.tests.alt.jackson.node</copy.package>
-        <copy.writer>com.fasterxml.jackson.databind.JsonNode</copy.writer>
-        <copy.reader>com.fasterxml.jackson.databind.JsonNode</copy.reader>
-        <copy.writerMode>RETURN</copy.writerMode>
+        <copy.package>org.tillerino.scruse.tests.alt.jackson.smile</copy.package>
+        <copy.writer>com.fasterxml.jackson.core.JsonGenerator</copy.writer>
+        <copy.reader>com.fasterxml.jackson.core.JsonParser</copy.reader>
+        <copy.writerMode>ARGUMENT</copy.writerMode>
+        <copy.features>-</copy.features>
     </properties>
 
     <dependencies>
@@ -25,8 +26,10 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-smile</artifactId>
+            <version>2.17.0</version>
         </dependency>
     </dependencies>
+
 </project>

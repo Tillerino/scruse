@@ -25,7 +25,7 @@ class ScalarArraysSerdeTest {
             roundTrip(object, impl::writeByteArray, impl::readByteArray, new TypeReference<byte[]>() {});
         }
         assertThatCalls("writeByteArray", "writePrimitiveByteX", false);
-        assertThatCalls("readByteArray", "readPrimitiveByteX", true);
+        assertThatCalls("readByteArray", "readPrimitiveByteX", false);
     }
 
     @Test

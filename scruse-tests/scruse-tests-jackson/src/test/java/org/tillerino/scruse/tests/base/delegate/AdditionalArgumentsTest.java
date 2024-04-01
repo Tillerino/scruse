@@ -12,6 +12,7 @@ import org.tillerino.scruse.tests.OutputUtils;
 class AdditionalArgumentsTest {
     AdditionalArgumentsSerde serde = new AdditionalArgumentsSerdeImpl();
 
+    /** FEATURE-JSON */
     @Test
     void output() throws IOException {
         ArrayList<Integer> l = new ArrayList<>();
@@ -20,6 +21,7 @@ class AdditionalArgumentsTest {
         assertThat(l).containsExactly(1);
     }
 
+    /** FEATURE-JSON */
     @Test
     void input() throws IOException {
         Queue<Integer> l = new LinkedList<>(List.of(1));

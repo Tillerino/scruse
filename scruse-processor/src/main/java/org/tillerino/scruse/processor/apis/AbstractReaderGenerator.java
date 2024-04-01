@@ -150,7 +150,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         return stringVar;
     }
 
-    private void readNullCheckedObject() {
+    protected void readNullCheckedObject() {
         if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false)
                     .build(Branch.ELSE_IF);
@@ -197,8 +197,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
     private void readArray(Branch branch) {
         Type componentType = type.getComponentType();
-        startArrayCase(branch);
-        {
+        if (componentType.getTypeMirror().getKind() == TypeKind.BYTE) {
+            startStringCase(Branch.ELSE_IF);
+            String stringVar = readStringInstead();
+            lhs.assign(code, "$T.getDecoder().decode($L)", Base64.class, stringVar);
+        } else {
+            startArrayCase(branch);
             TypeMirror rawComponentType = componentType.asRawType().getTypeMirror();
             TypeMirror rawRawComponentType =
                     rawComponentType.getKind().isPrimitive() ? rawComponentType : utils.commonTypes.object;
@@ -240,11 +244,6 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 lhs.assign(
                         code, "$T.copyOf($L, $L, $T[].class)", java.util.Arrays.class, varName, len, rawComponentType);
             }
-        }
-        if (componentType.getTypeMirror().getKind() == TypeKind.BYTE) {
-            startStringCase(Branch.ELSE_IF);
-            String stringVar = readStringInstead();
-            lhs.assign(code, "$T.getDecoder().decode($L)", Base64.class, stringVar);
         }
         code.nextControlFlow("else");
         {

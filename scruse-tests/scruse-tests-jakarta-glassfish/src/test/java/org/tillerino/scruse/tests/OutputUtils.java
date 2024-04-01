@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
+import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 import org.tillerino.scruse.helpers.JakartaJsonParserHelper.JsonParserWrapper;
 
@@ -65,6 +66,16 @@ public class OutputUtils {
             throws IOException {
         String json = assertIsEqualToDatabind2(obj, obj2, output);
         return InputUtils.assertIsEqualToDatabind2(json, obj2, input, typeRef);
+    }
+
+    public static <T> T roundTripContext(
+            T obj,
+            FailableTriConsumer<T, JsonGenerator, SerializationContext, IOException> output,
+            FailableBiFunction<JsonParserWrapper, DeserializationContext, T, IOException> input,
+            TypeReference<T> typeRef)
+            throws IOException {
+        String json = assertIsEqualToDatabind2(obj, new SerializationContext(), output);
+        return InputUtils.assertIsEqualToDatabind2(json, new DeserializationContext(), input, typeRef);
     }
 
     public static <T> T roundTripRecursive(

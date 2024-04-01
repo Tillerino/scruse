@@ -2,6 +2,7 @@ package org.tillerino.scruse.helpers;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class JacksonJsonParserReaderHelper {
@@ -28,5 +29,11 @@ public class JacksonJsonParserReaderHelper {
         }
         parser.nextToken();
         return true;
+    }
+
+    public static byte[] readBinary(JsonParser parser) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        parser.readBinaryValue(baos);
+        return baos.toByteArray();
     }
 }
