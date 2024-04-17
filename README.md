@@ -9,14 +9,16 @@ It is intended for two contexts:
 Scruse does not include any parsers or formatters and requires external ones.
 Various JSON libraries are supported out-of-the-box, including:
 - Jackson streaming (`JsonParser` and `JsonGenerator`) - note that this gives you support of many additional input and output formats
-  through existing extensions of these classes including YAML, CBOR, and Smile.
+  through existing extensions of these classes like YAML, CBOR, Smile, and more.
 - Jackson objects (`JsonNode`)
 - Gson (`JsonParser` and `JsonWriter`)
+- JSON-P
 - Fastjson2 (`JSONReader` and `JSONWriter`)
+- Nanojson
 
 Note that Scruse is not a beginner-friendly library.
 It optimizes for constraints that are not common in most applications.
-If you _just_ want to serialize and deserialize JSON and don't have any of the constraints above, you are probably better off with Jackson.
+If you _just_ want to serialize and deserialize JSON and do not have any of the constraints above, you are probably better off with Jackson.
 
 
 ## Usage
@@ -67,6 +69,11 @@ The tests are written for the `jackson-core` backend and copied/adapted to the o
 The jar of each test module is shaded with the `minimizeJar` flag for each test module to estimate the overhead of each backend.
 In many cases, this can be optimized further, but we provide this number as a baseline.
 
+If you have trouble picking a backend, here are some ideas:
+- Jackson Core if you do not want to worry about anything.
+- Fastjson2 if you want speed.
+- Nanojson if you want a small footprint.
+
 ### Jackson Core (streaming)
 
 `jackson-core` provides `JsonParser` and `JsonGenerator` for reading and writing JSON.
@@ -81,7 +88,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 850kiB
+Overhead: 740kiB
 
 ### Jackson Databind (objects)
 
@@ -98,7 +105,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 2250kiB
+Overhead: 2100kiB
 
 ### Gson
 
@@ -113,7 +120,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 350kiB
+Overhead: 280kiB
 
 ### fastjson2
 
@@ -130,7 +137,7 @@ The required dependency is:
 </dependency>
 ```
 
-Overhead: 2000kiB
+Overhead: 1920kiB
 
 ### Jakarta JSON-P
 
@@ -159,7 +166,7 @@ In addition to the API, you need to include an implementation. There are several
 </dependency>
 ```
 
-Johnzon and the API have an overhead of 260kiB.
+Johnzon and the API have an overhead of 180kiB.
 
 ```xml
 <dependency>
@@ -169,7 +176,26 @@ Johnzon and the API have an overhead of 260kiB.
 </dependency>
 ```
 
-The Glassfish implementation has an overhead of 210kiB.
+The Glassfish implementation has an overhead of 137kiB.
+
+### Nanojson
+
+`nanojson` is a small JSON parser and writer.
+Its `JsonParser` class just misses what we need, so to read JSON, you need to create a `TokenerWrapper` instance
+from an `InputStream` or `Reader`.
+We use `JsonAppendableWriter` for writing JSON, which can be obtained from the `JsonWriter` factory.
+
+The required dependency is:
+
+```xml
+<dependency>
+  <groupId>com.grack</groupId>
+  <artifactId>nanojson</artifactId>
+  <version>${nanojson.version}</version>
+</dependency>
+```
+
+Overhead: 30kiB
 
 ## Escape hatches (hacking Scruse)
 
