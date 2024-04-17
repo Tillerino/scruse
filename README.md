@@ -18,6 +18,16 @@ Note that Scruse is not a beginner-friendly library.
 It optimizes for constraints that are not common in most applications.
 If you _just_ want to serialize and deserialize JSON and don't have any of the constraints above, you are probably better off with Jackson.
 
+## Performance
+
+Since Scruse is based on code generation, it is expected to be faster than reflection-based libraries.
+There is of course no one-size-fits-all benchmark, but based on what we are seeing, Scruse is slightly faster than Jackson (even with afterburner or blackbird).
+
+(there should be links to benchmarks here)
+
+These benchmarks are based on warmed up JVMs.
+The difference for cold JVMs should be much larger, since there is very little class loading involved in Scruse.
+However, this is hard to measure.
 
 ## Usage
 
