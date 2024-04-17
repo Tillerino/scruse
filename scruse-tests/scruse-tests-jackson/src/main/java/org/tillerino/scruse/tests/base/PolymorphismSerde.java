@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import java.io.IOException;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.api.DeserializationContext;
@@ -11,24 +10,24 @@ import org.tillerino.scruse.api.SerializationContext;
 
 interface PolymorphismSerde {
     @JsonOutput
-    void writePolymorphism(SealedInterface sealedInterface, JsonGenerator generator) throws IOException;
+    void writePolymorphism(SealedInterface sealedInterface, JsonGenerator generator) throws Exception;
 
     @JsonInput
-    SealedInterface readPolymorphism(JsonParser generator) throws IOException;
+    SealedInterface readPolymorphism(JsonParser generator) throws Exception;
 
     interface WithDelegate {
         @JsonOutput
         void writePolymorphism(SealedInterface sealedInterface, JsonGenerator generator, SerializationContext context)
-                throws IOException;
+                throws Exception;
 
         @JsonOutput
-        void writeOne(RecordOne recordOne, JsonGenerator generator, SerializationContext context) throws IOException;
+        void writeOne(RecordOne recordOne, JsonGenerator generator, SerializationContext context) throws Exception;
 
         @JsonInput
-        SealedInterface readPolymorphism(JsonParser parser, DeserializationContext context) throws IOException;
+        SealedInterface readPolymorphism(JsonParser parser, DeserializationContext context) throws Exception;
 
         @JsonInput
-        RecordOne readOne(JsonParser parser, DeserializationContext context) throws IOException;
+        RecordOne readOne(JsonParser parser, DeserializationContext context) throws Exception;
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)

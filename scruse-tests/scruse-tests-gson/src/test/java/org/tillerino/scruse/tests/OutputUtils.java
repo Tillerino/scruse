@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
 import java.io.StringWriter;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
@@ -16,7 +15,7 @@ import org.tillerino.scruse.api.SerializationContext;
 
 public class OutputUtils {
 
-    public static String withGsonJsonWriter(FailableConsumer<JsonWriter, IOException> output) throws IOException {
+    public static String withGsonJsonWriter(FailableConsumer<JsonWriter, Exception> output) throws Exception {
         StringWriter out = new StringWriter();
         JsonWriter generator = new JsonWriter(out);
         output.accept(generator);
@@ -24,8 +23,8 @@ public class OutputUtils {
         return out.toString();
     }
 
-    public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, IOException> output)
-            throws IOException {
+    public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, Exception> output)
+            throws Exception {
         String databind = new ObjectMapper().writeValueAsString(obj);
         String ours = serialize(obj, output);
         assertThatJson(ours).isEqualTo(databind);
@@ -33,22 +32,21 @@ public class OutputUtils {
     }
 
     public static <T, U> String assertIsEqualToDatabind2(
-            T obj, U obj2, FailableTriConsumer<T, JsonWriter, U, IOException> output) throws IOException {
+            T obj, U obj2, FailableTriConsumer<T, JsonWriter, U, Exception> output) throws Exception {
         return assertIsEqualToDatabind(obj, (o, writer) -> output.accept(o, writer, obj2));
     }
 
-    public static <T> String serialize(T obj, FailableBiConsumer<T, JsonWriter, IOException> output)
-            throws IOException {
+    public static <T> String serialize(T obj, FailableBiConsumer<T, JsonWriter, Exception> output) throws Exception {
         return withGsonJsonWriter(generator -> output.accept(obj, generator));
     }
 
-    public static <T, U> String serialize2(T obj, U obj2, FailableTriConsumer<T, JsonWriter, U, IOException> output)
-            throws IOException {
+    public static <T, U> String serialize2(T obj, U obj2, FailableTriConsumer<T, JsonWriter, U, Exception> output)
+            throws Exception {
         return withGsonJsonWriter(generator -> output.accept(obj, generator, obj2));
     }
 
     public static <T> String assertIsEqualToDatabind(
-            T obj, FailableTriConsumer<T, JsonWriter, SerializationContext, IOException> output) throws IOException {
+            T obj, FailableTriConsumer<T, JsonWriter, SerializationContext, Exception> output) throws Exception {
         String databind = new ObjectMapper().writeValueAsString(obj);
         String ours = withGsonJsonWriter(generator -> output.accept(obj, generator, new SerializationContext()));
         assertThatJson(ours).isEqualTo(databind);
@@ -57,10 +55,10 @@ public class OutputUtils {
 
     public static <T> T roundTrip(
             T obj,
-            FailableBiConsumer<T, JsonWriter, IOException> output,
-            FailableFunction<JsonReader, T, IOException> input,
+            FailableBiConsumer<T, JsonWriter, Exception> output,
+            FailableFunction<JsonReader, T, Exception> input,
             TypeReference<T> typeRef)
-            throws IOException {
+            throws Exception {
         String json = assertIsEqualToDatabind(obj, output);
         return InputUtils.assertIsEqualToDatabind(json, input, typeRef);
     }
@@ -68,20 +66,20 @@ public class OutputUtils {
     public static <T, U> T roundTrip2(
             T obj,
             U obj2,
-            FailableTriConsumer<T, JsonWriter, U, IOException> output,
-            FailableBiFunction<JsonReader, U, T, IOException> input,
+            FailableTriConsumer<T, JsonWriter, U, Exception> output,
+            FailableBiFunction<JsonReader, U, T, Exception> input,
             TypeReference<T> typeRef)
-            throws IOException {
+            throws Exception {
         String json = assertIsEqualToDatabind2(obj, obj2, output);
         return InputUtils.assertIsEqualToDatabind2(json, obj2, input, typeRef);
     }
 
     public static <T> T roundTripRecursive(
             T obj,
-            FailableBiConsumer<T, JsonWriter, IOException> output,
-            FailableFunction<JsonReader, T, IOException> input,
+            FailableBiConsumer<T, JsonWriter, Exception> output,
+            FailableFunction<JsonReader, T, Exception> input,
             TypeReference<T> typeRef)
-            throws IOException {
+            throws Exception {
         String json = assertIsEqualToDatabind(obj, output);
         return InputUtils.assertIsEqualToDatabindComparingRecursively(json, input, typeRef);
     }

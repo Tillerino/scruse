@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class JakartaJsonParserHelper {
-    public static String readDiscriminator(String descriminatorName, JsonParserWrapper parser) throws IOException {
+    public static String readDiscriminator(String discriminatorName, JsonParserWrapper parser) throws IOException {
         if (parser.currentEvent() != Event.KEY_NAME) {
             throw new IOException("Expected field name, got " + parser.currentEvent() + " at " + parser.getLocation());
-        } else if (!parser.getString().equals(descriminatorName)) {
-            throw new IOException("Expected field name " + descriminatorName + ", got " + parser.getString() + " at "
+        } else if (!parser.getString().equals(discriminatorName)) {
+            throw new IOException("Expected field name " + discriminatorName + ", got " + parser.getString() + " at "
                     + parser.getLocation());
         } else if (parser.next() != Event.VALUE_STRING) {
             throw new IOException("Expected string, got " + parser.currentEvent() + " at " + parser.getLocation());

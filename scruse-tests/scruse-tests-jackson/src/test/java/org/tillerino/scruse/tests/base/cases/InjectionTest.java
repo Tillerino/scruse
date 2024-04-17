@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests.base.cases;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.InputUtils;
@@ -27,7 +26,7 @@ class InjectionTest {
 
     /** FEATURE-JSON */
     @Test
-    void testInjectionOutput() throws IOException {
+    void testInjectionOutput() throws Exception {
         assertThatJson(OutputUtils.serialize2(list, new InjectionSerializationContext(), serde::writeList))
                 .isEqualTo(json);
     }
@@ -37,7 +36,7 @@ class InjectionTest {
      * is just a demo.
      */
     @Test
-    void testInjectionInput() throws IOException {
+    void testInjectionInput() throws Exception {
         List<SelfReferencingRecord> records = InputUtils.withJsonParser(
                 json, parser -> serde.readList(parser, new InjectionSerde.InjectionDeserializationContext()));
         assertThat(records).isEqualTo(list);

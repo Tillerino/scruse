@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +20,7 @@ class ReflectionBridgeTest {
     Type type = JaxRsInterfaceOrSomething.class.getMethods()[0].getGenericReturnType();
 
     @Test
-    void testFindDeserializer() throws IOException {
+    void testFindDeserializer() throws Exception {
         ReflectionBridge reflectionBridge = new ReflectionBridge(List.of(new ScalarFieldsRecord$SerdeImpl()));
 
         Optional<DeserializerDescription<JsonParser>> deserializerMaybe =
@@ -35,7 +34,7 @@ class ReflectionBridgeTest {
     }
 
     @Test
-    void testFindSerializer() throws IOException {
+    void testFindSerializer() throws Exception {
         ReflectionBridge reflectionBridge = new ReflectionBridge(List.of(new ScalarFieldsRecord$SerdeImpl()));
 
         Optional<SerializerDescription<JsonGenerator>> serializerMaybe =

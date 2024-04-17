@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonReader;
-import java.io.IOException;
 import java.io.StringReader;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -14,15 +13,15 @@ import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
 
-    public static <T> T withGsonJsonReader(String json, FailableFunction<JsonReader, T, IOException> consumer)
-            throws IOException {
+    public static <T> T withGsonJsonReader(String json, FailableFunction<JsonReader, T, Exception> consumer)
+            throws Exception {
         JsonReader parser = new JsonReader(new StringReader(json));
         return consumer.apply(parser);
     }
 
     public static <T> T assertIsEqualToDatabind(
-            String json, FailableFunction<JsonReader, T, IOException> consumer, TypeReference<T> typeRef)
-            throws IOException {
+            String json, FailableFunction<JsonReader, T, Exception> consumer, TypeReference<T> typeRef)
+            throws Exception {
         T ours = deserialize(json, consumer);
         T databind = new ObjectMapper().readValue(json, typeRef);
         assertThat(ours).isEqualTo(databind);
@@ -30,29 +29,28 @@ public class InputUtils {
     }
 
     public static <T, U> T assertIsEqualToDatabind2(
-            String json, U arg2, FailableBiFunction<JsonReader, U, T, IOException> consumer, TypeReference<T> typeRef)
-            throws IOException {
+            String json, U arg2, FailableBiFunction<JsonReader, U, T, Exception> consumer, TypeReference<T> typeRef)
+            throws Exception {
         T ours = deserialize2(json, arg2, consumer);
         T databind = new ObjectMapper().readValue(json, typeRef);
         assertThat(ours).isEqualTo(databind);
         return ours;
     }
 
-    public static <T> T deserialize(String json, FailableFunction<JsonReader, T, IOException> consumer)
-            throws IOException {
+    public static <T> T deserialize(String json, FailableFunction<JsonReader, T, Exception> consumer) throws Exception {
         return withGsonJsonReader(json, consumer);
     }
 
-    public static <T, U> T deserialize2(String json, U obj2, FailableBiFunction<JsonReader, U, T, IOException> consumer)
-            throws IOException {
+    public static <T, U> T deserialize2(String json, U obj2, FailableBiFunction<JsonReader, U, T, Exception> consumer)
+            throws Exception {
         return withGsonJsonReader(json, parser -> consumer.apply(parser, obj2));
     }
 
     public static <T> T assertIsEqualToDatabind(
             String json,
-            FailableBiFunction<JsonReader, DeserializationContext, T, IOException> consumer,
+            FailableBiFunction<JsonReader, DeserializationContext, T, Exception> consumer,
             TypeReference<T> typeRef)
-            throws IOException {
+            throws Exception {
         return withGsonJsonReader(json, parser -> {
             T ours = consumer.apply(parser, new DeserializationContext());
             T databind = new ObjectMapper().readValue(json, typeRef);
@@ -62,8 +60,8 @@ public class InputUtils {
     }
 
     public static <T> T assertIsEqualToDatabindComparingRecursively(
-            String json, FailableFunction<JsonReader, T, IOException> consumer, TypeReference<T> typeRef)
-            throws IOException {
+            String json, FailableFunction<JsonReader, T, Exception> consumer, TypeReference<T> typeRef)
+            throws Exception {
         return withGsonJsonReader(json, parser -> {
             T ours = consumer.apply(parser);
             T databind = new ObjectMapper().readValue(json, typeRef);

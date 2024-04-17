@@ -1,7 +1,6 @@
 package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.OutputUtils;
@@ -12,19 +11,19 @@ class PolymorphismTest {
     PolymorphismSerde.WithDelegate withDelegate = new PolymorphismSerde$WithDelegateImpl();
 
     @Test
-    void sealedInterfaceDefaultsOutput() throws IOException {
+    void sealedInterfaceDefaultsOutput() throws Exception {
         OutputUtils.assertIsEqualToDatabind(new PolymorphismSerde.RecordOne("abc"), serde::writePolymorphism);
         OutputUtils.assertIsEqualToDatabind(new PolymorphismSerde.RecordTwo(123), serde::writePolymorphism);
     }
 
     @Test
-    void sealedInterfaceWithDelegatorDefaultsOutput() throws IOException {
+    void sealedInterfaceWithDelegatorDefaultsOutput() throws Exception {
         OutputUtils.assertIsEqualToDatabind(new PolymorphismSerde.RecordOne("abc"), withDelegate::writePolymorphism);
         OutputUtils.assertIsEqualToDatabind(new PolymorphismSerde.RecordTwo(123), withDelegate::writePolymorphism);
     }
 
     @Test
-    void sealedInterfaceDefaultsInput() throws IOException {
+    void sealedInterfaceDefaultsInput() throws Exception {
         InputUtils.assertIsEqualToDatabind(
                 "{\"@c\": \".PolymorphismSerde$RecordOne\", \"s\":\"abc\"}",
                 serde::readPolymorphism,
@@ -36,7 +35,7 @@ class PolymorphismTest {
     }
 
     @Test
-    void sealedInterfaceWithDelefatorDefaultsInput() throws IOException {
+    void sealedInterfaceWithDelefatorDefaultsInput() throws Exception {
         InputUtils.assertIsEqualToDatabind(
                 "{\"@c\": \".PolymorphismSerde$RecordOne\", \"s\":\"abc\"}",
                 withDelegate::readPolymorphism,

@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests.base;
 import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,7 @@ import org.tillerino.scruse.tests.model.NestingModel;
  */
 class NestingTest {
     @Test
-    void testOuterObject() throws IOException {
+    void testOuterObject() throws Exception {
         NestingSerde.OuterRecordSerde recordImpl = new NestingSerde$OuterRecordSerdeImpl();
         NestingSerde.OuterFieldsSerde fieldsImpl = new NestingSerde$OuterFieldsSerdeImpl();
         NestingSerde.OuterAccessorsSerde accessorsImpl = new NestingSerde$OuterAccessorsSerdeImpl();
@@ -73,7 +72,7 @@ class NestingTest {
     }
 
     @Test
-    void testDoubleArrayArray() throws IOException {
+    void testDoubleArrayArray() throws Exception {
         NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
         NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
 
@@ -111,7 +110,7 @@ class NestingTest {
     }
 
     @Test
-    void testStringDoubleMapArray() throws IOException {
+    void testStringDoubleMapArray() throws Exception {
         NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
         NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
 
@@ -141,7 +140,7 @@ class NestingTest {
     }
 
     @Test
-    void testStringInnerObjectMap() throws IOException {
+    void testStringInnerObjectMap() throws Exception {
         NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
 
         String[] jsons = {
@@ -179,7 +178,7 @@ class NestingTest {
     }
 
     @Test
-    void testInnerObjectArray() throws IOException {
+    void testInnerObjectArray() throws Exception {
         NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
         NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
 
@@ -228,7 +227,7 @@ class NestingTest {
     }
 
     @Test
-    void testStringStringDoubleMapMap() throws IOException {
+    void testStringStringDoubleMapMap() throws Exception {
         NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
 
         String[] jsons = {
@@ -254,7 +253,7 @@ class NestingTest {
     }
 
     @Test
-    void testStringDoubleArrayMap() throws IOException {
+    void testStringDoubleArrayMap() throws Exception {
         NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
 
         String[] jsons = {

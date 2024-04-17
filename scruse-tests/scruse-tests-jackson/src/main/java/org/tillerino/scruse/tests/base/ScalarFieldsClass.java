@@ -2,7 +2,6 @@ package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import java.io.IOException;
 import lombok.EqualsAndHashCode;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
@@ -72,9 +71,9 @@ class ScalarFieldsClass {
 
     interface Serde {
         @JsonOutput
-        void write(ScalarFieldsClass record, JsonGenerator generator) throws IOException;
+        void write(ScalarFieldsClass record, JsonGenerator generator) throws Exception;
 
         @JsonInput
-        ScalarFieldsClass read(JsonParser parser) throws IOException;
+        ScalarFieldsClass read(JsonParser parser) throws Exception;
     }
 }

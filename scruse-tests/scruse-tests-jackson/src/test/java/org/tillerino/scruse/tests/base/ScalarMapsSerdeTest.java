@@ -5,7 +5,6 @@ import static org.tillerino.scruse.tests.OutputUtils.roundTrip;
 import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ class ScalarMapsSerdeTest {
     ScalarMapsSerde impl = new ScalarMapsSerdeImpl();
 
     @Test
-    void testStringBooleanMap() throws IOException {
+    void testStringBooleanMap() throws Exception {
         for (Map<String, Boolean> object : SETTINGS.javaData().STRING_BOOLEAN_MAPS) {
             Map<String, Boolean> map = roundTrip(
                     object, impl::writeStringBooleanMap, impl::readStringBooleanMap, new TypeReference<>() {});
@@ -26,7 +25,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringByteMap() throws IOException {
+    void testStringByteMap() throws Exception {
         for (Map<String, Byte> object : SETTINGS.javaData().STRING_BYTE_MAPS) {
             Map<String, Byte> map =
                     roundTrip(object, impl::writeStringByteMap, impl::readStringByteMap, new TypeReference<>() {});
@@ -37,7 +36,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringShortMap() throws IOException {
+    void testStringShortMap() throws Exception {
         for (Map<String, Short> object : SETTINGS.javaData().STRING_SHORT_MAPS) {
             Map<String, Short> map =
                     roundTrip(object, impl::writeStringShortMap, impl::readStringShortMap, new TypeReference<>() {});
@@ -48,7 +47,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringIntMap() throws IOException {
+    void testStringIntMap() throws Exception {
         for (Map<String, Integer> object : SETTINGS.javaData().STRING_INT_MAPS) {
             Map<String, Integer> map =
                     roundTrip(object, impl::writeStringIntMap, impl::readStringIntMap, new TypeReference<>() {});
@@ -59,7 +58,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringLongMap() throws IOException {
+    void testStringLongMap() throws Exception {
         for (Map<String, Long> object : SETTINGS.javaData().STRING_LONG_MAPS) {
             Map<String, Long> map =
                     roundTrip(object, impl::writeStringLongMap, impl::readStringLongMap, new TypeReference<>() {});
@@ -70,7 +69,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringCharMap() throws IOException {
+    void testStringCharMap() throws Exception {
         for (Map<String, Character> object : SETTINGS.javaData().STRING_CHAR_MAPS) {
             Map<String, Character> map =
                     roundTrip(object, impl::writeStringCharMap, impl::readStringCharMap, new TypeReference<>() {});
@@ -81,7 +80,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringFloatMap() throws IOException {
+    void testStringFloatMap() throws Exception {
         for (Map<String, Float> object : SETTINGS.javaData().STRING_FLOAT_MAPS) {
             Map<String, Float> map =
                     roundTrip(object, impl::writeStringFloatMap, impl::readStringFloatMap, new TypeReference<>() {});
@@ -92,7 +91,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringDoubleMap() throws IOException {
+    void testStringDoubleMap() throws Exception {
         for (Map<String, Double> object : SETTINGS.javaData().STRING_DOUBLE_MAPS) {
             Map<String, Double> map =
                     roundTrip(object, impl::writeStringDoubleMap, impl::readStringDoubleMap, new TypeReference<>() {});
@@ -103,7 +102,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringStringMap() throws IOException {
+    void testStringStringMap() throws Exception {
         for (Map<String, String> object : SETTINGS.javaData().STRING_STRING_MAPS) {
             Map<String, String> map =
                     roundTrip(object, impl::writeStringStringMap, impl::readStringStringMap, new TypeReference<>() {});
@@ -114,7 +113,7 @@ class ScalarMapsSerdeTest {
     }
 
     @Test
-    void testStringEnumMap() throws IOException {
+    void testStringEnumMap() throws Exception {
         for (Map<String, AnEnum> object : SETTINGS.javaData().STRING_ENUM_MAPS) {
             Map<String, AnEnum> map =
                     roundTrip(object, impl::writeStringEnumMap, impl::readStringEnumMap, new TypeReference<>() {});

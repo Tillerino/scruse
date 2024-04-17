@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests.base;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,7 +13,7 @@ class ScalarCollectionsReaderTest {
     ScalarCollectionsReader impl = new ScalarCollectionsReaderImpl();
 
     @Test
-    void testBooleanSet() throws IOException {
+    void testBooleanSet() throws Exception {
         TypeReference<Set<Boolean>> typeRef = new TypeReference<>() {};
         String[] jsons = {
             "null", "[]", "[null]", "[true]", "[false]", "[true,false,null]",
@@ -28,7 +27,7 @@ class ScalarCollectionsReaderTest {
     }
 
     @Test
-    void testBooleanTreeSet() throws IOException {
+    void testBooleanTreeSet() throws Exception {
         TypeReference<TreeSet<Boolean>> typeRef = new TypeReference<>() {};
         // cannot contain null
         String[] jsons = {

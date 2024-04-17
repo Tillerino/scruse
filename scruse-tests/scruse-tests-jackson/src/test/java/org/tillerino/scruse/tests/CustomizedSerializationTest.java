@@ -1,6 +1,5 @@
 package org.tillerino.scruse.tests;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.assertj.core.api.Assertions;
@@ -11,14 +10,14 @@ class CustomizedSerializationTest {
     CustomizedSerialization serde = new CustomizedSerializationImpl();
 
     @Test
-    void offsetDateTimeSerializationExample() throws IOException {
+    void offsetDateTimeSerializationExample() throws Exception {
         String json = OutputUtils.withJsonGenerator(generator ->
                 serde.writeMyObj(new MyObj(OffsetDateTime.of(2021, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)), generator));
         Assertions.assertThat(json).isEqualTo("{\"t\":\"2021-01-01T00:00Z\"}");
     }
 
     @Test
-    void offsetDateTimeDeserializationExample() throws IOException {
+    void offsetDateTimeDeserializationExample() throws Exception {
         MyObj myObj = InputUtils.withJsonParser("{\"t\":\"2021-01-01T00:00Z\"}", parser -> serde.readMyObj(parser));
         Assertions.assertThat(myObj).isEqualTo(new MyObj(OffsetDateTime.of(2021, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)));
     }

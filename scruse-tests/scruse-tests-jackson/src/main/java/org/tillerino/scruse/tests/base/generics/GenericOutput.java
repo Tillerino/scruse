@@ -1,7 +1,6 @@
 package org.tillerino.scruse.tests.base.generics;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import java.io.IOException;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonOutput;
 
@@ -9,5 +8,5 @@ import org.tillerino.scruse.annotations.JsonOutput;
 @JsonConfig(implement = JsonConfig.ImplementationMode.DO_NOT_IMPLEMENT)
 public interface GenericOutput<U> {
     @JsonOutput
-    void writeOnGenericInterface(U obj, JsonGenerator gen) throws IOException;
+    void writeOnGenericInterface(U obj, JsonGenerator gen) throws Exception;
 }

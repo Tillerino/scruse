@@ -1,7 +1,6 @@
 package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.JsonParser;
-import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import org.tillerino.scruse.annotations.JsonInput;
@@ -12,8 +11,8 @@ import org.tillerino.scruse.annotations.JsonInput;
  */
 interface ScalarCollectionsReader {
     @JsonInput
-    Set<Boolean> readBooleanSet(JsonParser parser) throws IOException;
+    Set<Boolean> readBooleanSet(JsonParser parser) throws Exception;
 
     @JsonInput
-    TreeSet<Boolean> readBooleanTreeSet(JsonParser parser) throws IOException;
+    TreeSet<Boolean> readBooleanTreeSet(JsonParser parser) throws Exception;
 }

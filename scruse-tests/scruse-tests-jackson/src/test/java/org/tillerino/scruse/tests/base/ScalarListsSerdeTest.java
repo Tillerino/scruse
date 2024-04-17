@@ -5,7 +5,6 @@ import static org.tillerino.scruse.tests.OutputUtils.roundTrip;
 import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ class ScalarListsSerdeTest {
     ScalarListsSerde impl = new ScalarListsSerdeImpl();
 
     @Test
-    void testBooleanList() throws IOException {
+    void testBooleanList() throws Exception {
         for (List<Boolean> object : SETTINGS.javaData().BOOLEAN_LISTS) {
             List<Boolean> list =
                     roundTrip(object, impl::writeBooleanList, impl::readBooleanList, new TypeReference<>() {});
@@ -26,7 +25,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testByteList() throws IOException {
+    void testByteList() throws Exception {
         for (List<Byte> object : SETTINGS.javaData().BYTE_LISTS) {
             List<Byte> list = roundTrip(object, impl::writeByteList, impl::readByteList, new TypeReference<>() {});
             if (list != null) {
@@ -36,7 +35,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testShortList() throws IOException {
+    void testShortList() throws Exception {
         for (List<Short> object : SETTINGS.javaData().SHORT_LISTS) {
             List<Short> list = roundTrip(object, impl::writeShortList, impl::readShortList, new TypeReference<>() {});
             if (list != null) {
@@ -46,7 +45,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testIntList() throws IOException {
+    void testIntList() throws Exception {
         for (List<Integer> object : SETTINGS.javaData().INT_LISTS) {
             List<Integer> list = roundTrip(object, impl::writeIntList, impl::readIntegerList, new TypeReference<>() {});
             if (list != null) {
@@ -56,7 +55,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testLongList() throws IOException {
+    void testLongList() throws Exception {
         for (List<Long> object : SETTINGS.javaData().LONG_LISTS) {
             List<Long> list = roundTrip(object, impl::writeLongList, impl::readLongList, new TypeReference<>() {});
             if (list != null) {
@@ -66,7 +65,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testCharList() throws IOException {
+    void testCharList() throws Exception {
         for (List<Character> object : SETTINGS.javaData().CHAR_LISTS) {
             List<Character> list =
                     roundTrip(object, impl::writeCharList, impl::readCharacterList, new TypeReference<>() {});
@@ -77,7 +76,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testFloatList() throws IOException {
+    void testFloatList() throws Exception {
         for (List<Float> object : SETTINGS.javaData().floatLists) {
             List<Float> list = roundTrip(object, impl::writeFloatList, impl::readFloatList, new TypeReference<>() {});
             if (list != null) {
@@ -87,7 +86,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testDoubleList() throws IOException {
+    void testDoubleList() throws Exception {
         for (List<Double> object : SETTINGS.javaData().DOUBLE_LISTS) {
             List<Double> list =
                     roundTrip(object, impl::writeDoubleList, impl::readDoubleList, new TypeReference<>() {});
@@ -98,7 +97,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testStringList() throws IOException {
+    void testStringList() throws Exception {
         for (List<String> object : SETTINGS.javaData().STRING_LISTS) {
             List<String> list =
                     roundTrip(object, impl::writeStringList, impl::readStringList, new TypeReference<>() {});
@@ -109,7 +108,7 @@ class ScalarListsSerdeTest {
     }
 
     @Test
-    void testEnumList() throws IOException {
+    void testEnumList() throws Exception {
         for (List<AnEnum> object : SETTINGS.javaData().ENUM_LISTS) {
             List<AnEnum> list = roundTrip(object, impl::writeEnumList, impl::readEnumList, new TypeReference<>() {});
             if (list != null) {

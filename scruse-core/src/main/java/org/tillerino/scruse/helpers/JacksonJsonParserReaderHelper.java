@@ -5,12 +5,12 @@ import com.fasterxml.jackson.core.JsonToken;
 import java.io.IOException;
 
 public class JacksonJsonParserReaderHelper {
-    public static String readDiscriminator(String descriminatorName, JsonParser parser) throws IOException {
+    public static String readDiscriminator(String discriminatorName, JsonParser parser) throws IOException {
         if (parser.currentToken() != JsonToken.FIELD_NAME) {
             throw new IOException(
                     "Expected field name, got " + parser.currentToken() + " at " + parser.getCurrentLocation());
-        } else if (!parser.currentName().equals(descriminatorName)) {
-            throw new IOException("Expected field name " + descriminatorName + ", got " + parser.currentName() + " at "
+        } else if (!parser.currentName().equals(discriminatorName)) {
+            throw new IOException("Expected field name " + discriminatorName + ", got " + parser.currentName() + " at "
                     + parser.getCurrentLocation());
         } else if (parser.nextToken() != JsonToken.VALUE_STRING) {
             throw new IOException(

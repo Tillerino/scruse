@@ -1,7 +1,6 @@
 package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.OutputUtils;
 import org.tillerino.scruse.tests.TestSettings;
@@ -12,7 +11,7 @@ class ArrayFieldsRecordTest {
     ArrayFieldsRecordSerde serde = new ArrayFieldsRecordSerdeImpl();
 
     @Test
-    void roundtripPrimitive() throws IOException {
+    void roundtripPrimitive() throws Exception {
         for (PrimitiveArrayFieldsRecord record : PrimitiveArrayFieldsRecord.instances(TestSettings.SETTINGS)) {
             OutputUtils.roundTripRecursive(
                     record,
@@ -23,7 +22,7 @@ class ArrayFieldsRecordTest {
     }
 
     @Test
-    void roundtripReference() throws IOException {
+    void roundtripReference() throws Exception {
         for (ReferenceArrayFieldsRecord record : ReferenceArrayFieldsRecord.instances(TestSettings.SETTINGS)) {
             OutputUtils.roundTripRecursive(
                     record,

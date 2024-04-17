@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests.base.cases;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,11 +15,11 @@ import org.tillerino.scruse.tests.model.SelfReferencingRecord;
 public interface InjectionSerde {
     @JsonOutput
     void writeList(List<SelfReferencingRecord> list, JsonGenerator gen, InjectionSerializationContext ctx)
-            throws IOException;
+            throws Exception;
 
     @JsonOutput
     default void writeWithInjection(SelfReferencingRecord rec, JsonGenerator gen, InjectionSerializationContext ctx)
-            throws IOException {
+            throws Exception {
         String existingName = ctx.names.get(new InjectionSerializationContext.Reference(rec));
         if (existingName != null) {
             // WriterMode.RETURN: return writeString(existingName);
@@ -38,10 +37,10 @@ public interface InjectionSerde {
     @JsonOutput
     @JsonConfig(delegateTo = JsonConfig.DelegateeMode.DO_NOT_DELEGATE_TO)
     void writeInjectionRecord(SelfReferencingRecord rec, JsonGenerator gen, InjectionSerializationContext ctx)
-            throws IOException;
+            throws Exception;
 
     @JsonOutput
-    void writeString(String str, JsonGenerator gen) throws IOException;
+    void writeString(String str, JsonGenerator gen) throws Exception;
 
     class InjectionSerializationContext extends SerializationContext {
         Map<Reference, String> names = new LinkedHashMap<>();
@@ -71,12 +70,12 @@ public interface InjectionSerde {
 
     /** NOCOPY */
     @JsonInput
-    List<SelfReferencingRecord> readList(JsonParser parser, InjectionDeserializationContext ctx) throws IOException;
+    List<SelfReferencingRecord> readList(JsonParser parser, InjectionDeserializationContext ctx) throws Exception;
 
     /** NOCOPY This cannot be copied for the other backends because we need to access the generator directly. */
     @JsonInput
     default SelfReferencingRecord readWithInjection(JsonParser parser, InjectionDeserializationContext ctx)
-            throws IOException {
+            throws Exception {
         if (!parser.hasCurrentToken()) {
             parser.nextToken();
         }
@@ -95,6 +94,5 @@ public interface InjectionSerde {
     /** NOCOPY */
     @JsonInput
     @JsonConfig(delegateTo = JsonConfig.DelegateeMode.DO_NOT_DELEGATE_TO)
-    SelfReferencingRecord readInjectionRecord(JsonParser parser, InjectionDeserializationContext ctx)
-            throws IOException;
+    SelfReferencingRecord readInjectionRecord(JsonParser parser, InjectionDeserializationContext ctx) throws Exception;
 }

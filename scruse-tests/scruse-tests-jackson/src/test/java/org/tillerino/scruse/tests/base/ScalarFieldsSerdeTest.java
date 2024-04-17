@@ -1,7 +1,6 @@
 package org.tillerino.scruse.tests.base;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.OutputUtils;
@@ -10,7 +9,7 @@ import org.tillerino.scruse.tests.model.AnEnum;
 class ScalarFieldsSerdeTest {
 
     @Test
-    void scalarFieldsRecordOutput() throws IOException {
+    void scalarFieldsRecordOutput() throws Exception {
         List<ScalarFieldsRecord> values = List.of(
                 new ScalarFieldsRecord(
                         false,
@@ -43,7 +42,7 @@ class ScalarFieldsSerdeTest {
     }
 
     @Test
-    void scalarFieldsClassOutput() throws IOException {
+    void scalarFieldsClassOutput() throws Exception {
         List<ScalarFieldsClass> values = List.of(
                 new ScalarFieldsClass(
                         false,
@@ -76,7 +75,7 @@ class ScalarFieldsSerdeTest {
     }
 
     @Test
-    void scalarAccessorsClassOutput() throws IOException {
+    void scalarAccessorsClassOutput() throws Exception {
         List<ScalarAccessorsClass> values = List.of(
                 new ScalarAccessorsClass(
                         false,
