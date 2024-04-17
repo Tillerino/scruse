@@ -23,6 +23,9 @@ public sealed interface PrototypeKind {
     String JAKARTA_JSON_PARSER = "org.tillerino.scruse.helpers.JakartaJsonParserHelper.JsonParserWrapper";
     String JAKARTA_JSON_GENERATOR = "jakarta.json.stream.JsonGenerator";
 
+    String NANOJSON_JSON_READER = "com.grack.nanojson.TokenerWrapper";
+    String NANOJSON_JSON_WRITER = "com.grack.nanojson.JsonAppendableWriter";
+
     record Input(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
             implements PrototypeKind {}
 
@@ -41,7 +44,8 @@ public sealed interface PrototypeKind {
                                 JACKSON_JSON_NODE,
                                 GSON_JSON_READER,
                                 FASTJSON_2_JSONREADER,
-                                JAKARTA_JSON_PARSER)
+                                JAKARTA_JSON_PARSER,
+                                NANOJSON_JSON_READER)
                         .contains(m.parameters().get(0).type().toString())) {
             return Optional.of(new Input(
                     m.parameters().get(0).type(),
@@ -51,7 +55,12 @@ public sealed interface PrototypeKind {
         if (m.element().getAnnotation(JsonOutput.class) != null
                 && m.returnType().getKind() == TypeKind.VOID
                 && m.parameters().size() >= 2
-                && List.of(JACKSON_JSON_GENERATOR, GSON_JSON_WRITER, FASTJSON_2_JSONWRITER, JAKARTA_JSON_GENERATOR)
+                && List.of(
+                                JACKSON_JSON_GENERATOR,
+                                GSON_JSON_WRITER,
+                                FASTJSON_2_JSONWRITER,
+                                JAKARTA_JSON_GENERATOR,
+                                NANOJSON_JSON_WRITER)
                         .contains(m.parameters().get(1).type().toString())) {
             return Optional.of(new Output(
                     m.parameters().get(1).type(),

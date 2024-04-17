@@ -17,6 +17,7 @@
         <module>scruse-tests-fastjson2</module>
         <module>scruse-tests-jakarta-glassfish</module>
         <module>scruse-tests-jakarta-johnzon</module>
+        <module>scruse-tests-nanojson</module>
     </modules>
 
     <properties>
