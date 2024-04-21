@@ -123,7 +123,15 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
      * specializations for some types that require a dedicated null check.
      */
     protected void writeNullCheckedObject() {
-        if (utils.isBoxed(type.getTypeMirror())) {
+        Optional<InstantiatedMethod> jsonValueMethod = utils.annotations.findJsonValueMethod(type.getTypeMirror());
+        if (jsonValueMethod.isPresent()) {
+            InstantiatedMethod method = jsonValueMethod.get();
+            RHS.Variable newValue = new RHS.Variable("$" + stackDepth() + "$value", true);
+            RHS.Accessor valueMethodInvocation = new RHS.Accessor(rhs, method.name() + "()", true);
+            Snippet.of("$T $L = $C", method.returnType(), newValue.name, valueMethodInvocation)
+                    .addStatementTo(code);
+            nest(method.returnType(), lhs, null, newValue, true).build();
+        } else if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs, false)
                     .build();
         } else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
@@ -179,7 +187,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         Type keyType = type.determineTypeArguments(Map.class).get(0);
         Type valueType = type.determineTypeArguments(Map.class).get(1);
 
-        RHS.Variable entry = new RHS.Variable("entry$" + (stackDepth() + 1), false);
+        RHS.Variable entry = new RHS.Variable("$" + (stackDepth() + 1) + "$entry", false);
 
         RHS.Accessor value = new RHS.Accessor(entry, "getValue()", true);
         LHS.Field key = new LHS.Field("$L.getKey()", new Object[] {entry.name()});
@@ -377,6 +385,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
 
         record Variable(String name, boolean nullable) implements RHS {}
 
+        /** @param accessorLiteral can be field or method - append () for method */
         record Accessor(RHS object, String accessorLiteral, boolean nullable) implements RHS {}
 
         record StringLiteral(String value) implements RHS {

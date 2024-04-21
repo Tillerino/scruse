@@ -1,12 +1,10 @@
 package org.tillerino.scruse.processor.util;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -48,7 +46,7 @@ public record Generics(AnnotationProcessorUtils utils) {
     }
 
     public InstantiatedMethod applyTypeBindings(
-            Map<Generics.TypeVar, TypeMirror> typeBindings, InstantiatedMethod instantiatedMethod) {
+            InstantiatedMethod instantiatedMethod, Map<TypeVar, TypeMirror> typeBindings) {
         List<InstantiatedVariable> newParameters =
                 applyTypeBindingsToAll(instantiatedMethod.parameters(), typeBindings);
         TypeMirror newReturnType = applyTypeBindings(instantiatedMethod.returnType(), typeBindings);
@@ -81,6 +79,49 @@ public record Generics(AnnotationProcessorUtils utils) {
                 applyTypeBindings(methodElement.getReturnType(), typeBindings),
                 parameters,
                 methodElement);
+    }
+
+    /**
+     * Records type variables such that the candidate type is equal to the actual type.
+     *
+     * @param typeBindings is modified by the (recursive) call
+     */
+    public boolean tybeBindingsSatisfyingEquality(
+            TypeMirror actualType, TypeMirror candidateType, Map<TypeVar, TypeMirror> typeBindings) {
+        if (utils.types.isSameType(actualType, candidateType)) {
+            return true;
+        }
+        if ((actualType instanceof DeclaredType actualDeclared)
+                && (candidateType instanceof DeclaredType candidateDeclared)) {
+            // compare raw type
+            if (!utils.types.isSameType(
+                    actualDeclared.asElement().asType(),
+                    candidateDeclared.asElement().asType())) {
+                return false;
+            }
+            for (int i = 0; i < actualDeclared.getTypeArguments().size(); i++) {
+                if (!tybeBindingsSatisfyingEquality(
+                        actualDeclared.getTypeArguments().get(i),
+                        candidateDeclared.getTypeArguments().get(i),
+                        typeBindings)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if ((actualType instanceof ArrayType actualArray) && (candidateType instanceof ArrayType candidateArray)) {
+            return tybeBindingsSatisfyingEquality(
+                    actualArray.getComponentType(), candidateArray.getComponentType(), typeBindings);
+        }
+        if (candidateType instanceof TypeVariable candidateVar) {
+            TypeVar candidate = TypeVar.of(candidateVar);
+            if (typeBindings.containsKey(candidate)) {
+                return utils.types.isSameType(typeBindings.get(candidate), actualType);
+            }
+            typeBindings.put(candidate, actualType);
+            return true;
+        }
+        return false;
     }
 
     /** Required since {@link TypeVariable} and its corresponding element do not implement hashCode and equals? */

@@ -64,7 +64,7 @@ public record ScruseMethod(
             if (!allowExact && typeBindings.isEmpty()) {
                 return null;
             }
-            return utils.generics.applyTypeBindings(typeBindings, this.asInstantiatedMethod());
+            return utils.generics.applyTypeBindings(this.asInstantiatedMethod(), typeBindings);
         }
         return null;
     }

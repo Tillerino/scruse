@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -37,10 +38,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
     public CodeBlock.Builder build() {
         initializeParser();
-        return build(Branch.IF);
+        return build(Branch.IF, true);
     }
 
-    public CodeBlock.Builder build(Branch branch) {
+    public CodeBlock.Builder build(Branch branch, boolean nullable) {
         Optional<Delegatee> delegate = utils.prototypeFinder
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1)
                 .map(d -> new Delegatee(
@@ -60,7 +61,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         if (type.isPrimitive()) {
             readPrimitive(branch, type.getTypeMirror());
         } else {
-            readNullable(branch);
+            readNullable(branch, nullable);
         }
         return code;
     }
@@ -69,18 +70,22 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
      * Reads non-primitive types. This is a good method to override if you want to add specializations for some types
      * that work with null values.
      */
-    protected void readNullable(Branch branch) {
-        Snippet cond = nullCaseCondition();
-        if (canBePolyChild) {
-            branch.controlFlow(
-                    code,
-                    "!$L.isObjectOpen(false) && " + cond.format(),
-                    flatten(prototype.contextParameter().get(), cond.args()));
+    protected void readNullable(Branch branch, boolean nullable) {
+        if (nullable) {
+            Snippet cond = nullCaseCondition();
+            if (canBePolyChild) {
+                branch.controlFlow(
+                        code,
+                        "!$L.isObjectOpen(false) && " + cond.format(),
+                        flatten(prototype.contextParameter().get(), cond.args()));
+            } else {
+                branch.controlFlow(code, cond.format(), cond.args());
+            }
+            lhs.assign(code, "null");
+            readNullCheckedObject(Branch.ELSE_IF);
         } else {
-            branch.controlFlow(code, cond.format(), cond.args());
+            readNullCheckedObject(branch);
         }
-        lhs.assign(code, "null");
-        readNullCheckedObject();
     }
 
     protected void readPrimitive(Branch branch, TypeMirror type) {
@@ -150,22 +155,46 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         return stringVar;
     }
 
-    private void readNullCheckedObject() {
-        if (utils.isBoxed(type.getTypeMirror())) {
+    private void readNullCheckedObject(Branch branch) {
+        Optional<InstantiatedMethod> jsonCreatorMethod = utils.annotations.findJsonCreatorMethod(type.getTypeMirror());
+        if (jsonCreatorMethod.isPresent()) {
+            InstantiatedMethod method = jsonCreatorMethod.get();
+            if (method.parameters().size() != 1) {
+                throw new UnsupportedOperationException("Only JsonCreator methods with one parameter are supported");
+            }
+            readCreator(branch, method);
+        } else if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false)
-                    .build(Branch.ELSE_IF);
+                    .build(branch, true);
         } else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
-            readString(Branch.ELSE_IF, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
+            readString(branch, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
         } else if (type.isEnumType()) {
-            readEnum(Branch.ELSE_IF);
+            readEnum(branch);
         } else if (type.isArrayType()) {
-            readArray(Branch.ELSE_IF);
+            readArray(branch);
         } else if (type.isIterableType()) {
-            readCollection(Branch.ELSE_IF);
+            readCollection(branch);
         } else if (type.isMapType()) {
-            readMap(Branch.ELSE_IF);
+            readMap(branch);
         } else {
-            readObject(Branch.ELSE_IF);
+            readObject(branch);
+        }
+    }
+
+    private void readCreator(Branch branch, InstantiatedMethod method) {
+        if (branch == Branch.ELSE_IF) {
+            code.nextControlFlow("else");
+        }
+        LHS.Variable creatorArg = new LHS.Variable("$" + stackDepth() + "$creator");
+        Snippet.of("$T $L", method.parameters().get(0).type(), creatorArg.name).addStatementTo(code);
+        nest(method.parameters().get(0).type(), null, creatorArg, true).build(Branch.IF, false);
+        if (method.element().getKind() == ElementKind.CONSTRUCTOR) {
+            lhs.assign(code, Snippet.of("new $T($L)", type.asRawType().getTypeMirror(), creatorArg.name));
+        } else {
+            lhs.assign(code, Snippet.of("$T.$L($L)", type.asRawType().getTypeMirror(), method.name(), creatorArg.name));
+        }
+        if (branch == Branch.ELSE_IF) {
+            code.endControlFlow();
         }
     }
 
@@ -230,7 +259,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 code.endControlFlow();
 
                 SELF nested = nest(componentType.getTypeMirror(), "item", new LHS.Array(varName, len), true);
-                nested.build(Branch.IF);
+                nested.build(Branch.IF, true);
             }
             code.endControlFlow(); // end of loop
             afterArray();
@@ -264,7 +293,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             iterateOverElements();
             {
                 SELF nested = nest(componentType.getTypeMirror(), "item", new LHS.Collection(varName), true);
-                nested.build(Branch.IF);
+                nested.build(Branch.IF, true);
             }
             code.endControlFlow(); // end of loop
             afterArray();
@@ -316,7 +345,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 String keyVar = "key$" + stackDepth();
                 readFieldNameInIteration(keyVar);
                 nest(valueType.getTypeMirror(), "value", new LHS.Map(varName, keyVar), true)
-                        .build(Branch.IF);
+                        .build(Branch.IF, true);
                 code.nextControlFlow("else");
                 throwUnexpected("field name");
                 code.endControlFlow();
@@ -324,7 +353,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             code.endControlFlow(); // end of loop
             afterObject();
 
-            lhs.assign(code, "$L", varName);
+            if (!(lhs instanceof LHS.Variable)) {
+                lhs.assign(code, "$L", varName);
+            }
         }
         code.nextControlFlow("else");
         throwUnexpected("object");
@@ -416,7 +447,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         code.beginControlFlow("switch($L)", fieldVar);
         for (SELF nest : properties) {
             code.beginControlFlow("case $S:", nest.property);
-            nest.build(Branch.IF);
+            nest.build(Branch.IF, true);
             code.addStatement("break");
             code.endControlFlow();
         }

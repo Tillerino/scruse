@@ -20,6 +20,7 @@ import org.mapstruct.ap.internal.util.AnnotationProcessorContext;
 import org.mapstruct.ap.internal.util.RoundContext;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
+import org.tillerino.scruse.processor.util.Annotations;
 import org.tillerino.scruse.processor.util.Generics;
 
 public class AnnotationProcessorUtils {
@@ -30,13 +31,15 @@ public class AnnotationProcessorUtils {
     public final PrototypeFinder prototypeFinder;
     public final Generics generics;
     public final Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
+    public final Annotations annotations;
 
     public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement) {
         elements = processingEnv.getElementUtils();
         types = processingEnv.getTypeUtils();
         commonTypes = new CommonTypes();
-        this.prototypeFinder = new PrototypeFinder(processingEnv.getTypeUtils(), blueprints);
-        this.generics = new Generics(this);
+        prototypeFinder = new PrototypeFinder(processingEnv.getTypeUtils(), blueprints);
+        generics = new Generics(this);
+        annotations = new Annotations(this);
 
         AnnotationProcessorContext apc = new AnnotationProcessorContext(
                 processingEnv.getElementUtils(),

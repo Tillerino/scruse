@@ -41,6 +41,8 @@ Include the following in your POM:
 </dependency>
 ```
 
+(Alternatively, you can use `scruse-processor` as an annotation processor, both work just fine.)
+
 To generate readers and writers, create an interface and annotate a method with `@JsonInput` or `@JsonOutput`:
 
 ```java
@@ -181,7 +183,7 @@ The Glassfish implementation has an overhead of 137kiB.
 ### Nanojson
 
 `nanojson` is a small JSON parser and writer.
-Its `JsonParser` class just misses what we need, so to read JSON, you need to create a `TokenerWrapper` instance
+Its `JsonParser` class just misses what we need. To read JSON, you need to create a `TokenerWrapper` instance
 from an `InputStream` or `Reader`.
 We use `JsonAppendableWriter` for writing JSON, which can be obtained from the `JsonWriter` factory.
 
@@ -241,7 +243,7 @@ This works for output and input.
 
 ## Compatibility
 
-## Features
+### Features
 
 - [x] Polymorphism
 - [x] Reflection bridge
@@ -251,6 +253,11 @@ Escape hatches: fucky mechanisms to work around missing features, e.g. ghetto in
 - [ ] Custom converters per property
 - [ ] Abstract converter classes with constructors.
 
+### Jackson annotations compatibility
+
+The following is a rough indication of compatibility with Jackson's annotations.
+A checkmark indicates _basic_ compatibility, although there can be edge cases where we are not compatible.
+
 - [ ] JacksonInject
 - [ ] JsonAlias
 - [ ] JsonAnyGetter
@@ -258,7 +265,7 @@ Escape hatches: fucky mechanisms to work around missing features, e.g. ghetto in
 - [ ] JsonAutoDetect
 - [ ] JsonBackReference
 - [ ] JsonClassDescription
-- [ ] JsonCreator
+- [X] JsonCreator - with default `mode`
 - [ ] JsonEnumDefaultValue
 - [ ] JsonFilter
 - [ ] JsonFormat
@@ -284,7 +291,7 @@ Escape hatches: fucky mechanisms to work around missing features, e.g. ghetto in
 - [ ] JsonTypeInfo
 - [ ] JsonTypeName
 - [ ] JsonUnwrapped
-- [ ] JsonValue
+- [X] JsonValue
 - [ ] JsonView
 
 ## Checkboxes

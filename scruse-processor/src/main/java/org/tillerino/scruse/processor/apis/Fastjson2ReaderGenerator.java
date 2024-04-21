@@ -48,7 +48,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     @Override
-    protected void readNullable(Branch branch) {
+    protected void readNullable(Branch branch, boolean nullable) {
         if (type.isArrayType()) {
             if (type.getComponentType().isString()) {
                 lhs.assign(code, "$L.readStringArray()", parserVariable.getSimpleName());
@@ -63,7 +63,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
                 return;
             }
         }
-        super.readNullable(branch);
+        super.readNullable(branch, nullable);
     }
 
     @Override
