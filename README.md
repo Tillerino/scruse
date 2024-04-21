@@ -243,6 +243,16 @@ This works for output and input.
 
 ## Compatibility
 
+In general, Scruse tries to be compatible with Jackson's default behaviour.
+Some of Jackson's annotations are supported, but not all and not each supported annotation is supported fully.
+
+### Notable exceptions
+
+- With polymorphism, Jackson will always write and require a discriminator, even when explicitly limiting the type to a concrete subtype.
+  Scruse will not write or require a discriminator when the subtype is known.
+- Jackson requires `ParameterNamesModule` and compilation with the `-parameters` flag to support creator-based deserialization without
+  @JsonProperty annotations. Scruse does not require this since this information is always present during annotation processing.
+
 ### Features
 
 - [x] Polymorphism

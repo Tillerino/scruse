@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.google.gson.stream.JsonReader;
 import java.io.StringReader;
 import org.apache.commons.lang3.function.FailableBiFunction;
@@ -12,6 +13,7 @@ import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguratio
 import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
+    private static ObjectMapper objectMapper = new ObjectMapper().registerModule(new ParameterNamesModule());
 
     public static <T> T withGsonJsonReader(String json, FailableFunction<JsonReader, T, Exception> consumer)
             throws Exception {
@@ -23,7 +25,7 @@ public class InputUtils {
             String json, FailableFunction<JsonReader, T, Exception> consumer, TypeReference<T> typeRef)
             throws Exception {
         T ours = deserialize(json, consumer);
-        T databind = new ObjectMapper().readValue(json, typeRef);
+        T databind = objectMapper.readValue(json, typeRef);
         assertThat(ours).isEqualTo(databind);
         return ours;
     }
@@ -32,7 +34,7 @@ public class InputUtils {
             String json, U arg2, FailableBiFunction<JsonReader, U, T, Exception> consumer, TypeReference<T> typeRef)
             throws Exception {
         T ours = deserialize2(json, arg2, consumer);
-        T databind = new ObjectMapper().readValue(json, typeRef);
+        T databind = objectMapper.readValue(json, typeRef);
         assertThat(ours).isEqualTo(databind);
         return ours;
     }
@@ -53,7 +55,7 @@ public class InputUtils {
             throws Exception {
         return withGsonJsonReader(json, parser -> {
             T ours = consumer.apply(parser, new DeserializationContext());
-            T databind = new ObjectMapper().readValue(json, typeRef);
+            T databind = objectMapper.readValue(json, typeRef);
             assertThat(ours).isEqualTo(databind);
             return ours;
         });
@@ -64,7 +66,7 @@ public class InputUtils {
             throws Exception {
         return withGsonJsonReader(json, parser -> {
             T ours = consumer.apply(parser);
-            T databind = new ObjectMapper().readValue(json, typeRef);
+            T databind = objectMapper.readValue(json, typeRef);
             assertEqualsComparingRecursively(ours, databind);
             return ours;
         });

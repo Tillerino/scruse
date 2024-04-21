@@ -4,17 +4,21 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.model.annotations.JsonCreatorConstructorClass;
-import org.tillerino.scruse.tests.model.annotations.JsonCreatorConstructorRecord;
-import org.tillerino.scruse.tests.model.annotations.JsonValueRecord;
+import org.tillerino.scruse.tests.model.annotations.*;
 
 public interface JsonValueAndJsonCreatorSerde {
     @JsonOutput
     void write(JsonValueRecord<Integer> obj, JsonGenerator generator) throws Exception;
 
     @JsonInput
-    JsonCreatorConstructorClass<Integer> readConstructor(JsonParser parser) throws Exception;
+    JsonCreatorConstructorFactoryClass<Integer> readConstructorFactory(JsonParser parser) throws Exception;
 
     @JsonInput
-    JsonCreatorConstructorRecord<Integer> readRecord(JsonParser parser) throws Exception;
+    JsonCreatorMethodFactoryRecord<Integer> readMethodFactory(JsonParser parser) throws Exception;
+
+    @JsonInput
+    JsonCreatorConstructorCreatorClass<Integer> readConstructorCreator(JsonParser parser) throws Exception;
+
+    @JsonInput
+    JsonCreatorMethodCreatorRecord<Integer> readMethodCreator(JsonParser parser) throws Exception;
 }

@@ -5,18 +5,19 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.mapstruct.ap.internal.util.accessor.Accessor;
 import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
+import org.tillerino.scruse.processor.util.InstantiatedVariable;
 
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>>
         extends AbstractCodeGeneratorStack<SELF> {
@@ -156,13 +157,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readNullCheckedObject(Branch branch) {
-        Optional<InstantiatedMethod> jsonCreatorMethod = utils.annotations.findJsonCreatorMethod(type.getTypeMirror());
+        Optional<InstantiatedMethod> jsonCreatorMethod = utils.annotations
+                .findJsonCreatorMethod(type.getTypeMirror())
+                .filter(m -> m.parameters().size() == 1);
         if (jsonCreatorMethod.isPresent()) {
-            InstantiatedMethod method = jsonCreatorMethod.get();
-            if (method.parameters().size() != 1) {
-                throw new UnsupportedOperationException("Only JsonCreator methods with one parameter are supported");
-            }
-            readCreator(branch, method);
+            readFactory(branch, jsonCreatorMethod.get());
         } else if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false)
                     .build(branch, true);
@@ -181,18 +180,14 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
     }
 
-    private void readCreator(Branch branch, InstantiatedMethod method) {
+    private void readFactory(Branch branch, InstantiatedMethod method) {
         if (branch == Branch.ELSE_IF) {
             code.nextControlFlow("else");
         }
         LHS.Variable creatorArg = new LHS.Variable("$" + stackDepth() + "$creator");
         Snippet.of("$T $L", method.parameters().get(0).type(), creatorArg.name).addStatementTo(code);
         nest(method.parameters().get(0).type(), null, creatorArg, true).build(Branch.IF, false);
-        if (method.element().getKind() == ElementKind.CONSTRUCTOR) {
-            lhs.assign(code, Snippet.of("new $T($L)", type.asRawType().getTypeMirror(), creatorArg.name));
-        } else {
-            lhs.assign(code, Snippet.of("$T.$L($L)", type.asRawType().getTypeMirror(), method.name(), creatorArg.name));
-        }
+        lhs.assign(code, Snippet.of("$C($L)", method.callSymbol(utils), creatorArg.name));
         if (branch == Branch.ELSE_IF) {
             code.endControlFlow();
         }
@@ -381,13 +376,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             branch.controlFlow(code, cond.format(), cond.args());
         }
 
-        Optional<Polymorphism> polymorphismMaybe =
-                Optional.ofNullable(type.getTypeElement()).flatMap(t -> Polymorphism.of(t, utils.elements));
-        if (polymorphismMaybe.isPresent()) {
-            readPolymorphicObject(polymorphismMaybe.get());
-        } else {
-            readObjectFields();
-        }
+        Optional.ofNullable(type.getTypeElement())
+                .flatMap(t -> Polymorphism.of(t, utils.elements))
+                .ifPresentOrElse(this::readPolymorphicObject, this::readObjectFields);
 
         code.nextControlFlow("else");
         throwUnexpected("object");
@@ -434,12 +425,52 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     void readObjectFields() {
-        List<SELF> properties = findProperties();
-        for (SELF nest : properties) {
-            if (nest.lhs instanceof LHS.Variable v) {
-                code.addStatement("$T $L = $L", nest.type.getTypeMirror(), v.name, nest.type.getNull());
-            }
+        Optional<InstantiatedMethod> creatorMethod = utils.annotations
+                .findJsonCreatorMethod(type.getTypeMirror())
+                .filter(m -> m.parameters().size() != 1);
+        if (creatorMethod.isPresent()) {
+            readCreator(creatorMethod.get());
+        } else if (type.isRecord()) {
+            Map<TypeVar, TypeMirror> typeBindings =
+                    utils.generics.recordTypeBindings((DeclaredType) type.getTypeMirror());
+            InstantiatedMethod instantiadedConstructor = utils.generics.instantiateMethod(
+                    ElementFilter.constructorsIn(type.getTypeElement().getEnclosedElements())
+                            .get(0),
+                    typeBindings);
+            readCreator(instantiadedConstructor);
+        } else {
+            readObjectFromAccessors();
         }
+    }
+
+    private void readCreator(InstantiatedMethod method) {
+        List<SELF> nested = new ArrayList<>();
+        for (InstantiatedVariable parameter : method.parameters()) {
+            String varName = parameter.name() + "$" + (stackDepth() + 1);
+            SELF nest = nest(parameter.type(), parameter.name(), new LHS.Variable(varName), true);
+            code.addStatement("$T $L = $L", nest.type.getTypeMirror(), varName, nest.type.getNull());
+            nested.add(nest);
+        }
+        readProperties(nested);
+        String args = nested.stream().map(p -> ((LHS.Variable) p.lhs).name()).collect(Collectors.joining(", "));
+        lhs.assign(code, Snippet.of("$C($L)", method.callSymbol(utils), args));
+    }
+
+    private void readObjectFromAccessors() {
+        List<SELF> nested = new ArrayList<>();
+        String objectVar = "object$" + stackDepth();
+        code.addStatement("$T $L = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
+        type.getPropertyWriteAccessors(CollectionMappingStrategyGem.SETTER_PREFERRED)
+                .forEach((p, a) -> {
+                    LHS lhs = LHS.from(a, objectVar);
+                    SELF nest = nest(a.getAccessedType(), p, lhs, true);
+                    nested.add(nest);
+                });
+        readProperties(nested);
+        lhs.assign(code, "$L", "object$" + stackDepth());
+    }
+
+    private void readProperties(List<SELF> properties) {
         iterateOverFields();
         startFieldCase(Branch.IF);
         String fieldVar = "field$" + stackDepth();
@@ -458,53 +489,6 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         code.endControlFlow();
         code.endControlFlow(); // ends the loop
         afterObject();
-        if (type.isRecord()) {
-            lhs.assign(
-                    code,
-                    "new $T($L)",
-                    type.getTypeMirror(),
-                    properties.stream().map(p -> ((LHS.Variable) p.lhs).name()).collect(Collectors.joining(", ")));
-        } else {
-            lhs.assign(code, "$L", "object$" + stackDepth());
-        }
-    }
-
-    private List<SELF> findProperties() {
-        List<SELF> nested = new ArrayList<>();
-        if (type.isRecord()) {
-            Map<TypeVar, TypeMirror> typeBindings =
-                    utils.generics.recordTypeBindings((DeclaredType) type.getTypeMirror());
-            for (Element component : type.getRecordComponents()) {
-                TypeMirror instantiatedComponentType =
-                        utils.generics.applyTypeBindings(component.asType(), typeBindings);
-                String varName = component.getSimpleName().toString() + "$" + (stackDepth() + 1);
-                SELF nest = nest(
-                        instantiatedComponentType,
-                        component.getSimpleName().toString(),
-                        new LHS.Variable(varName),
-                        true);
-                nested.add(nest);
-            }
-        } else {
-            String objectVar = "object$" + stackDepth();
-            code.addStatement("$T $L = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
-            type.getPropertyWriteAccessors(CollectionMappingStrategyGem.SETTER_PREFERRED)
-                    .forEach((p, a) -> {
-                        LHS lhs =
-                                switch (a.getAccessorType()) {
-                                    case FIELD -> new LHS.Field(
-                                            objectVar,
-                                            a.getElement().getSimpleName().toString());
-                                    case SETTER -> new LHS.Setter(
-                                            objectVar,
-                                            a.getElement().getSimpleName().toString());
-                                    default -> throw new AssertionError(a.getAccessorType());
-                                };
-                        SELF nest = nest(a.getAccessedType(), p, lhs, true);
-                        nested.add(nest);
-                    });
-        }
-        return nested;
     }
 
     protected abstract void initializeParser();
@@ -568,6 +552,16 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             } else {
                 throw new AssertionError(this);
             }
+        }
+
+        static LHS from(Accessor a, String objectVar) {
+            return switch (a.getAccessorType()) {
+                case FIELD -> new Field(
+                        objectVar, a.getElement().getSimpleName().toString());
+                case SETTER -> new Setter(
+                        objectVar, a.getElement().getSimpleName().toString());
+                default -> throw new AssertionError(a.getAccessorType());
+            };
         }
 
         record Return() implements LHS {}
