@@ -1,6 +1,6 @@
 mvn := `if command -v mvnd &> /dev/null; then echo mvnd; else echo mvn; fi`
 
-updates-flags := "-q '-Dmaven.version.ignore=.*\\.Beta\\d*,.*\\.android\\d*' -Dversions.outputFile=updates.txt -Dversions.outputLineWidth=1000"
+updates-flags := "-q '-Dmaven.version.ignore=.*\\.Beta\\d*,.*\\.android\\d*,.*-M\\d' -Dversions.outputFile=updates.txt -Dversions.outputLineWidth=1000 -P release"
 
 # lists all recipes
 @recipes:
@@ -41,3 +41,12 @@ shaded-sizes:
       echo "$name: $eff KiB"
     fi
   done
+
+prepare-release:
+    # format so that we fail earlier if there are issues (release plugin will notice dirty working directory)
+    just format
+    # don't use mvnd here. no need to overoptimize
+    mvn release:prepare -DtagNameFormat=@{project.version} '-Darguments=-Dmaven.build.cache.skipCache=true'
+
+perform-release:
+    mvn release:perform -P release '-Darguments=-Dmaven.build.cache.skipCache=true --projects scruse-processor --also-make'
