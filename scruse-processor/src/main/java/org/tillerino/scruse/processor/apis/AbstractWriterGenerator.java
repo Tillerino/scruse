@@ -203,7 +203,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     }
 
     protected void writeObjectAsMap() {
-        Polymorphism.of(type.getTypeElement(), utils.elements).ifPresentOrElse(this::writePolymorphicObject, () -> {
+        Polymorphism.of(type.getTypeElement(), utils).ifPresentOrElse(this::writePolymorphicObject, () -> {
             startObject();
             code.add("\n");
             writeObjectPropertiesAsFields();

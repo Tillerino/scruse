@@ -296,9 +296,9 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonRawValue
 - [ ] JsonRootName
 - [ ] JsonSetter
-- [ ] JsonSubTypes
+- [X] JsonSubTypes (`failOnRepeatedNames` unsupported)
 - [ ] JsonTypeId
-- [ ] JsonTypeInfo
+- [X] JsonTypeInfo (not `use` `CUSTOM` or `DEDUCE`, always `include` `PROPERTY`, `defaultImpl` ignored, `visible` always `false`)
 - [ ] JsonTypeName
 - [ ] JsonUnwrapped
 - [X] JsonValue

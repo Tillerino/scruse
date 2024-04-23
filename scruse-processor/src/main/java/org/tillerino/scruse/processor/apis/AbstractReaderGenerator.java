@@ -377,7 +377,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
 
         Optional.ofNullable(type.getTypeElement())
-                .flatMap(t -> Polymorphism.of(t, utils.elements))
+                .flatMap(t -> Polymorphism.of(t, utils))
                 .ifPresentOrElse(this::readPolymorphicObject, this::readObjectFields);
 
         code.nextControlFlow("else");

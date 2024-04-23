@@ -1,16 +1,17 @@
 package org.tillerino.scruse.processor.util;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.apache.commons.lang3.Validate;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 
 public record Annotations(AnnotationProcessorUtils utils) {
@@ -66,12 +67,103 @@ public record Annotations(AnnotationProcessorUtils utils) {
         return Optional.empty();
     }
 
-    public Optional<AnnotationMirror> findAnnotation(Element element, String annotationType) {
+    public Optional<AnnotationMirrorWrapper> findAnnotation(Element element, String annotationType) {
         for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
             if (annotationMirror.getAnnotationType().toString().equals(annotationType)) {
-                return Optional.of(annotationMirror);
+                return Optional.of(new AnnotationMirrorWrapper(annotationMirror, utils));
             }
         }
         return Optional.empty();
+    }
+
+    public record AnnotationMirrorWrapper(AnnotationMirror mirror, AnnotationProcessorUtils utils) {
+        public Optional<AnnotationValueWrapper> method(String name, boolean withDefaults) {
+            return filterMethod(
+                            name,
+                            withDefaults
+                                    ? utils.elements.getElementValuesWithDefaults(mirror)
+                                    : mirror.getElementValues())
+                    .map(Map.Entry::getValue)
+                    .map(AnnotationValueWrapper::new);
+        }
+
+        private static Optional<? extends Map.Entry<? extends ExecutableElement, ? extends AnnotationValue>>
+                filterMethod(String name, Map<? extends ExecutableElement, ? extends AnnotationValue> baseValues) {
+            return baseValues.entrySet().stream()
+                    .filter(entry -> entry.getKey().getSimpleName().toString().equals(name))
+                    .findFirst();
+        }
+    }
+
+    public record AnnotationValueWrapper(AnnotationValue value) {
+        public List<AnnotationValueWrapper> asArray() {
+            return Validate.notNull(
+                    value.accept(
+                            new GetAnnotationValues<List<AnnotationValueWrapper>, Void>() {
+                                @Override
+                                public List<AnnotationValueWrapper> visitArray(
+                                        List<? extends AnnotationValue> vals, Void o) {
+                                    return vals.stream()
+                                            .map(AnnotationValueWrapper::new)
+                                            .toList();
+                                }
+                            },
+                            null),
+                    "not an array");
+        }
+
+        public AnnotationMirrorWrapper asAnnotation() {
+            return new AnnotationMirrorWrapper(
+                    Validate.notNull(
+                            value.accept(
+                                    new GetAnnotationValues<AnnotationMirror, Void>() {
+                                        @Override
+                                        public AnnotationMirror visitAnnotation(AnnotationMirror a, Void o) {
+                                            return a;
+                                        }
+                                    },
+                                    null),
+                            "not an annotation"),
+                    null);
+        }
+
+        public String asString() {
+            return Validate.notNull(
+                    value.accept(
+                            new GetAnnotationValues<String, Void>() {
+                                @Override
+                                public String visitString(String s, Void o) {
+                                    return s;
+                                }
+                            },
+                            null),
+                    "not a string");
+        }
+
+        public TypeMirror asTypeMirror() {
+            return Validate.notNull(
+                    value.accept(
+                            new GetAnnotationValues<TypeMirror, Void>() {
+                                @Override
+                                public TypeMirror visitType(TypeMirror t, Void o) {
+                                    return t;
+                                }
+                            },
+                            null),
+                    "not a type");
+        }
+
+        public String asEnum() {
+            return Validate.notNull(
+                    value.accept(
+                            new GetAnnotationValues<String, Void>() {
+                                @Override
+                                public String visitEnumConstant(VariableElement c, Void o) {
+                                    return c.getSimpleName().toString();
+                                }
+                            },
+                            null),
+                    "not an enum");
+        }
     }
 }
