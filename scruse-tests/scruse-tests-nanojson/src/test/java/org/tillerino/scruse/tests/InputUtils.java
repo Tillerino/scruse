@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.grack.nanojson.TokenerWrapper;
 import java.io.StringReader;
@@ -13,7 +14,9 @@ import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguratio
 import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
-    private static ObjectMapper objectMapper = new ObjectMapper().registerModule(new ParameterNamesModule());
+    static ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new ParameterNamesModule())
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     public static <T> T withJsonParser(String json, FailableFunction<TokenerWrapper, T, Exception> consumer)
             throws Exception {

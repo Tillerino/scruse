@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.alibaba.fastjson2.JSONReader;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -12,7 +13,9 @@ import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguratio
 import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
-    private static ObjectMapper objectMapper = new ObjectMapper().registerModule(new ParameterNamesModule());
+    static ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new ParameterNamesModule())
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     public static <T> T withReader(String json, FailableFunction<JSONReader, T, Exception> consumer) throws Exception {
         try (JSONReader reader = JSONReader.of(json)) {

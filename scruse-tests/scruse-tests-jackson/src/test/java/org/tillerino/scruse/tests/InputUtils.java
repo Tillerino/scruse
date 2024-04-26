@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -14,7 +15,9 @@ import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
 
-    private static ObjectMapper objectMapper = new ObjectMapper().registerModule(new ParameterNamesModule());
+    static ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new ParameterNamesModule())
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     public static <T> T withJsonParser(String json, FailableFunction<JsonParser, T, Exception> consumer)
             throws Exception {

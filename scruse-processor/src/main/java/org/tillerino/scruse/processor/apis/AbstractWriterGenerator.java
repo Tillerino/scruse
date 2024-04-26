@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -286,9 +285,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             code.addStatement("$L.pendingDiscriminatorProperty = null", context);
             code.endControlFlow();
         }
-        DeclaredType t = (DeclaredType) type.getTypeMirror();
 
         type.getPropertyReadAccessors().forEach((propertyName, accessor) -> {
+            if (utils.annotations.isJsonIgnore(propertyName, accessor)) {
+                return;
+            }
             LHS lhs = new LHS.Field("$S", new Object[] {propertyName});
             RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
             SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest, true);

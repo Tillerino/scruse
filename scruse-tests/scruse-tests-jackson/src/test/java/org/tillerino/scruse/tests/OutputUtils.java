@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.function.FailableBiConsumer;
@@ -36,7 +35,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, Exception> output)
             throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
         System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);
@@ -51,7 +50,7 @@ public class OutputUtils {
 
     public static <T, U> String assertIsEqualToDatabind2(
             T obj, U obj2, FailableTriConsumer<T, JsonGenerator, U, Exception> output) throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize2(obj, obj2, output);
         System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);

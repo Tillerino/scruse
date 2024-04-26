@@ -4,7 +4,6 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.tillerino.scruse.api.SerializationContext;
@@ -13,7 +12,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(T obj, FailableFunction<T, JsonNode, Exception> output)
             throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
         assertThatJson(ours).isEqualTo(databind);
         return ours;
@@ -35,7 +34,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(
             T obj, FailableBiFunction<T, SerializationContext, JsonNode, Exception> output) throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = output.apply(obj, new SerializationContext()).toString();
         assertThatJson(ours).isEqualTo(databind);
         return ours;

@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grack.nanojson.JsonAppendableWriter;
 import com.grack.nanojson.JsonWriter;
 import com.grack.nanojson.TokenerWrapper;
@@ -36,7 +35,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(
             T obj, FailableBiConsumer<T, JsonAppendableWriter, Exception> output) throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
         System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);
@@ -52,7 +51,7 @@ public class OutputUtils {
 
     public static <T, U> String assertIsEqualToDatabind2(
             T obj, U obj2, FailableTriConsumer<T, JsonAppendableWriter, U, Exception> output) throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize2(obj, obj2, output);
         System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);

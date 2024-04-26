@@ -282,7 +282,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonGetter
 - [ ] JsonIdentityInfo
 - [ ] JsonIdentityReference
-- [ ] JsonIgnore
+- [X] JsonIgnore
 - [ ] JsonIgnoreProperties
 - [ ] JsonIgnoreType
 - [ ] JsonInclude

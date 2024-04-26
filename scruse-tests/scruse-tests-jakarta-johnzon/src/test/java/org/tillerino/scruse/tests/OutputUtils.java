@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.json.stream.JsonGenerator;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
@@ -15,7 +14,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, Exception> output)
             throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
         assertThatJson(ours).isEqualTo(databind);
         return ours;
@@ -37,7 +36,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(
             T obj, FailableTriConsumer<T, JsonGenerator, SerializationContext, Exception> output) throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours =
                 ToShadeUtils.withGsonJsonWriter(generator -> output.accept(obj, generator, new SerializationContext()));
         assertThatJson(ours).isEqualTo(databind);

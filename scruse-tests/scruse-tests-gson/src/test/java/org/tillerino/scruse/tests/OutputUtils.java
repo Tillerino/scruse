@@ -3,7 +3,6 @@ package org.tillerino.scruse.tests;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import java.io.StringWriter;
@@ -25,7 +24,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonWriter, Exception> output)
             throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
         assertThatJson(ours).isEqualTo(databind);
         return ours;
@@ -47,7 +46,7 @@ public class OutputUtils {
 
     public static <T> String assertIsEqualToDatabind(
             T obj, FailableTriConsumer<T, JsonWriter, SerializationContext, Exception> output) throws Exception {
-        String databind = new ObjectMapper().writeValueAsString(obj);
+        String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = withGsonJsonWriter(generator -> output.accept(obj, generator, new SerializationContext()));
         assertThatJson(ours).isEqualTo(databind);
         return ours;

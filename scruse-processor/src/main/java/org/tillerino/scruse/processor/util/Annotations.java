@@ -10,6 +10,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.Validate;
+import org.mapstruct.ap.internal.util.accessor.Accessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
@@ -63,6 +64,40 @@ public record Annotations(AnnotationProcessorUtils utils) {
                 continue;
             }
             return Optional.of(utils.generics.applyTypeBindings(methodWithTypeTypeVars, methodTypeVars));
+        }
+        return Optional.empty();
+    }
+
+    public boolean isJsonIgnore(String propertyName, Accessor accessor) {
+        return findJsonIgnore(propertyName, accessor)
+                .flatMap(w -> w.method("value", true))
+                .filter(AnnotationValueWrapper::asBoolean)
+                .isPresent();
+    }
+
+    public Optional<AnnotationMirrorWrapper> findJsonIgnore(String propertyName, Accessor accessor) {
+        return findPropertyAnnotation(propertyName, accessor, "com.fasterxml.jackson.annotation.JsonIgnore");
+    }
+
+    /** Finds an annotation on property: either on the field or on the accessor. */
+    public Optional<AnnotationMirrorWrapper> findPropertyAnnotation(
+            String propertyName, Accessor accessor, String annotationType) {
+        Element element = accessor.getElement();
+        if (element instanceof VariableElement variableElement) {
+            Optional<AnnotationMirrorWrapper> annotation = findAnnotation(variableElement, annotationType);
+            if (annotation.isPresent()) {
+                return annotation;
+            }
+        } else {
+            Optional<AnnotationMirrorWrapper> fieldAnnotation =
+                    ElementFilter.fieldsIn(element.getEnclosingElement().getEnclosedElements()).stream()
+                            .filter(field -> field.getSimpleName().toString().equals(propertyName))
+                            .findFirst()
+                            .flatMap(field -> findAnnotation(field, annotationType));
+            if (fieldAnnotation.isPresent()) {
+                return fieldAnnotation;
+            }
+            return findAnnotation(element, annotationType);
         }
         return Optional.empty();
     }
@@ -164,6 +199,19 @@ public record Annotations(AnnotationProcessorUtils utils) {
                             },
                             null),
                     "not an enum");
+        }
+
+        public boolean asBoolean() {
+            return Validate.notNull(
+                    value.accept(
+                            new GetAnnotationValues<Boolean, Void>() {
+                                @Override
+                                public Boolean visitBoolean(boolean b, Void o) {
+                                    return b;
+                                }
+                            },
+                            null),
+                    "not a boolean");
         }
     }
 }
