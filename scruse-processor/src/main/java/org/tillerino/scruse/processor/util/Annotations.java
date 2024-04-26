@@ -79,6 +79,20 @@ public record Annotations(AnnotationProcessorUtils utils) {
         return findPropertyAnnotation(propertyName, accessor, "com.fasterxml.jackson.annotation.JsonIgnore");
     }
 
+    public String getJsonPropertyName(String propertyName, Accessor accessor) {
+        return findPropertyAnnotation(propertyName, accessor, "com.fasterxml.jackson.annotation.JsonProperty")
+                .flatMap(w -> w.method("value", true))
+                .map(AnnotationValueWrapper::asString)
+                .orElse(propertyName);
+    }
+
+    public String getJsonPropertyName(VariableElement element) {
+        return findAnnotation(element, "com.fasterxml.jackson.annotation.JsonProperty")
+                .flatMap(w -> w.method("value", true))
+                .map(AnnotationValueWrapper::asString)
+                .orElse(element.getSimpleName().toString());
+    }
+
     /** Finds an annotation on property: either on the field or on the accessor. */
     public Optional<AnnotationMirrorWrapper> findPropertyAnnotation(
             String propertyName, Accessor accessor, String annotationType) {

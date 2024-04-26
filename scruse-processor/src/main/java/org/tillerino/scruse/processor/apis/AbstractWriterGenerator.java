@@ -287,12 +287,15 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         }
 
         type.getPropertyReadAccessors().forEach((propertyName, accessor) -> {
+            // here, we still use the original property name before the application of JsonProperty so that we can
+            // correctly find the field if necessary
             if (utils.annotations.isJsonIgnore(propertyName, accessor)) {
                 return;
             }
-            LHS lhs = new LHS.Field("$S", new Object[] {propertyName});
+            String finalPropertyName = utils.annotations.getJsonPropertyName(propertyName, accessor);
+            LHS lhs = new LHS.Field("$S", new Object[] {finalPropertyName});
             RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
-            SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest, true);
+            SELF nested = nest(accessor.getAccessedType(), lhs, finalPropertyName, nest, true);
             nested.build();
             code.add("\n");
         });

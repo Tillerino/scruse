@@ -37,7 +37,7 @@ public record Generics(AnnotationProcessorUtils utils) {
     }
 
     public InstantiatedVariable applyTypeBindings(InstantiatedVariable v, Map<TypeVar, TypeMirror> bindings) {
-        return new InstantiatedVariable(applyTypeBindings(v.type(), bindings), v.name());
+        return new InstantiatedVariable(applyTypeBindings(v.type(), bindings), v.element());
     }
 
     public List<InstantiatedVariable> applyTypeBindingsToAll(
@@ -70,9 +70,7 @@ public record Generics(AnnotationProcessorUtils utils) {
     public InstantiatedMethod instantiateMethod(
             ExecutableElement methodElement, Map<TypeVar, TypeMirror> typeBindings) {
         List<InstantiatedVariable> parameters = methodElement.getParameters().stream()
-                .map(p -> new InstantiatedVariable(
-                        applyTypeBindings(p.asType(), typeBindings),
-                        p.getSimpleName().toString()))
+                .map(p -> new InstantiatedVariable(applyTypeBindings(p.asType(), typeBindings), p))
                 .toList();
         return new InstantiatedMethod(
                 methodElement.getSimpleName().toString(),

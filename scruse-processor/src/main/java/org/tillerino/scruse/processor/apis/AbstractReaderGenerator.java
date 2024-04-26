@@ -446,8 +446,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     private void readCreator(InstantiatedMethod method) {
         List<SELF> nested = new ArrayList<>();
         for (InstantiatedVariable parameter : method.parameters()) {
-            String varName = parameter.name() + "$" + (stackDepth() + 1);
-            SELF nest = nest(parameter.type(), parameter.name(), new LHS.Variable(varName), true);
+            String finalPropertyName = utils.annotations.getJsonPropertyName(parameter.element());
+            String varName = finalPropertyName + "$" + (stackDepth() + 1);
+            SELF nest = nest(parameter.type(), finalPropertyName, new LHS.Variable(varName), true);
             code.addStatement("$T $L = $L", nest.type.getTypeMirror(), varName, nest.type.getNull());
             nested.add(nest);
         }
@@ -462,8 +463,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         code.addStatement("$T $L = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
         type.getPropertyWriteAccessors(CollectionMappingStrategyGem.SETTER_PREFERRED)
                 .forEach((p, a) -> {
+                    String finalPropertyName = utils.annotations.getJsonPropertyName(p, a);
                     LHS lhs = LHS.from(a, objectVar);
-                    SELF nest = nest(a.getAccessedType(), p, lhs, true);
+                    SELF nest = nest(a.getAccessedType(), finalPropertyName, lhs, true);
                     nested.add(nest);
                 });
         readProperties(nested);

@@ -290,7 +290,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonKey
 - [ ] JsonManagedReference
 - [ ] JsonMerge
-- [ ] JsonProperty
+- [X] JsonProperty (only `value`)
 - [ ] JsonPropertyDescription
 - [ ] JsonPropertyOrder
 - [ ] JsonRawValue
