@@ -12,8 +12,6 @@ public sealed interface PrototypeKind {
     String JACKSON_JSON_GENERATOR = "com.fasterxml.jackson.core.JsonGenerator";
     String JACKSON_JSON_PARSER = "com.fasterxml.jackson.core.JsonParser";
 
-    String JACKSON_JSON_NODE = "com.fasterxml.jackson.databind.JsonNode";
-
     String GSON_JSON_READER = "com.google.gson.stream.JsonReader";
     String GSON_JSON_WRITER = "com.google.gson.stream.JsonWriter";
 
@@ -35,16 +33,12 @@ public sealed interface PrototypeKind {
     record Output(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
             implements PrototypeKind {}
 
-    record ReturningOutput(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
-            implements PrototypeKind {}
-
     static Optional<PrototypeKind> of(InstantiatedMethod m, AnnotationProcessorUtils utils) {
         if (m.element().getAnnotation(JsonInput.class) != null
                 && m.returnType().getKind() != TypeKind.VOID
                 && !m.parameters().isEmpty()) {
             if (List.of(
                             JACKSON_JSON_PARSER,
-                            JACKSON_JSON_NODE,
                             GSON_JSON_READER,
                             FASTJSON_2_JSONREADER,
                             JAKARTA_JSON_PARSER,
@@ -87,15 +81,6 @@ public sealed interface PrototypeKind {
                         m.parameters().get(0).type(),
                         m.parameters().subList(2, m.parameters().size())));
             }
-        }
-        if (m.element().getAnnotation(JsonOutput.class) != null
-                && m.returnType().getKind() != TypeKind.VOID
-                && !m.parameters().isEmpty()
-                && List.of(JACKSON_JSON_NODE).contains(m.returnType().toString())) {
-            return Optional.of(new ReturningOutput(
-                    m.returnType(),
-                    m.parameters().get(0).type(),
-                    m.parameters().subList(1, m.parameters().size())));
         }
         return Optional.empty();
     }

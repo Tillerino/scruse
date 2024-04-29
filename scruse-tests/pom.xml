@@ -12,7 +12,6 @@
     <modules>
         <module>scruse-tests-base</module>
         <module>scruse-tests-jackson</module>
-        <module>scruse-tests-jackson-node</module>
         <module>scruse-tests-gson</module>
         <module>scruse-tests-fastjson2</module>
         <module>scruse-tests-jakarta-glassfish</module>

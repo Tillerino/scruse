@@ -3,6 +3,7 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.InputUtils;
 import org.tillerino.scruse.tests.OutputUtils;
 import org.tillerino.scruse.tests.model.AnEnum;
 
@@ -105,5 +106,17 @@ class ScalarFieldsSerdeTest {
         for (ScalarAccessorsClass object : values) {
             OutputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
         }
+    }
+
+    @Test
+    void testUnknownPropertiesDefault() throws Exception {
+        ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
+
+        InputUtils.assertException(
+                "{ \"whatIsThis\": 1 }",
+                impl::read,
+                new TypeReference<ScalarFieldsRecord>() {},
+                "Unrecognized field \"whatIsThis\"",
+                "Unrecognized field \"whatIsThis\"");
     }
 }

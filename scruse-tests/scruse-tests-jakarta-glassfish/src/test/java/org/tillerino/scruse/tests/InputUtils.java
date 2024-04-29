@@ -1,6 +1,7 @@
 package org.tillerino.scruse.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,16 @@ public class InputUtils {
         T databind = objectMapper.readValue(json, typeRef);
         assertThat(ours).isEqualTo(databind);
         return ours;
+    }
+
+    public static <T> void assertException(
+            String json,
+            FailableFunction<JsonParserWrapper, T, Exception> consumer,
+            TypeReference<T> typeRef,
+            String ourMessage,
+            String theirMessage) {
+        assertThatThrownBy(() -> deserialize(json, consumer)).hasMessageContaining(ourMessage);
+        assertThatThrownBy(() -> objectMapper.readValue(json, typeRef)).hasMessageContaining(theirMessage);
     }
 
     public static <T, U> T assertIsEqualToDatabind2(

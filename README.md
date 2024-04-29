@@ -220,6 +220,8 @@ Overhead: 740kiB
 `jackson-databind` provides `JsonNode` for reading and writing JSON.
 You would only use this instead of `jackson-core` if you have some special requirements, e.g.
 you cannot guarantee that the order of fields in JSON is stable and require polymorphism.
+To correctly handle visibility of discriminators and unknown properties, we need adapters for `JsonNode`.
+Use `JacksonJsonNodeReaderAdapter` and `JacksonJsonNodeWriterAdapter` to write your `@JsonInput` and `@JsonOutput` methods.
 The required dependency is:
 
 ```xml
@@ -435,7 +437,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 ## Roadmap
 
 ### Short-term:
-- Sort out unknown properties (discriminators are repeated for `JsonNode`).
+- Configure ignore unknown properties.
 - Sort out missing properties.
 
 ### Long-term:

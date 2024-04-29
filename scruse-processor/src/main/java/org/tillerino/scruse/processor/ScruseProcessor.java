@@ -180,8 +180,6 @@ public class ScruseProcessor extends AbstractProcessor {
         return switch (method.kind().jsonType().toString()) {
             case PrototypeKind.JACKSON_JSON_GENERATOR -> new JacksonJsonGeneratorWriterGenerator(
                     utils, method, generatedClass)::build;
-            case PrototypeKind.JACKSON_JSON_NODE -> new JacksonJsonNodeWriterGenerator(utils, method, generatedClass)
-                    ::build;
             case PrototypeKind.GSON_JSON_WRITER -> new GsonJsonWriterWriterGenerator(utils, method, generatedClass)
                     ::build;
             case PrototypeKind.FASTJSON_2_JSONWRITER -> new Fastjson2WriterGenerator(utils, method, generatedClass)
@@ -201,8 +199,6 @@ public class ScruseProcessor extends AbstractProcessor {
         return switch (method.kind().jsonType().toString()) {
             case PrototypeKind.JACKSON_JSON_PARSER -> new JacksonJsonParserReaderGenerator(
                     utils, method, generatedClass)::build;
-            case PrototypeKind.JACKSON_JSON_NODE -> new JacksonJsonNodeReaderGenerator(utils, method, generatedClass)
-                    ::build;
             case PrototypeKind.GSON_JSON_READER -> new GsonJsonReaderReaderGenerator(utils, method, generatedClass)
                     ::build;
             case PrototypeKind.FASTJSON_2_JSONREADER -> new Fastjson2ReaderGenerator(utils, method, generatedClass)

@@ -508,7 +508,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             code.addStatement("break");
             code.endControlFlow();
         }
-        // unknown fields are ignored for now
+        {
+            code.beginControlFlow("default:");
+            code.addStatement("throw new $T($S + $L + $S)", IOException.class, "Unrecognized field \"", fieldVar, "\"");
+            code.endControlFlow();
+        }
         code.endControlFlow(); // ends the last field
         code.nextControlFlow("else");
         throwUnexpected("field name");
