@@ -13,64 +13,64 @@ class ScalarArraysSerdeTest {
     @Test
     void testBooleanArray() throws Exception {
         for (boolean[] object : SETTINGS.javaData().BOOLEAN_ARRAYS) {
-            roundTrip(object, impl::writeBooleanArray, impl::readBooleanArray, new TypeReference<boolean[]>() {});
+            roundTrip(object, impl::writeBooleanArrayX, impl::readBooleanArrayX, new TypeReference<boolean[]>() {});
         }
-        assertThatCalls("writeBooleanArray", "writePrimitiveBooleanX", !SETTINGS.canWriteBooleanArrayNatively());
-        assertThatCalls("readBooleanArray", "readPrimitiveBooleanX", true);
+        assertThatCalls("writeBooleanArrayX", "writePrimitiveBooleanX", !SETTINGS.canWriteBooleanArrayNatively());
+        assertThatCalls("readBooleanArrayX", "readPrimitiveBooleanX", true);
     }
 
     @Test
     void testByteArray() throws Exception {
         for (byte[] object : SETTINGS.javaData().BYTE_ARRAYS) {
-            roundTrip(object, impl::writeByteArray, impl::readByteArray, new TypeReference<byte[]>() {});
+            roundTrip(object, impl::writeByteArrayX, impl::readByteArrayX, new TypeReference<byte[]>() {});
         }
-        assertThatCalls("writeByteArray", "writePrimitiveByteX", false);
-        assertThatCalls("readByteArray", "readPrimitiveByteX", true);
+        assertThatCalls("writeByteArrayX", "writePrimitiveByteX", false);
+        assertThatCalls("readByteArrayX", "readPrimitiveByteX", true);
     }
 
     @Test
     void testShortArray() throws Exception {
         for (short[] object : SETTINGS.javaData().SHORT_ARRAYS) {
-            roundTrip(object, impl::writeShortArray, impl::readShortArray, new TypeReference<short[]>() {});
+            roundTrip(object, impl::writeShortArrayX, impl::readShortArrayX, new TypeReference<short[]>() {});
         }
-        assertThatCalls("writeShortArray", "writePrimitiveShortX", !SETTINGS.canWriteShortArrayNatively());
-        assertThatCalls("readShortArray", "readPrimitiveShortX", true);
+        assertThatCalls("writeShortArrayX", "writePrimitiveShortX", !SETTINGS.canWriteShortArrayNatively());
+        assertThatCalls("readShortArrayX", "readPrimitiveShortX", true);
     }
 
     @Test
     void testIntArray() throws Exception {
         for (int[] object : SETTINGS.javaData().INT_ARRAYS) {
-            roundTrip(object, impl::writeIntArray, impl::readIntArray, new TypeReference<int[]>() {});
+            roundTrip(object, impl::writeIntArrayX, impl::readIntArrayX, new TypeReference<int[]>() {});
         }
-        assertThatCalls("writeIntArray", "writePrimitiveIntX", !SETTINGS.canWriteIntArrayNatively());
-        assertThatCalls("readIntArray", "readPrimitiveIntX", !SETTINGS.canReadIntArrayNatively());
+        assertThatCalls("writeIntArrayX", "writePrimitiveIntX", !SETTINGS.canWriteIntArrayNatively());
+        assertThatCalls("readIntArrayX", "readPrimitiveIntX", !SETTINGS.canReadIntArrayNatively());
     }
 
     @Test
     void testLongArray() throws Exception {
         for (long[] object : SETTINGS.javaData().LONG_ARRAYS) {
-            roundTrip(object, impl::writeLongArray, impl::readLongArray, new TypeReference<long[]>() {});
+            roundTrip(object, impl::writeLongArrayX, impl::readLongArrayX, new TypeReference<long[]>() {});
         }
-        assertThatCalls("writeLongArray", "writePrimitiveLongX", !SETTINGS.canWriteLongArrayNatively());
-        assertThatCalls("readLongArray", "readPrimitiveLongX", !SETTINGS.canReadLongArrayNatively());
+        assertThatCalls("writeLongArrayX", "writePrimitiveLongX", !SETTINGS.canWriteLongArrayNatively());
+        assertThatCalls("readLongArrayX", "readPrimitiveLongX", !SETTINGS.canReadLongArrayNatively());
     }
 
     @Test
     void testFloatArray() throws Exception {
         for (float[] object : SETTINGS.javaData().floatArrays) {
-            roundTrip(object, impl::writeFloatArray, impl::readFloatArray, new TypeReference<float[]>() {});
+            roundTrip(object, impl::writeFloatArrayX, impl::readFloatArrayX, new TypeReference<float[]>() {});
         }
-        assertThatCalls("writeFloatArray", "writePrimitiveFloatX", !SETTINGS.canWriteFloatArrayNatively());
-        assertThatCalls("readFloatArray", "readPrimitiveFloatX", true);
+        assertThatCalls("writeFloatArrayX", "writePrimitiveFloatX", !SETTINGS.canWriteFloatArrayNatively());
+        assertThatCalls("readFloatArrayX", "readPrimitiveFloatX", true);
     }
 
     @Test
     void testDoubleArray() throws Exception {
         for (double[] object : SETTINGS.javaData().DOUBLE_ARRAYS) {
-            roundTrip(object, impl::writeDoubleArray, impl::readDoubleArray, new TypeReference<double[]>() {});
+            roundTrip(object, impl::writeDoubleArrayX, impl::readDoubleArrayX, new TypeReference<double[]>() {});
         }
-        assertThatCalls("writeDoubleArray", "writePrimitiveDoubleX", !SETTINGS.canWriteDoubleArrayNatively());
-        assertThatCalls("readDoubleArray", "readPrimitiveDoubleX", true);
+        assertThatCalls("writeDoubleArrayX", "writePrimitiveDoubleX", !SETTINGS.canWriteDoubleArrayNatively());
+        assertThatCalls("readDoubleArrayX", "readPrimitiveDoubleX", true);
     }
 
     @Test
@@ -78,86 +78,88 @@ class ScalarArraysSerdeTest {
         for (Boolean[] object : SETTINGS.javaData().BOXED_BOOLEAN_ARRAYS) {
             roundTrip(
                     object,
-                    impl::writeBoxedBooleanArray,
-                    impl::readBoxedBooleanArray,
+                    impl::writeBoxedBooleanArrayX,
+                    impl::readBoxedBooleanArrayX,
                     new TypeReference<Boolean[]>() {});
         }
-        assertThatCalls("writeBoxedBooleanArray", "writeBoxedBooleanX", true);
-        assertThatCalls("readBoxedBooleanArray", "readBoxedBooleanX", true);
+        assertThatCalls("writeBoxedBooleanArrayX", "writeBoxedBooleanX", true);
+        assertThatCalls("readBoxedBooleanArrayX", "readBoxedBooleanX", true);
     }
 
     @Test
     void testBoxedByteArray() throws Exception {
         for (Byte[] object : SETTINGS.javaData().BOXED_BYTE_ARRAYS) {
-            roundTrip(object, impl::writeBoxedByteArray, impl::readBoxedByteArray, new TypeReference<Byte[]>() {});
+            roundTrip(object, impl::writeBoxedByteArrayX, impl::readBoxedByteArrayX, new TypeReference<Byte[]>() {});
         }
-        assertThatCalls("writeBoxedByteArray", "writeBoxedByteX", true);
-        assertThatCalls("readBoxedByteArray", "readBoxedByteX", true);
+        assertThatCalls("writeBoxedByteArrayX", "writeBoxedByteX", true);
+        assertThatCalls("readBoxedByteArrayX", "readBoxedByteX", true);
     }
 
     @Test
     void testBoxedShortArray() throws Exception {
         for (Short[] object : SETTINGS.javaData().BOXED_SHORT_ARRAYS) {
-            roundTrip(object, impl::writeBoxedShortArray, impl::readBoxedShortArray, new TypeReference<Short[]>() {});
+            roundTrip(object, impl::writeBoxedShortArrayX, impl::readBoxedShortArrayX, new TypeReference<Short[]>() {});
         }
-        assertThatCalls("writeBoxedShortArray", "writeBoxedShortX", true);
-        assertThatCalls("readBoxedShortArray", "readBoxedShortX", true);
+        assertThatCalls("writeBoxedShortArrayX", "writeBoxedShortX", true);
+        assertThatCalls("readBoxedShortArrayX", "readBoxedShortX", true);
     }
 
     @Test
     void testBoxedIntArray() throws Exception {
         for (Integer[] object : SETTINGS.javaData().BOXED_INT_ARRAYS) {
-            roundTrip(object, impl::writeBoxedIntArray, impl::readBoxedIntArray, new TypeReference<Integer[]>() {});
+            roundTrip(object, impl::writeBoxedIntArrayX, impl::readBoxedIntArrayX, new TypeReference<Integer[]>() {});
         }
-        assertThatCalls("writeBoxedIntArray", "writeBoxedIntX", true);
-        assertThatCalls("readBoxedIntArray", "readBoxedIntX", true);
+        assertThatCalls("writeBoxedIntArrayX", "writeBoxedIntX", true);
+        assertThatCalls("readBoxedIntArrayX", "readBoxedIntX", true);
     }
 
     @Test
     void testBoxedLongArray() throws Exception {
         for (Long[] object : SETTINGS.javaData().BOXED_LONG_ARRAYS) {
-            roundTrip(object, impl::writeBoxedLongArray, impl::readBoxedLongArray, new TypeReference<Long[]>() {});
+            roundTrip(object, impl::writeBoxedLongArrayX, impl::readBoxedLongArrayX, new TypeReference<Long[]>() {});
         }
-        assertThatCalls("writeBoxedLongArray", "writeBoxedLongX", true);
-        assertThatCalls("readBoxedLongArray", "readBoxedLongX", true);
+        assertThatCalls("writeBoxedLongArrayX", "writeBoxedLongX", true);
+        assertThatCalls("readBoxedLongArrayX", "readBoxedLongX", true);
     }
 
     @Test
     void testBoxedFloatArray() throws Exception {
         for (Float[] object : SETTINGS.javaData().boxedFloatArrays) {
-            roundTrip(object, impl::writeBoxedFloatArray, impl::readBoxedFloatArray, new TypeReference<Float[]>() {});
+            roundTrip(object, impl::writeBoxedFloatArrayX, impl::readBoxedFloatArrayX, new TypeReference<Float[]>() {});
         }
-        assertThatCalls("writeBoxedFloatArray", "writeBoxedFloatX", true);
-        assertThatCalls("readBoxedFloatArray", "readBoxedFloatX", true);
+        assertThatCalls("writeBoxedFloatArrayX", "writeBoxedFloatX", true);
+        assertThatCalls("readBoxedFloatArrayX", "readBoxedFloatX", true);
     }
 
     @Test
     void testBoxedDoubleArray() throws Exception {
         for (Double[] object : SETTINGS.javaData().BOXED_DOUBLE_ARRAYS) {
             roundTrip(
-                    object, impl::writeBoxedDoubleArray, impl::readBoxedDoubleArray, new TypeReference<Double[]>() {});
+                    object,
+                    impl::writeBoxedDoubleArrayX,
+                    impl::readBoxedDoubleArrayX,
+                    new TypeReference<Double[]>() {});
         }
-        assertThatCalls("writeBoxedDoubleArray", "writeBoxedDoubleX", true);
-        assertThatCalls("readBoxedDoubleArray", "readBoxedDoubleX", true);
+        assertThatCalls("writeBoxedDoubleArrayX", "writeBoxedDoubleX", true);
+        assertThatCalls("readBoxedDoubleArrayX", "readBoxedDoubleX", true);
     }
 
     @Test
     void testStringArray() throws Exception {
         for (String[] object : SETTINGS.javaData().STRING_ARRAYS) {
-            roundTrip(object, impl::writeStringArray, impl::readStringArray, new TypeReference<String[]>() {});
+            roundTrip(object, impl::writeStringArrayX, impl::readStringArrayX, new TypeReference<String[]>() {});
         }
-        assertThatCalls("writeStringArray", "writeStringX", !SETTINGS.canWriteStringArrayNatively());
-        assertThatCalls("readStringArray", "readStringX", !SETTINGS.canReadStringArrayNatively());
+        assertThatCalls("writeStringArrayX", "writeStringX", !SETTINGS.canWriteStringArrayNatively());
+        assertThatCalls("readStringArrayX", "readStringX", !SETTINGS.canReadStringArrayNatively());
     }
 
-    private static void assertThatCalls(String writeBooleanArray, String writePrimitiveBooleanX, boolean doesCall)
-            throws Exception {
+    private static void assertThatCalls(String caller, String callee, boolean doesCall) throws Exception {
         CodeAssertions.MethodAssert method =
-                CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class).method(writeBooleanArray);
+                CodeAssertions.assertThatCode(ScalarArraysWriterImpl.class).method(caller);
         if (doesCall) {
-            method.calls(writePrimitiveBooleanX);
+            method.calls(callee);
         } else {
-            method.doesNotCall(writePrimitiveBooleanX);
+            method.doesNotCall(callee);
         }
     }
 }

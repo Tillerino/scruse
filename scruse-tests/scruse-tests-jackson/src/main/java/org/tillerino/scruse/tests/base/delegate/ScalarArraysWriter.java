@@ -6,104 +6,105 @@ import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 
+// methods are marked with X to make sure no methods of the backend are named identically
 @JsonConfig(uses = BoxedScalarsWriter.class)
 interface ScalarArraysWriter {
     @JsonOutput
-    void writeBooleanArray(boolean[] input, JsonGenerator generator) throws Exception;
+    void writeBooleanArrayX(boolean[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeByteArray(byte[] input, JsonGenerator generator) throws Exception;
+    void writeByteArrayX(byte[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeShortArray(short[] input, JsonGenerator generator) throws Exception;
+    void writeShortArrayX(short[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeIntArray(int[] input, JsonGenerator generator) throws Exception;
+    void writeIntArrayX(int[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeLongArray(long[] input, JsonGenerator generator) throws Exception;
+    void writeLongArrayX(long[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeCharArray(char[] input, JsonGenerator generator) throws Exception;
+    void writeCharArrayX(char[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeFloatArray(float[] input, JsonGenerator generator) throws Exception;
+    void writeFloatArrayX(float[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeDoubleArray(double[] input, JsonGenerator generator) throws Exception;
+    void writeDoubleArrayX(double[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedBooleanArray(Boolean[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedBooleanArrayX(Boolean[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedByteArray(Byte[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedByteArrayX(Byte[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedShortArray(Short[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedShortArrayX(Short[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedIntArray(Integer[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedIntArrayX(Integer[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedLongArray(Long[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedLongArrayX(Long[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedCharArray(Character[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedCharArrayX(Character[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedFloatArray(Float[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedFloatArrayX(Float[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeBoxedDoubleArray(Double[] input, JsonGenerator generator) throws Exception;
+    void writeBoxedDoubleArrayX(Double[] input, JsonGenerator generator) throws Exception;
 
     @JsonOutput
-    void writeStringArray(String[] input, JsonGenerator generator) throws Exception;
+    void writeStringArrayX(String[] input, JsonGenerator generator) throws Exception;
 
     @JsonInput
-    boolean[] readBooleanArray(JsonParser parser) throws Exception;
+    boolean[] readBooleanArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    byte[] readByteArray(JsonParser parser) throws Exception;
+    byte[] readByteArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    char[] readCharArray(JsonParser parser) throws Exception;
+    char[] readCharArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    short[] readShortArray(JsonParser parser) throws Exception;
+    short[] readShortArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    int[] readIntArray(JsonParser parser) throws Exception;
+    int[] readIntArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    long[] readLongArray(JsonParser parser) throws Exception;
+    long[] readLongArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    float[] readFloatArray(JsonParser parser) throws Exception;
+    float[] readFloatArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    double[] readDoubleArray(JsonParser parser) throws Exception;
+    double[] readDoubleArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Boolean[] readBoxedBooleanArray(JsonParser parser) throws Exception;
+    Boolean[] readBoxedBooleanArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Byte[] readBoxedByteArray(JsonParser parser) throws Exception;
+    Byte[] readBoxedByteArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Short[] readBoxedShortArray(JsonParser parser) throws Exception;
+    Short[] readBoxedShortArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Integer[] readBoxedIntArray(JsonParser parser) throws Exception;
+    Integer[] readBoxedIntArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Long[] readBoxedLongArray(JsonParser parser) throws Exception;
+    Long[] readBoxedLongArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Float[] readBoxedFloatArray(JsonParser parser) throws Exception;
+    Float[] readBoxedFloatArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    Double[] readBoxedDoubleArray(JsonParser parser) throws Exception;
+    Double[] readBoxedDoubleArrayX(JsonParser parser) throws Exception;
 
     @JsonInput
-    String[] readStringArray(JsonParser parser) throws Exception;
+    String[] readStringArrayX(JsonParser parser) throws Exception;
 }
