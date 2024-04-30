@@ -101,6 +101,9 @@ public record ScruseMethod(
         if (javaType instanceof PrimitiveType p && targetType instanceof PrimitiveType pt) {
             return p.getKind().equals(pt.getKind());
         }
+        if (javaType instanceof ArrayType a && targetType instanceof ArrayType at) {
+            return isSameTypeWithBindings(a.getComponentType(), at.getComponentType(), localTypeVars, typeBindings);
+        }
         return false;
     }
 
