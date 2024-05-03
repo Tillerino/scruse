@@ -46,18 +46,141 @@ Include the following in your POM:
 To generate readers and writers, create an interface and annotate a method with `@JsonInput` or `@JsonOutput`:
 
 ```java
-interface MyJsonMapper {
+interface MyObjectSerde {
     @JsonInput
-    MyObject read(JsonParser parser, DeserializationContext context);
+    MyObject read(JsonParser parser, DeserializationContext context) throws IOException;
 
     @JsonOutput
-    void write(MyObject object, JsonGenerator generator, SerializationContext context);
+    void write(MyObject object, JsonGenerator generator, SerializationContext context) throws IOException;
 }
 ```
 
 The example above is based on Jackson streaming, which provides `JsonParser` for parsing and `JsonGenerator` for writing JSON.
 The Scruse annotation processor will generate `MyJsonMapperImpl`, which implements the interface.
 The context parameters can be omitted if they are not explicitly needed.
+
+### Delegators
+
+Scruse can delegate to other suitable `@JsonInput` and `@JsonOutput` methods whenever possible.
+This is very important for keeping the generated code small.
+Take the following example:
+
+```java
+interface MyObjectSerde {
+  @JsonInput
+  List<MyObject> read(JsonParser parser) throws IOException;
+
+  @JsonInput
+  MyObject read(JsonParser parser) throws IOException;
+}
+```
+
+Here, the implementation of the first method will call the second method for each element in the list.
+It is recommended to view the generated code and declare further methods to break down large generated methods.
+This will work at any level, and you can even declare methods for primitive types.
+
+To organize your methods, you can use the `uses` attribute of the `@JsonConfig` annotation:
+
+```java
+@JsonConfig(uses = {PrimitivesSerde.class})
+interface MyObjectSerde {
+  ...
+}
+
+interface PrimitivesSerde {
+  @JsonInput
+  int readInt(JsonParser parser) throws IOException;
+
+  ...
+}
+```
+
+### Converters
+
+It is impractical to write actual (de-)serialisers for data types which have a simpler representation like a string.
+`@JsonValue` and `@JsonCreator` are supported, but if you cannot (or do not want to) modify the actual types, you can use converters.
+Converters are static methods annotated with `@JsonOutputConverter` or `@JsonInputConverter`.
+See this example for `OffsetDateTime`:
+
+```java
+public class OffsetDateTimeConverters {
+  @JsonOutputConverter
+  public static String offsetDateTimeToString(OffsetDateTime offsetDateTime) {
+    return offsetDateTime.toString();
+  }
+
+  @JsonInputConverter
+  public static OffsetDateTime stringToOffsetDateTime(String string) {
+    return OffsetDateTime.parse(string);
+  }
+}
+```
+
+Converter methods can be either located in the same class as the `@JsonInput` or `@JsonOutput` method
+or in a separate class and referenced with the `@JsonConfig` `uses` value.
+
+Generics are supported for converters, `@JsonValue`, and `@JsonCreator` methods.
+For example, you can write a converter for `Optional<T>`:
+
+```java
+public class OptionalConverters {
+  @JsonOutputConverter
+  public static <T> T optionalToNullable(Optional<T> optional) {
+    return optional.orElse(null);
+  }
+
+  @JsonInputConverter
+  public static <T> Optional<T> nullableToOptional(T value) {
+    return Optional.ofNullable(value);
+  }
+}
+```
+
+This specific case has already been implemented for reuse
+in [OptionalInputConverters](scruse-core/src/main/java/org/tillerino/scruse/converters/OptionalInputConverters.java)
+and [OptionalOutputConverters](scruse-core/src/main/java/org/tillerino/scruse/converters/OptionalOutputConverters.java).
+See the [converters](scruse-core/src/main/java/org/tillerino/scruse/converters) package for more premade converters.
+
+### Generics
+
+There is some support for generics.
+Suppose you have a record with a generic component:
+
+```java
+  record MyRecord<T>(T genericComponent /*, and a bunch of non-generic components  */) { }
+```
+
+Suppose you need several `@JsonInput` and `@JsonOutput` methods for `MyRecord` with different types of `T`,
+e.g. `MyRecord<String>`, `MyRecord<Integer>`, and so on.
+Firstly, the generics are correctly instantiated, i.e. for `MyRecord<String>`, `genericComponent` is serialized as a String.
+However, simply writing several methods with different types of `T` will produce a lot of repeated code.
+To avoid this, you can pass sub-(de-)serializers to a generic method.
+For a sub-(de-)serializer, you need to define an interface, for example the following:
+
+```java
+interface GenericOutput<T> {
+  @JsonOutput
+  void write(T whatever, JsonGenerator generator) throws IOException;
+}
+```
+
+Then, you can use this interface in the main (de-)serializer:
+
+```java
+interface MyRecordSerde {
+  @JsonOutput
+  <T> void write(MyRecord<T> record, JsonGenerator generator, GenericOutput<T> subSerializer) throws IOException;
+}
+```
+
+The generated code will invoke the passed serializer for the generic component.
+Once `MyRecordSerde` is used by any other (de-)serializer, any matching sub-(de-)serializer from the classes in `@JsonConfig(uses = { ... })`
+will be passed as the `subSerializer` parameter,
+or a _suitable lambda expression_ will be passed to instantiate the sub-(de-)serializer from any method in all available (de-)serializers.
+
+This is a fairly involved feature. Please see the examples in
+[GenericsTest](scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/generics/GenericsTest.java)
+and compare the generated code.
 
 ## Backends (Parser/formatter implementations)
 
@@ -252,6 +375,11 @@ Some of Jackson's annotations are supported, but not all and not each supported 
   Scruse will not write or require a discriminator when the subtype is known.
 - Jackson requires `ParameterNamesModule` and compilation with the `-parameters` flag to support creator-based deserialization without
   @JsonProperty annotations. Scruse does not require this since this information is always present during annotation processing.
+- Scruse will assign the default value of the property type to absent properties even when converters are used.
+  Jackson will always use the converter and invoke it with its default argument - _I think_.
+  An example of this is that Scruse will initialize an absent `Optional<Optional<T>>` property with `Optional.empty()`
+  whereas Jackson will instead initialize it with `Optional.of(Optional.empty())`.
+  I asked here: https://github.com/FasterXML/jackson-modules-java8/issues/310
 
 ### Features
 
@@ -304,21 +432,13 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [X] JsonValue
 - [ ] JsonView
 
-## Checkboxes
+## Roadmap
 
-- [x] Serialize all eight primitive types raw and boxed
-- [x] Serialize String (includes char[])
-- [x] Serialize Arrays, Lists (generalized as Iterables)
-- [x] Serialize byte[]
-- [x] Serialize Maps
-- [x] Serialize record components, getters, fields
+### Short-term:
+- Sort out unknown properties (discriminators are repeated for `JsonNode`).
+- Sort out missing properties.
 
-- [x] Deserialize all eight primitive types raw and boxed
-- [x] Deserialize String (includes char[])
-- [x] Deserialize Arrays, Lists (generalized as Iterables)
-- [x] Deserialize byte[]
-- [x] Deserialize Maps
-- [x] Deserialize record components, setters, fields
+### Long-term:
 
-- [x] Delegate to other readers/writers
-- [x] enums
+- Slowly add support for more Jackson annotations, but on a need-to-have basis.
+  There are so many annotations that we cannot support them all.

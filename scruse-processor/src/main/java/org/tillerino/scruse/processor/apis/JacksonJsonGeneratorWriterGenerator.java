@@ -7,7 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -15,13 +15,13 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
     private final VariableElement generatorVariable;
 
     public JacksonJsonGeneratorWriterGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         super(utils, prototype, generatedClass);
         this.generatorVariable = prototype.methodElement().getParameters().get(1);
     }
 
     protected JacksonJsonGeneratorWriterGenerator(
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
             CodeBlock.Builder code,

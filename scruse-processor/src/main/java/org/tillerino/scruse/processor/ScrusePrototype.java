@@ -17,7 +17,7 @@ import org.tillerino.scruse.processor.util.Generics.TypeVar;
  * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or
  * {@link org.tillerino.scruse.annotations.JsonOutput}.
  */
-public record ScruseMethod(
+public record ScrusePrototype(
         ScruseBlueprint blueprint,
         String name,
         ExecutableElement methodElement,
@@ -27,14 +27,14 @@ public record ScruseMethod(
         List<InstantiatedVariable> instantiatedParameters,
         Config config) {
 
-    static ScruseMethod of(
+    static ScrusePrototype of(
             ScruseBlueprint blueprint,
             InstantiatedMethod instantiated,
             PrototypeKind kind,
             AnnotationProcessorUtils utils) {
         Config config = Config.defaultConfig(instantiated.element(), utils).merge(blueprint.config);
 
-        return new ScruseMethod(
+        return new ScrusePrototype(
                 blueprint,
                 instantiated.name(),
                 instantiated.element(),
@@ -46,7 +46,7 @@ public record ScruseMethod(
     }
 
     /** Checks if reads/writes the given type and matches the signature of a reference method. */
-    public InstantiatedMethod matches(ScruseMethod referenceSignature, Type targetType, boolean allowExact) {
+    public InstantiatedMethod matches(ScrusePrototype referenceSignature, Type targetType, boolean allowExact) {
         if (kind.direction() != referenceSignature.kind().direction()
                 || !utils.types.isSameType(
                         kind().jsonType(), referenceSignature.kind().jsonType())) {

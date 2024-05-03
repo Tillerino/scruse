@@ -10,7 +10,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -18,7 +18,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
     private final VariableElement parserVariable;
 
     public JacksonJsonParserReaderGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         super(
                 utils,
                 generatedClass,
@@ -33,7 +33,7 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
     }
 
     public JacksonJsonParserReaderGenerator(
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
             String propertyName,

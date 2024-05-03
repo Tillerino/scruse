@@ -10,7 +10,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JakartaJsonParserHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -18,7 +18,7 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     private final VariableElement parserVariable;
 
     public JakartaJsonParserGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         super(
                 utils,
                 generatedClass,
@@ -33,7 +33,7 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     }
 
     public JakartaJsonParserGenerator(
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
             String propertyName,

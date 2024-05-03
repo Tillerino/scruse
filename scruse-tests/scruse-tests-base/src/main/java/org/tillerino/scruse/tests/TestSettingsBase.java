@@ -2,9 +2,8 @@ package org.tillerino.scruse.tests;
 
 import static java.util.Arrays.asList;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -103,6 +102,19 @@ public final class TestSettingsBase {
             null
         };
         public final AnEnum[] ENUMS = {null, AnEnum.SOME_VALUE, AnEnum.ANOTHER_VALUE};
+
+        // Optionals
+        public final List<OptionalInt> OPTIONAL_INTS = Stream.of(BOXED_INTS)
+                .map(i -> i != null ? OptionalInt.of(i) : OptionalInt.empty())
+                .toList();
+        public final List<OptionalLong> OPTIONAL_LONGS = Stream.of(BOXED_LONGS)
+                .map(i -> i != null ? OptionalLong.of(i) : OptionalLong.empty())
+                .toList();
+        public final List<OptionalDouble> OPTIONAL_DOUBLES = Stream.of(BOXED_DOUBLES)
+                .map(i -> i != null ? OptionalDouble.of(i) : OptionalDouble.empty())
+                .toList();
+        public final List<Optional<String>> OPTIONAL_STRINGS =
+                Stream.of(STRINGS).map(Optional::ofNullable).toList();
 
         // Primitive arrays
         public final List<boolean[]> BOOLEAN_ARRAYS = asList(null, new boolean[0], BOOLEANS);

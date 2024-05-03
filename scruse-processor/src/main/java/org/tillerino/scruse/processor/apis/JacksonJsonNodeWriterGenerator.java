@@ -7,7 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -20,7 +20,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
     private String nodeName = null;
 
     public JacksonJsonNodeWriterGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         super(utils, prototype, generatedClass);
     }
 
@@ -32,7 +32,7 @@ public class JacksonJsonNodeWriterGenerator extends AbstractWriterGenerator<Jack
             LHS lhs,
             RHS rhs,
             String propertyName,
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             boolean stackRelevantType) {
         super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
     }

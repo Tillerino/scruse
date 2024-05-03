@@ -24,7 +24,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     protected AbstractWriterGenerator(
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             CodeBlock.Builder code,
             SELF parent,
             Type type,
@@ -38,7 +38,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     }
 
     protected AbstractWriterGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         this(
                 utils,
                 generatedClass,
@@ -130,7 +130,25 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             Snippet.of("$T $L = $C", method.returnType(), newValue.name, valueMethodInvocation)
                     .addStatementTo(code);
             nest(method.returnType(), lhs, null, newValue, true).build();
-        } else if (utils.isBoxed(type.getTypeMirror())) {
+            return;
+        }
+        Optional<InstantiatedMethod> converter =
+                utils.converters.findOutputConverter(prototype.blueprint(), type.getTypeMirror());
+        if (converter.isPresent()) {
+            InstantiatedMethod method = converter.get();
+            RHS.Variable newValue = new RHS.Variable("$" + stackDepth() + "$converted", true);
+            Snippet.of(
+                            "$T $L = $C($C$C)",
+                            method.returnType(),
+                            newValue.name,
+                            method.callSymbol(utils),
+                            rhs,
+                            Snippet.joinPrependingCommaToEach(prototype.findArguments(method, 1, generatedClass)))
+                    .addStatementTo(code);
+            nest(method.returnType(), lhs, null, newValue, true).build();
+            return;
+        }
+        if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs, false)
                     .build();
         } else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
@@ -362,7 +380,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 return "$L";
             } else if (this instanceof Accessor a) {
                 return a.object().format() + ".$L";
-            } else if (this instanceof StringLiteral s) {
+            } else if (this instanceof StringLiteral) {
                 return "$S";
             } else if (this instanceof AnySnippet a) {
                 return a.snippet().format();

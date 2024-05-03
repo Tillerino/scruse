@@ -10,7 +10,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.Fastjson2ReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -19,7 +19,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     private final VariableElement parserVariable;
 
     public Fastjson2ReaderGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         super(
                 utils,
                 generatedClass,
@@ -34,7 +34,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     public Fastjson2ReaderGenerator(
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
             String propertyName,

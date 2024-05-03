@@ -16,7 +16,7 @@ import org.tillerino.scruse.processor.util.PrototypeKind;
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
     protected final AnnotationProcessorUtils utils;
     protected final GeneratedClass generatedClass;
-    protected final ScruseMethod prototype;
+    protected final ScrusePrototype prototype;
     protected final CodeBlock.Builder code;
 
     @Nullable
@@ -33,7 +33,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
     protected AbstractCodeGeneratorStack(
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             CodeBlock.Builder code,
             SELF parent,
             Type type,

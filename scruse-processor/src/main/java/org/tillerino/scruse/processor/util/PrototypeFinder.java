@@ -1,15 +1,16 @@
-package org.tillerino.scruse.processor;
+package org.tillerino.scruse.processor.util;
 
 import java.util.*;
-import javax.lang.model.util.Types;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.processor.util.InstantiatedMethod;
+import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseBlueprint;
+import org.tillerino.scruse.processor.ScrusePrototype;
 
-public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprints) {
+public record PrototypeFinder(AnnotationProcessorUtils utils) {
     public Optional<Prototype> findPrototype(
-            Type type, ScruseMethod signatureReference, boolean allowRecursion, boolean allowExact) {
+            Type type, ScrusePrototype signatureReference, boolean allowRecursion, boolean allowExact) {
         ScruseBlueprint blueprint = signatureReference.blueprint();
-        for (ScruseMethod method : blueprint.methods) {
+        for (ScrusePrototype method : blueprint.prototypes) {
             if (method.config().delegateTo().canBeDelegatedTo() && (method != signatureReference || allowRecursion)) {
                 InstantiatedMethod match = method.matches(signatureReference, type, allowExact);
                 if (match != null) {
@@ -17,11 +18,8 @@ public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprin
                 }
             }
         }
-        List<ScruseBlueprint> uses = new ArrayList<>(blueprint.config.uses());
-        // reverse for correct precedence
-        Collections.reverse(uses);
-        for (ScruseBlueprint use : uses) {
-            for (ScruseMethod method : use.methods) {
+        for (ScruseBlueprint use : blueprint.reversedUses()) {
+            for (ScrusePrototype method : use.prototypes) {
                 if (method.config().delegateTo().canBeDelegatedTo()) {
                     InstantiatedMethod match = method.matches(signatureReference, type, allowExact);
                     if (match != null) {
@@ -33,5 +31,5 @@ public record PrototypeFinder(Types types, Map<String, ScruseBlueprint> blueprin
         return Optional.empty();
     }
 
-    public record Prototype(ScruseBlueprint blueprint, ScruseMethod prototype, InstantiatedMethod method) {}
+    public record Prototype(ScruseBlueprint blueprint, ScrusePrototype prototype, InstantiatedMethod method) {}
 }

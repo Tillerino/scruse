@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -15,6 +16,7 @@ import org.tillerino.scruse.helpers.JakartaJsonParserHelper.JsonParserWrapper;
 public class InputUtils {
     static ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new ParameterNamesModule())
+            .registerModule(new Jdk8Module())
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     public static <T> T assertIsEqualToDatabind(

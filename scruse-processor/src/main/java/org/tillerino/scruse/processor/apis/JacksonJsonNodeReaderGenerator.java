@@ -11,7 +11,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonNodeReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
-import org.tillerino.scruse.processor.ScruseMethod;
+import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -23,7 +23,7 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
     private String fieldVar;
 
     public JacksonJsonNodeReaderGenerator(
-            AnnotationProcessorUtils utils, ScruseMethod prototype, GeneratedClass generatedClass) {
+            AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
         super(
                 utils,
                 generatedClass,
@@ -38,7 +38,7 @@ public class JacksonJsonNodeReaderGenerator extends AbstractReaderGenerator<Jack
     }
 
     public JacksonJsonNodeReaderGenerator(
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
             String propertyName,

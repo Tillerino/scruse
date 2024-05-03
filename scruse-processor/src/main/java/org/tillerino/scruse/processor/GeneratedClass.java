@@ -82,13 +82,13 @@ public class GeneratedClass {
             return null;
         }
         InstantiatedMethod targetMethod = utils.generics.instantiateMethods(d).get(0);
-        for (ScruseMethod method : blueprint.methods) {
+        for (ScrusePrototype method : blueprint.prototypes) {
             if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
                 return Pair.of(getOrCreateDelegateeField(blueprint, blueprint), method.name());
             }
         }
         for (ScruseBlueprint use : blueprint.config.uses()) {
-            for (ScruseMethod method : use.methods) {
+            for (ScrusePrototype method : use.prototypes) {
                 if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
                     return Pair.of(getOrCreateDelegateeField(blueprint, use), method.name());
                 }

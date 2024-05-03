@@ -26,7 +26,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     protected AbstractReaderGenerator(
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
-            ScruseMethod prototype,
+            ScrusePrototype prototype,
             CodeBlock.Builder code,
             SELF parent,
             Type type,
@@ -53,6 +53,25 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 code.nextControlFlow("else");
             }
             invokeDelegate(delegate.get().fieldOrParameter(), delegate.get().method());
+            if (branch != Branch.IF) {
+                code.endControlFlow();
+            }
+            return code;
+        }
+        Optional<InstantiatedMethod> converter =
+                utils.converters.findInputConverter(prototype.blueprint(), type.getTypeMirror());
+        if (converter.isPresent()) {
+            if (branch != Branch.IF) {
+                code.nextControlFlow("else");
+            }
+            InstantiatedMethod method = converter.get();
+
+            LHS.Variable converterArg = new LHS.Variable("$" + stackDepth() + "$toConvert");
+            Snippet.of("$T $L", method.parameters().get(0).type(), converterArg.name)
+                    .addStatementTo(code);
+            nest(method.parameters().get(0).type(), null, converterArg, true).build(Branch.IF, nullable);
+            lhs.assign(code, Snippet.of("$C($L)", method.callSymbol(utils), converterArg.name));
+
             if (branch != Branch.IF) {
                 code.endControlFlow();
             }
@@ -449,7 +468,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             String finalPropertyName = utils.annotations.getJsonPropertyName(parameter.element());
             String varName = finalPropertyName + "$" + (stackDepth() + 1);
             SELF nest = nest(parameter.type(), finalPropertyName, new LHS.Variable(varName), true);
-            code.addStatement("$T $L = $L", nest.type.getTypeMirror(), varName, nest.type.getNull());
+            Snippet defaultValue = utils.converters
+                    .findInputDefaultValue(prototype.blueprint(), nest.type.getTypeMirror())
+                    .map(m -> Snippet.of("$C()", m.callSymbol(utils)))
+                    .orElse(Snippet.of("$L", nest.type.getNull()));
+            Snippet.of("$T $L = $C", nest.type.getTypeMirror(), varName, defaultValue)
+                    .addStatementTo(code);
             nested.add(nest);
         }
         readProperties(nested);

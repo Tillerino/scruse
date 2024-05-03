@@ -63,10 +63,10 @@ public class ScruseProcessor extends AbstractProcessor {
                 if (!exec.getEnclosingElement().equals(element)) {
                     InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
                     PrototypeKind.of(instantiated).ifPresent(kind -> {
-                        ScruseMethod method = ScruseMethod.of(blueprint, instantiated, kind, utils);
+                        ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
                         // should actually check if super method is not being generated and THIS is being generated
                         if (method.config().implement().shouldImplement()) {
-                            blueprint.methods.add(method);
+                            blueprint.prototypes.add(method);
                         }
                     });
                 }
@@ -81,8 +81,8 @@ public class ScruseProcessor extends AbstractProcessor {
             PrototypeKind.of(instantiated)
                     .ifPresentOrElse(
                             kind -> {
-                                ScruseMethod method = ScruseMethod.of(blueprint, instantiated, kind, utils);
-                                blueprint.methods.add(method);
+                                ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
+                                blueprint.prototypes.add(method);
                             },
                             () -> {
                                 logError("Signature unknown. Please see @JsonOutput for hints.", exec);
@@ -97,8 +97,8 @@ public class ScruseProcessor extends AbstractProcessor {
             PrototypeKind.of(instantiated)
                     .ifPresentOrElse(
                             kind -> {
-                                ScruseMethod method = ScruseMethod.of(blueprint, instantiated, kind, utils);
-                                blueprint.methods.add(method);
+                                ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
+                                blueprint.prototypes.add(method);
                             },
                             () -> {
                                 logError("Signature unknown. Please see @JsonInput for hints.", exec);
@@ -108,7 +108,7 @@ public class ScruseProcessor extends AbstractProcessor {
 
     private void generateCode() {
         for (ScruseBlueprint blueprint : utils.blueprints.values()) {
-            if (blueprint.methods.stream()
+            if (blueprint.prototypes.stream()
                     .anyMatch(method -> method.config().implement().shouldImplement())) {
                 try {
                     mapStructSetup(processingEnv, blueprint.typeElement);
@@ -127,7 +127,7 @@ public class ScruseProcessor extends AbstractProcessor {
                 .addSuperinterface(blueprint.typeElement.asType());
         List<MethodSpec> methods = new ArrayList<>();
         GeneratedClass generatedClass = new GeneratedClass(classBuilder, utils, blueprint);
-        for (ScruseMethod method : blueprint.methods) {
+        for (ScrusePrototype method : blueprint.prototypes) {
             if (!method.methodElement().getModifiers().contains(Modifier.ABSTRACT)
                     || !method.config().implement().shouldImplement()) {
                 // method is implemented by user and can be used by us
@@ -176,7 +176,7 @@ public class ScruseProcessor extends AbstractProcessor {
     }
 
     private Supplier<CodeBlock.Builder> determineOutputCodeGenerator(
-            ScruseMethod method, GeneratedClass generatedClass) {
+            ScrusePrototype method, GeneratedClass generatedClass) {
         return switch (method.kind().jsonType().toString()) {
             case PrototypeKind.JACKSON_JSON_GENERATOR -> new JacksonJsonGeneratorWriterGenerator(
                     utils, method, generatedClass)::build;
@@ -196,7 +196,7 @@ public class ScruseProcessor extends AbstractProcessor {
     }
 
     private Supplier<CodeBlock.Builder> determineInputCodeGenerator(
-            ScruseMethod method, GeneratedClass generatedClass) {
+            ScrusePrototype method, GeneratedClass generatedClass) {
         return switch (method.kind().jsonType().toString()) {
             case PrototypeKind.JACKSON_JSON_PARSER -> new JacksonJsonParserReaderGenerator(
                     utils, method, generatedClass)::build;
