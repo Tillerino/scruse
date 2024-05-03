@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.tillerino.scruse</groupId>
     <artifactId>scruse-parent</artifactId>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.3.0</version>
     <packaging>pom</packaging>
     <description>A databind annotation processor for Java</description>
     <url>https://github.com/Tillerino/scruse</url>
@@ -32,7 +32,7 @@
     <scm>
         <connection>scm:git:git@github.com:Tillerino/scruse.git</connection>
         <developerConnection>scm:git:git@github.com:Tillerino/scruse.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.3.0</tag>
         <url>https://github.com/Tillerino/scruse</url>
     </scm>
     <distributionManagement>
