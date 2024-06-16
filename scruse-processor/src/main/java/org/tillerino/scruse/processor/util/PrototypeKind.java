@@ -26,6 +26,9 @@ public sealed interface PrototypeKind {
     String NANOJSON_JSON_READER = "com.grack.nanojson.TokenerWrapper";
     String NANOJSON_JSON_WRITER = "com.grack.nanojson.JsonAppendableWriter";
 
+    String SCRUSE_READER = "org.tillerino.scruse.api.ScruseReader";
+    String SCRUSE_WRITER = "org.tillerino.scruse.api.ScruseWriter";
+
     record Input(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
             implements PrototypeKind {}
 
@@ -35,37 +38,55 @@ public sealed interface PrototypeKind {
     record ReturningOutput(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
             implements PrototypeKind {}
 
-    static Optional<PrototypeKind> of(InstantiatedMethod m) {
+    static Optional<PrototypeKind> of(InstantiatedMethod m, AnnotationProcessorUtils utils) {
         if (m.element().getAnnotation(JsonInput.class) != null
                 && m.returnType().getKind() != TypeKind.VOID
-                && !m.parameters().isEmpty()
-                && List.of(
-                                JACKSON_JSON_PARSER,
-                                JACKSON_JSON_NODE,
-                                GSON_JSON_READER,
-                                FASTJSON_2_JSONREADER,
-                                JAKARTA_JSON_PARSER,
-                                NANOJSON_JSON_READER)
-                        .contains(m.parameters().get(0).type().toString())) {
-            return Optional.of(new Input(
-                    m.parameters().get(0).type(),
-                    m.returnType(),
-                    m.parameters().subList(1, m.parameters().size())));
+                && !m.parameters().isEmpty()) {
+            if (List.of(
+                            JACKSON_JSON_PARSER,
+                            JACKSON_JSON_NODE,
+                            GSON_JSON_READER,
+                            FASTJSON_2_JSONREADER,
+                            JAKARTA_JSON_PARSER,
+                            NANOJSON_JSON_READER)
+                    .contains(m.parameters().get(0).type().toString())) {
+                return Optional.of(new Input(
+                        m.parameters().get(0).type(),
+                        m.returnType(),
+                        m.parameters().subList(1, m.parameters().size())));
+            }
+            TypeMirror scruseReaderRaw =
+                    utils.tf.getType(SCRUSE_READER).asRawType().getTypeMirror();
+            if (utils.types.isAssignable(m.parameters().get(0).type(), scruseReaderRaw)) {
+                return Optional.of(new Input(
+                        scruseReaderRaw,
+                        m.returnType(),
+                        m.parameters().subList(1, m.parameters().size())));
+            }
         }
         if (m.element().getAnnotation(JsonOutput.class) != null
                 && m.returnType().getKind() == TypeKind.VOID
-                && m.parameters().size() >= 2
-                && List.of(
-                                JACKSON_JSON_GENERATOR,
-                                GSON_JSON_WRITER,
-                                FASTJSON_2_JSONWRITER,
-                                JAKARTA_JSON_GENERATOR,
-                                NANOJSON_JSON_WRITER)
-                        .contains(m.parameters().get(1).type().toString())) {
-            return Optional.of(new Output(
-                    m.parameters().get(1).type(),
-                    m.parameters().get(0).type(),
-                    m.parameters().subList(2, m.parameters().size())));
+                && m.parameters().size() >= 2) {
+            if (List.of(
+                            JACKSON_JSON_GENERATOR,
+                            GSON_JSON_WRITER,
+                            FASTJSON_2_JSONWRITER,
+                            JAKARTA_JSON_GENERATOR,
+                            NANOJSON_JSON_WRITER)
+                    .contains(m.parameters().get(1).type().toString())) {
+                return Optional.of(new Output(
+                        m.parameters().get(1).type(),
+                        m.parameters().get(0).type(),
+                        m.parameters().subList(2, m.parameters().size())));
+            }
+            TypeMirror scruseWriterRaw =
+                    utils.tf.getType(SCRUSE_WRITER).asRawType().getTypeMirror();
+            if (utils.types.isAssignable(m.parameters().get(1).type(), scruseWriterRaw)) {
+                return Optional.of(new Output(
+                        scruseWriterRaw,
+                        m.parameters().get(0).type(),
+                        m.parameters().subList(2, m.parameters().size())));
+            }
         }
         if (m.element().getAnnotation(JsonOutput.class) != null
                 && m.returnType().getKind() != TypeKind.VOID

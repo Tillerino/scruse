@@ -62,7 +62,7 @@ public class ScruseProcessor extends AbstractProcessor {
                     ElementFilter.methodsIn(utils.elements.getAllMembers((TypeElement) element))) {
                 if (!exec.getEnclosingElement().equals(element)) {
                     InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
-                    PrototypeKind.of(instantiated).ifPresent(kind -> {
+                    PrototypeKind.of(instantiated, utils).ifPresent(kind -> {
                         ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
                         // should actually check if super method is not being generated and THIS is being generated
                         if (method.config().implement().shouldImplement()) {
@@ -78,7 +78,7 @@ public class ScruseProcessor extends AbstractProcessor {
             mapStructSetup(processingEnv, type);
             ScruseBlueprint blueprint = utils.blueprint(type);
             InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
-            PrototypeKind.of(instantiated)
+            PrototypeKind.of(instantiated, utils)
                     .ifPresentOrElse(
                             kind -> {
                                 ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
@@ -94,7 +94,7 @@ public class ScruseProcessor extends AbstractProcessor {
             mapStructSetup(processingEnv, type);
             ScruseBlueprint blueprint = utils.blueprint(type);
             InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
-            PrototypeKind.of(instantiated)
+            PrototypeKind.of(instantiated, utils)
                     .ifPresentOrElse(
                             kind -> {
                                 ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
@@ -190,6 +190,7 @@ public class ScruseProcessor extends AbstractProcessor {
                     utils, method, generatedClass)::build;
             case PrototypeKind.NANOJSON_JSON_WRITER -> new NanojsonWriterGenerator(utils, method, generatedClass)
                     ::build;
+            case PrototypeKind.SCRUSE_WRITER -> new ScruseWriterGenerator(utils, method, generatedClass)::build;
             default -> throw new IllegalStateException(
                     "Unknown output type: " + method.kind().jsonType());
         };
@@ -210,6 +211,7 @@ public class ScruseProcessor extends AbstractProcessor {
                     ::build;
             case PrototypeKind.NANOJSON_JSON_READER -> new NanojsonReaderGenerator(utils, method, generatedClass)
                     ::build;
+            case PrototypeKind.SCRUSE_READER -> new ScruseReaderGenerator(utils, method, generatedClass)::build;
             default -> throw new IllegalStateException(
                     "Unknown input type: " + method.kind().jsonType());
         };

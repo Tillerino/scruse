@@ -10,14 +10,16 @@
     <artifactId>scruse-tests</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>scruse-tests-base</module>
         <module>scruse-tests-jackson</module>
         <module>scruse-tests-jackson-node</module>
-        <module>scruse-tests-base</module>
         <module>scruse-tests-gson</module>
         <module>scruse-tests-fastjson2</module>
         <module>scruse-tests-jakarta-glassfish</module>
         <module>scruse-tests-jakarta-johnzon</module>
         <module>scruse-tests-nanojson</module>
+        <module>scruse-tests-adapter-jackson</module>
+        <module>scruse-tests-adapter-jackson-node</module>
     </modules>
 
     <properties>

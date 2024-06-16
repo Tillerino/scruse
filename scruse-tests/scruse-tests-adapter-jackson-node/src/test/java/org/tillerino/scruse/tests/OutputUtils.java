@@ -2,38 +2,36 @@ package org.tillerino.scruse.tests;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
+import org.tillerino.scruse.adapters.JacksonJsonNodeReaderAdapter;
+import org.tillerino.scruse.adapters.JacksonJsonNodeWriterAdapter;
 import org.tillerino.scruse.api.SerializationContext;
 
 public class OutputUtils {
-    public static String withJsonGenerator(FailableConsumer<JsonGenerator, Exception> output) throws Exception {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        JsonGenerator generator = new JsonFactory().createGenerator(out);
-        output.accept(generator);
-        generator.flush();
-        return out.toString(StandardCharsets.UTF_8);
+    public static String withJsonGenerator(FailableConsumer<JacksonJsonNodeWriterAdapter, Exception> output)
+            throws Exception {
+        JacksonJsonNodeWriterAdapter adapter = new JacksonJsonNodeWriterAdapter(new ObjectMapper().getNodeFactory());
+        output.accept(adapter);
+        return adapter.getResult().toString();
     }
 
-    public static <T> String serialize(T obj, FailableBiConsumer<T, JsonGenerator, Exception> output) throws Exception {
+    public static <T> String serialize(T obj, FailableBiConsumer<T, JacksonJsonNodeWriterAdapter, Exception> output)
+            throws Exception {
         return withJsonGenerator(generator -> output.accept(obj, generator));
     }
 
-    public static <T, U> String serialize2(T obj, U obj2, FailableTriConsumer<T, JsonGenerator, U, Exception> output)
-            throws Exception {
+    public static <T, U> String serialize2(
+            T obj, U obj2, FailableTriConsumer<T, JacksonJsonNodeWriterAdapter, U, Exception> output) throws Exception {
         return withJsonGenerator(generator -> output.accept(obj, generator, obj2));
     }
 
-    public static <T> String assertIsEqualToDatabind(T obj, FailableBiConsumer<T, JsonGenerator, Exception> output)
-            throws Exception {
+    public static <T> String assertIsEqualToDatabind(
+            T obj, FailableBiConsumer<T, JacksonJsonNodeWriterAdapter, Exception> output) throws Exception {
         String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
         System.out.println(ours);
@@ -42,13 +40,14 @@ public class OutputUtils {
     }
 
     public static <T> String assertIsEqualToDatabind(
-            T obj, FailableTriConsumer<T, JsonGenerator, SerializationContext, Exception> output) throws Exception {
+            T obj, FailableTriConsumer<T, JacksonJsonNodeWriterAdapter, SerializationContext, Exception> output)
+            throws Exception {
         return assertIsEqualToDatabind2(
                 obj, new SerializationContext(), (obj2, generator, context) -> output.accept(obj, generator, context));
     }
 
     public static <T, U> String assertIsEqualToDatabind2(
-            T obj, U obj2, FailableTriConsumer<T, JsonGenerator, U, Exception> output) throws Exception {
+            T obj, U obj2, FailableTriConsumer<T, JacksonJsonNodeWriterAdapter, U, Exception> output) throws Exception {
         String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize2(obj, obj2, output);
         System.out.println(ours);
@@ -58,8 +57,8 @@ public class OutputUtils {
 
     public static <T> T roundTrip(
             T obj,
-            FailableBiConsumer<T, JsonGenerator, Exception> output,
-            FailableFunction<JsonParser, T, Exception> input,
+            FailableBiConsumer<T, JacksonJsonNodeWriterAdapter, Exception> output,
+            FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> input,
             TypeReference<T> typeRef)
             throws Exception {
         String json = assertIsEqualToDatabind(obj, output);
@@ -69,8 +68,8 @@ public class OutputUtils {
     public static <T, U> T roundTrip2(
             T obj,
             U obj2,
-            FailableTriConsumer<T, JsonGenerator, U, Exception> output,
-            FailableBiFunction<JsonParser, U, T, Exception> input,
+            FailableTriConsumer<T, JacksonJsonNodeWriterAdapter, U, Exception> output,
+            FailableBiFunction<JacksonJsonNodeReaderAdapter, U, T, Exception> input,
             TypeReference<T> typeRef)
             throws Exception {
         String json = assertIsEqualToDatabind2(obj, obj2, output);
@@ -79,8 +78,8 @@ public class OutputUtils {
 
     public static <T> T roundTripRecursive(
             T obj,
-            FailableBiConsumer<T, JsonGenerator, Exception> output,
-            FailableFunction<JsonParser, T, Exception> input,
+            FailableBiConsumer<T, JacksonJsonNodeWriterAdapter, Exception> output,
+            FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> input,
             TypeReference<T> typeRef)
             throws Exception {
         String json = assertIsEqualToDatabind(obj, output);

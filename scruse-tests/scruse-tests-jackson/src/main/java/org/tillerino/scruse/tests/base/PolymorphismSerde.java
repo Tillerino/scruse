@@ -8,7 +8,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 
-interface PolymorphismSerde {
+public interface PolymorphismSerde {
     @JsonOutput
     void writePolymorphism(SealedInterface sealedInterface, JsonGenerator generator) throws Exception;
 

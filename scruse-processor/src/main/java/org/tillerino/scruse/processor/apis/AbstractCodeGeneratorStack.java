@@ -101,7 +101,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
     protected Optional<Delegatee> findDelegateeInMethodParameters() {
         for (InstantiatedVariable parameter : prototype.kind().otherParameters()) {
             for (InstantiatedMethod method : utils.generics.instantiateMethods(parameter.type())) {
-                Optional<PrototypeKind> prototypeKind = PrototypeKind.of(method)
+                Optional<PrototypeKind> prototypeKind = PrototypeKind.of(method, utils)
                         .filter(kind -> kind.matchesWithJavaType(prototype.kind(), type.getTypeMirror(), utils));
                 if (prototypeKind.isPresent()) {
                     return Optional.of(new Delegatee(parameter.name(), method));
