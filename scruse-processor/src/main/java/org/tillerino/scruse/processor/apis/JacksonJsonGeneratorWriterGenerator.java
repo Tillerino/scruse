@@ -9,6 +9,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {
@@ -30,8 +31,20 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
             LHS lhs,
             RHS rhs,
             String propertyName,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                propertyName,
+                rhs,
+                lhs,
+                stackRelevantType,
+                config);
         this.generatorVariable = generatorVariable;
     }
 
@@ -153,7 +166,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
     @Override
     protected JacksonJsonGeneratorWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new JacksonJsonGeneratorWriterGenerator(
                 prototype,
                 utils,
@@ -164,6 +177,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
                 lhs,
                 rhs,
                 propertyName,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 }

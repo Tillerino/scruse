@@ -8,19 +8,30 @@ import org.tillerino.scruse.processor.ScrusePrototype;
 
 public record PrototypeFinder(AnnotationProcessorUtils utils) {
     public Optional<Prototype> findPrototype(
-            Type type, ScrusePrototype signatureReference, boolean allowRecursion, boolean allowExact) {
+            Type type,
+            ScrusePrototype signatureReference,
+            boolean allowRecursion,
+            boolean allowExact,
+            AnyConfig config) {
         ScruseBlueprint blueprint = signatureReference.blueprint();
         for (ScrusePrototype method : blueprint.prototypes) {
-            if (method.config().delegateTo().canBeDelegatedTo() && (method != signatureReference || allowRecursion)) {
+            if (method.config()
+                            .resolveProperty(ConfigProperty.DELEGATEE)
+                            .value()
+                            .canBeDelegatedTo()
+                    && (method != signatureReference || allowRecursion)) {
                 InstantiatedMethod match = method.matches(signatureReference, type, allowExact);
                 if (match != null) {
                     return Optional.of(new Prototype(blueprint, method, match));
                 }
             }
         }
-        for (ScruseBlueprint use : blueprint.reversedUses()) {
+        for (ScruseBlueprint use : config.reversedUses()) {
             for (ScrusePrototype method : use.prototypes) {
-                if (method.config().delegateTo().canBeDelegatedTo()) {
+                if (method.config()
+                        .resolveProperty(ConfigProperty.DELEGATEE)
+                        .value()
+                        .canBeDelegatedTo()) {
                     InstantiatedMethod match = method.matches(signatureReference, type, allowExact);
                     if (match != null) {
                         return Optional.of(new Prototype(use, method, match));

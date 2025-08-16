@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor.util;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
@@ -36,5 +37,15 @@ public record InstantiatedMethod(
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%s %s.%s(%s)",
+                returnType,
+                element.getEnclosingElement().getSimpleName(),
+                name,
+                parameters.stream().map(InstantiatedVariable::toString).collect(Collectors.joining(", ")));
     }
 }

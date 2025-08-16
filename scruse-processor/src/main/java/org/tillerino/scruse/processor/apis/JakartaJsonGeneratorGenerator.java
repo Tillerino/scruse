@@ -9,6 +9,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<JakartaJsonGeneratorGenerator> {
@@ -30,14 +31,26 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
             LHS lhs,
             RHS rhs,
             String propertyName,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                propertyName,
+                rhs,
+                lhs,
+                stackRelevantType,
+                config);
         this.generatorVariable = generatorVariable;
     }
 
     @Override
     protected Features features() {
-        return Features.builder().onlySupportsFiniteNumbers(true).build();
+        return new Features(true);
     }
 
     @Override
@@ -122,7 +135,7 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
 
     @Override
     protected JakartaJsonGeneratorGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new JakartaJsonGeneratorGenerator(
                 prototype,
                 utils,
@@ -133,6 +146,7 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
                 lhs,
                 rhs,
                 propertyName,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 }

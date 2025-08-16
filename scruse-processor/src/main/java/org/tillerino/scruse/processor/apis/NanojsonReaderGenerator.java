@@ -11,6 +11,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonReaderGenerator> {
@@ -18,16 +19,7 @@ public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonRea
 
     public NanojsonReaderGenerator(
             AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
-        super(
-                utils,
-                generatedClass,
-                prototype,
-                CodeBlock.builder(),
-                null,
-                utils.tf.getType(prototype.instantiatedReturnType()),
-                true,
-                null,
-                new LHS.Return());
+        super(utils, prototype, generatedClass);
         parserVariable = prototype.methodElement().getParameters().get(0);
     }
 
@@ -40,8 +32,19 @@ public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonRea
             VariableElement parserVariable,
             LHS lhs,
             NanojsonReaderGenerator parent,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                stackRelevantType,
+                propertyName,
+                lhs,
+                config);
         this.parserVariable = parserVariable;
     }
 
@@ -149,6 +152,12 @@ public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonRea
     }
 
     @Override
+    protected void skipValue() {
+        code.addStatement("$L.skipChildren()", parserVariable.getSimpleName());
+        code.addStatement("$L.next()", parserVariable.getSimpleName());
+    }
+
+    @Override
     protected void afterObject() {}
 
     @Override
@@ -193,7 +202,8 @@ public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonRea
     }
 
     @Override
-    protected NanojsonReaderGenerator nest(TypeMirror type, String propertyName, LHS lhs, boolean stackRelevantType) {
+    protected NanojsonReaderGenerator nest(
+            TypeMirror type, String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new NanojsonReaderGenerator(
                 prototype,
                 utils,
@@ -203,7 +213,8 @@ public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonRea
                 parserVariable,
                 lhs,
                 this,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 
     private String token(String t) {

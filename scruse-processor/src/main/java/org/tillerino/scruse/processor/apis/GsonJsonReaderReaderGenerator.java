@@ -1,8 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
-import javax.annotation.Nullable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -12,6 +12,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJsonReaderReaderGenerator> {
@@ -19,16 +20,7 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
     public GsonJsonReaderReaderGenerator(
             AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
-        super(
-                utils,
-                generatedClass,
-                prototype,
-                CodeBlock.builder(),
-                null,
-                utils.tf.getType(prototype.instantiatedReturnType()),
-                true,
-                null,
-                new LHS.Return());
+        super(utils, prototype, generatedClass);
         parserVariable = prototype.methodElement().getParameters().get(0);
     }
 
@@ -41,8 +33,19 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
             VariableElement parserVariable,
             LHS lhs,
             GsonJsonReaderReaderGenerator parent,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                stackRelevantType,
+                propertyName,
+                lhs,
+                config);
         this.parserVariable = parserVariable;
     }
 
@@ -122,6 +125,11 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
     }
 
     @Override
+    protected void skipValue() {
+        code.addStatement("$L.skipValue()", parserVariable.getSimpleName());
+    }
+
+    @Override
     protected void afterObject() {
         code.addStatement("$L.endObject()", parserVariable.getSimpleName());
     }
@@ -175,7 +183,7 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
     @Override
     protected GsonJsonReaderReaderGenerator nest(
-            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType) {
+            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new GsonJsonReaderReaderGenerator(
                 prototype,
                 utils,
@@ -185,6 +193,7 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
                 parserVariable,
                 lhs,
                 this,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 }

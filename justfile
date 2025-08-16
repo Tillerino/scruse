@@ -6,13 +6,14 @@ updates-flags := "-q '-Dmaven.version.ignore=.*\\.Beta\\d*,.*\\.android\\d*,.*-M
 @recipes:
   just --list
 
-# install all without build cache
-no-cache:
-  {{mvn}} clean install -Dmaven.build.cache.skipCache=true
-
 # apply spotless format
 format:
-  {{mvn}} spotless:apply -Dmaven.build.cache.skipCache=true
+  {{mvn}} -q spotless:apply
+
+# install quickly. mvnd does not resolve the processor correctly unless it is installed
+install:
+  {{mvn}} clean spotless:apply install -pl scruse-processor -am
+  {{mvn}} clean spotless:apply install -pl scruse-tests -amd
 
 # show all available updates
 updates:

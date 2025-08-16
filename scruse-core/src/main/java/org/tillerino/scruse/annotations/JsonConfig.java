@@ -27,7 +27,7 @@ public @interface JsonConfig {
      *
      * @return see {@link ImplementationMode}
      */
-    ImplementationMode implement() default ImplementationMode.MERGE;
+    ImplementationMode implement() default ImplementationMode.DEFAULT;
 
     /**
      * Determines if the annotated element can be called from other serializers.
@@ -37,31 +37,22 @@ public @interface JsonConfig {
      *
      * @return see {@link DelegateeMode}
      */
-    DelegateeMode delegateTo() default DelegateeMode.MERGE;
+    DelegateeMode delegateTo() default DelegateeMode.DEFAULT;
 
     /**
-     * Determines how this annotation is treated in the presence of other {@link JsonConfig} annotations which apply to
-     * the same scope.
+     * Determines how unknown properties are treated.
      *
-     * <p>By default, the annotations are merged. For example, the {@link #uses()} arrays are merged. Conflicts are
-     * always solved by choosing the value from the annotation which is closer to the annotated element.
-     *
-     * @return false to ignore other {@link JsonConfig} annotations which would apply to the annotated element.
+     * @return see {@link UnknownPropertiesMode}
      */
-    MergeMode merge() default MergeMode.LIKE_ENCLOSING;
+    UnknownPropertiesMode unknownProperties() default UnknownPropertiesMode.DEFAULT;
 
     enum DelegateeMode {
         /** The annotated element can be called from other serializers. */
         DELEGATE_TO,
         /** The annotated element cannot be called from other serializers. */
         DO_NOT_DELEGATE_TO,
-        /**
-         * The annotated element inherits the setting. If there is nothing to inherit, this is equivalent to
-         * {@link #DELEGATE_TO}.
-         */
-        MERGE,
-        /** During merging, this value is not taken into account. */
-        NONE,
+        /** Unspecified. Unless a specific value is inherited, {@link #DELEGATE_TO}. */
+        DEFAULT,
         ;
 
         public boolean canBeDelegatedTo() {
@@ -72,8 +63,7 @@ public @interface JsonConfig {
     enum ImplementationMode {
         DO_IMPLEMENT,
         DO_NOT_IMPLEMENT,
-        MERGE,
-        NONE,
+        DEFAULT,
         ;
 
         public boolean shouldImplement() {
@@ -81,20 +71,14 @@ public @interface JsonConfig {
         }
     }
 
-    enum MergeMode {
-        /**
-         * Starts with the configuration of the enclosing element. Then merges this with the configuration from any
-         * {@link JsonConfig#config()} elements in their referenced order. Finally merges this with the configuration
-         * from the annotated element.
-         */
-        ENCLOSING_THEN_CONFIGURATION,
-        /** Only uses the configuration from the annotated element. */
-        DO_NOT_MERGE,
-        /**
-         * The annotated element inherits this setting from the enclosing element. If there is nothing to inherit, this
-         * is equivalent to {@link #ENCLOSING_THEN_CONFIGURATION}.
-         */
-        LIKE_ENCLOSING,
+    enum UnknownPropertiesMode {
+        THROW,
+        IGNORE,
+        DEFAULT,
         ;
+
+        public boolean shouldThrow() {
+            return this != IGNORE;
+        }
     }
 }

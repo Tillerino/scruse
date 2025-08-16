@@ -12,6 +12,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderGenerator> {
@@ -19,16 +20,7 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     public ScruseReaderGenerator(
             AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
-        super(
-                utils,
-                generatedClass,
-                prototype,
-                CodeBlock.builder(),
-                null,
-                utils.tf.getType(prototype.instantiatedReturnType()),
-                true,
-                null,
-                new LHS.Return());
+        super(utils, prototype, generatedClass);
         parserVariable = prototype.methodElement().getParameters().get(0);
     }
 
@@ -41,8 +33,19 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
             VariableElement parserVariable,
             LHS lhs,
             ScruseReaderGenerator parent,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                stackRelevantType,
+                propertyName,
+                lhs,
+                config);
         this.parserVariable = parserVariable;
     }
 
@@ -121,6 +124,11 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
     }
 
     @Override
+    protected void skipValue() {
+        code.addStatement("$L.skipChildren($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
+    }
+
+    @Override
     protected void afterObject() {}
 
     @Override
@@ -164,7 +172,8 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
     }
 
     @Override
-    protected ScruseReaderGenerator nest(TypeMirror type, String propertyName, LHS lhs, boolean stackRelevantType) {
+    protected ScruseReaderGenerator nest(
+            TypeMirror type, String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new ScruseReaderGenerator(
                 prototype,
                 utils,
@@ -174,7 +183,8 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
                 parserVariable,
                 lhs,
                 this,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 
     private String importAdvance(ScruseReader.Advance advance) {

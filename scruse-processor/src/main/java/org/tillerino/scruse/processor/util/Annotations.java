@@ -10,7 +10,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.Validate;
-import org.mapstruct.ap.internal.util.accessor.Accessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
@@ -64,54 +63,6 @@ public record Annotations(AnnotationProcessorUtils utils) {
                 continue;
             }
             return Optional.of(utils.generics.applyTypeBindings(methodWithTypeTypeVars, methodTypeVars));
-        }
-        return Optional.empty();
-    }
-
-    public boolean isJsonIgnore(String propertyName, Accessor accessor) {
-        return findJsonIgnore(propertyName, accessor)
-                .flatMap(w -> w.method("value", true))
-                .filter(AnnotationValueWrapper::asBoolean)
-                .isPresent();
-    }
-
-    public Optional<AnnotationMirrorWrapper> findJsonIgnore(String propertyName, Accessor accessor) {
-        return findPropertyAnnotation(propertyName, accessor, "com.fasterxml.jackson.annotation.JsonIgnore");
-    }
-
-    public String getJsonPropertyName(String propertyName, Accessor accessor) {
-        return findPropertyAnnotation(propertyName, accessor, "com.fasterxml.jackson.annotation.JsonProperty")
-                .flatMap(w -> w.method("value", true))
-                .map(AnnotationValueWrapper::asString)
-                .orElse(propertyName);
-    }
-
-    public String getJsonPropertyName(VariableElement element) {
-        return findAnnotation(element, "com.fasterxml.jackson.annotation.JsonProperty")
-                .flatMap(w -> w.method("value", true))
-                .map(AnnotationValueWrapper::asString)
-                .orElse(element.getSimpleName().toString());
-    }
-
-    /** Finds an annotation on property: either on the field or on the accessor. */
-    public Optional<AnnotationMirrorWrapper> findPropertyAnnotation(
-            String propertyName, Accessor accessor, String annotationType) {
-        Element element = accessor.getElement();
-        if (element instanceof VariableElement variableElement) {
-            Optional<AnnotationMirrorWrapper> annotation = findAnnotation(variableElement, annotationType);
-            if (annotation.isPresent()) {
-                return annotation;
-            }
-        } else {
-            Optional<AnnotationMirrorWrapper> fieldAnnotation =
-                    ElementFilter.fieldsIn(element.getEnclosingElement().getEnclosedElements()).stream()
-                            .filter(field -> field.getSimpleName().toString().equals(propertyName))
-                            .findFirst()
-                            .flatMap(field -> findAnnotation(field, annotationType));
-            if (fieldAnnotation.isPresent()) {
-                return fieldAnnotation;
-            }
-            return findAnnotation(element, annotationType);
         }
         return Optional.empty();
     }
@@ -186,7 +137,8 @@ public record Annotations(AnnotationProcessorUtils utils) {
                                 }
                             },
                             null),
-                    "not a string");
+                    "not a string: %s",
+                    value);
         }
 
         public TypeMirror asTypeMirror() {
@@ -202,13 +154,13 @@ public record Annotations(AnnotationProcessorUtils utils) {
                     "not a type");
         }
 
-        public String asEnum() {
+        public <T extends Enum<T>> T asEnum(Class<T> cls) {
             return Validate.notNull(
                     value.accept(
-                            new GetAnnotationValues<String, Void>() {
+                            new GetAnnotationValues<T, Void>() {
                                 @Override
-                                public String visitEnumConstant(VariableElement c, Void o) {
-                                    return c.getSimpleName().toString();
+                                public T visitEnumConstant(VariableElement c, Void o) {
+                                    return Enum.valueOf(cls, c.getSimpleName().toString());
                                 }
                             },
                             null),

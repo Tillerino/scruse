@@ -413,7 +413,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonIdentityInfo
 - [ ] JsonIdentityReference
 - [X] JsonIgnore
-- [ ] JsonIgnoreProperties
+- [X] JsonIgnoreProperties (only `ignoreUnknown` property)
 - [ ] JsonIgnoreType
 - [ ] JsonInclude
 - [ ] JsonIncludeProperties
@@ -437,7 +437,6 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 ## Roadmap
 
 ### Short-term:
-- Configure ignore unknown properties.
 - Sort out missing properties.
 
 ### Long-term:

@@ -9,6 +9,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWriterGenerator> {
@@ -30,14 +31,26 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
             LHS lhs,
             RHS rhs,
             String propertyName,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                propertyName,
+                rhs,
+                lhs,
+                stackRelevantType,
+                config);
         this.generatorVariable = generatorVariable;
     }
 
     @Override
     protected Features features() {
-        return Features.builder().onlySupportsFiniteNumbers(true).build();
+        return new Features(true);
     }
 
     @Override
@@ -133,7 +146,7 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
 
     @Override
     protected NanojsonWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new NanojsonWriterGenerator(
                 prototype,
                 utils,
@@ -144,6 +157,7 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
                 lhs,
                 rhs,
                 propertyName,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 }

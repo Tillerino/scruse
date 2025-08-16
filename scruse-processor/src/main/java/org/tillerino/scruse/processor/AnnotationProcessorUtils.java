@@ -2,8 +2,8 @@ package org.tillerino.scruse.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.*;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -20,10 +20,7 @@ import org.mapstruct.ap.internal.util.AnnotationProcessorContext;
 import org.mapstruct.ap.internal.util.RoundContext;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
-import org.tillerino.scruse.processor.util.Annotations;
-import org.tillerino.scruse.processor.util.Converters;
-import org.tillerino.scruse.processor.util.Generics;
-import org.tillerino.scruse.processor.util.PrototypeFinder;
+import org.tillerino.scruse.processor.util.*;
 
 public class AnnotationProcessorUtils {
     public final Elements elements;
@@ -35,6 +32,7 @@ public class AnnotationProcessorUtils {
     public final Converters converters;
     public final Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
     public final Annotations annotations;
+    public final Messager messager;
 
     public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement) {
         elements = processingEnv.getElementUtils();
@@ -44,6 +42,7 @@ public class AnnotationProcessorUtils {
         generics = new Generics(this);
         annotations = new Annotations(this);
         converters = new Converters(this);
+        messager = processingEnv.getMessager();
 
         AnnotationProcessorContext apc = new AnnotationProcessorContext(
                 processingEnv.getElementUtils(),
@@ -80,15 +79,6 @@ public class AnnotationProcessorUtils {
             vals.forEach(val -> val.accept(this, o));
             return null;
         }
-    }
-
-    boolean isJsonIgnore(List<? extends AnnotationMirror> annotationMirrors) {
-        return annotationMirrors.stream()
-                .anyMatch(a -> types.isSameType(a.getAnnotationType(), commonTypes.jsonIgnore)
-                        && a.getElementValues().entrySet().stream()
-                                .anyMatch(e ->
-                                        e.getKey().getSimpleName().toString().equals("value")
-                                                && e.getValue().getValue().equals("true")));
     }
 
     public boolean isBoxed(TypeMirror type) {

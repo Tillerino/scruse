@@ -9,6 +9,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJsonWriterWriterGenerator> {
@@ -30,8 +31,20 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
             LHS lhs,
             RHS rhs,
             String propertyName,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                propertyName,
+                rhs,
+                lhs,
+                stackRelevantType,
+                config);
         this.writerVariable = writerVariable;
     }
 
@@ -120,7 +133,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 
     @Override
     protected GsonJsonWriterWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new GsonJsonWriterWriterGenerator(
                 prototype,
                 utils,
@@ -131,7 +144,8 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
                 lhs,
                 rhs,
                 propertyName,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 
     private void addFieldNameIfNeeded() {

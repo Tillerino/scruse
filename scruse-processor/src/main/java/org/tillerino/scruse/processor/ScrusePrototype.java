@@ -25,14 +25,19 @@ public record ScrusePrototype(
         AnnotationProcessorUtils utils,
         TypeMirror instantiatedReturnType,
         List<InstantiatedVariable> instantiatedParameters,
-        Config config) {
+        AnyConfig config) {
 
     static ScrusePrototype of(
             ScruseBlueprint blueprint,
             InstantiatedMethod instantiated,
             PrototypeKind kind,
             AnnotationProcessorUtils utils) {
-        Config config = Config.defaultConfig(instantiated.element(), utils).merge(blueprint.config);
+        AnyConfig config = AnyConfig.create(instantiated.element(), ConfigProperty.LocationKind.PROTOTYPE, utils)
+                .merge(blueprint.config);
+        if (kind.javaType() instanceof DeclaredType d) {
+            config = AnyConfig.create(d.asElement(), ConfigProperty.LocationKind.DTO, utils)
+                    .merge(config);
+        }
 
         return new ScrusePrototype(
                 blueprint,
@@ -135,7 +140,7 @@ public record ScrusePrototype(
                 }
             }
             // see if we can instantiate an instance from our list of used blueprints
-            String delegateeInField = generatedClass.getOrCreateUsedBlueprintWithTypeField(calleeParameterType);
+            String delegateeInField = generatedClass.getOrCreateUsedBlueprintWithTypeField(calleeParameterType, config);
             if (delegateeInField != null) {
                 arguments.add(Snippet.of("$L", delegateeInField));
                 continue calleeParameter;

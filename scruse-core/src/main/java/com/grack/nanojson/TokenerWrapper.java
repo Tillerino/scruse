@@ -129,4 +129,21 @@ public class TokenerWrapper {
         String s = tokener.reusableBuffer.toString();
         return Double.parseDouble(s);
     }
+
+    public void skipChildren() throws JsonParserException {
+        if (current() == TOKEN_ARRAY_START) {
+            next();
+            while (current() != TOKEN_ARRAY_END && current() != TOKEN_EOF) {
+                skipChildren();
+                next();
+            }
+        }
+        if (current() == TOKEN_OBJECT_START) {
+            next();
+            while (current() != TOKEN_OBJECT_END && current() != TOKEN_EOF) {
+                skipChildren();
+                next();
+            }
+        }
+    }
 }

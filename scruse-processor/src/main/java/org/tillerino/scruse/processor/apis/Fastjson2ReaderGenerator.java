@@ -1,8 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
-import javax.annotation.Nullable;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -12,6 +12,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2ReaderGenerator> {
@@ -20,16 +21,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     public Fastjson2ReaderGenerator(
             AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
-        super(
-                utils,
-                generatedClass,
-                prototype,
-                CodeBlock.builder(),
-                null,
-                utils.tf.getType(prototype.instantiatedReturnType()),
-                true,
-                null,
-                new LHS.Return());
+        super(utils, prototype, generatedClass);
         parserVariable = prototype.methodElement().getParameters().get(0);
     }
 
@@ -42,8 +34,19 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
             VariableElement parserVariable,
             LHS lhs,
             Fastjson2ReaderGenerator parent,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, lhs);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                stackRelevantType,
+                propertyName,
+                lhs,
+                config);
         this.parserVariable = parserVariable;
     }
 
@@ -140,6 +143,11 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     @Override
+    protected void skipValue() {
+        code.addStatement("$L.skipValue()", parserVariable.getSimpleName());
+    }
+
+    @Override
     protected void afterObject() {}
 
     @Override
@@ -187,7 +195,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected Fastjson2ReaderGenerator nest(
-            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType) {
+            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new Fastjson2ReaderGenerator(
                 prototype,
                 utils,
@@ -197,6 +205,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
                 parserVariable,
                 lhs,
                 this,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 }

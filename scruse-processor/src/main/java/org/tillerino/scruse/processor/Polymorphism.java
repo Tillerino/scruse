@@ -12,6 +12,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
 
 public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child> children) {
@@ -45,7 +46,7 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
                         .toList())
                 .orElseGet(() -> {
                     if (type.getPermittedSubclasses().isEmpty()) {
-                        throw new UnsupportedOperationException(
+                        throw new ContextedRuntimeException(
                                 "Specify subclasses for " + type.getQualifiedName() + " or use a sealed interface.");
                     }
                     return type.getPermittedSubclasses().stream()
@@ -68,7 +69,7 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
             case MINIMAL_CLASS -> minimalName(subType, superType);
             case SIMPLE_NAME -> name.orElseGet(subType.getSimpleName()::toString);
             case NAME -> name.orElseThrow(() -> new UnsupportedOperationException("No name specified for " + subType));
-            default -> throw new UnsupportedOperationException("Unsupported id: " + id);
+            default -> throw new ContextedRuntimeException("Unsupported id: " + id);
         };
     }
 
@@ -80,7 +81,7 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
         if (element.getEnclosingElement() instanceof TypeElement t) {
             return fullName(t) + "$" + element.getSimpleName().toString();
         }
-        throw new UnsupportedOperationException("Cannot determine full name of " + element);
+        throw new ContextedRuntimeException("Cannot determine full name of " + element);
     }
 
     static String minimalName(TypeElement element, TypeElement superType) {
@@ -101,7 +102,7 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
         if (element.getEnclosingElement() instanceof TypeElement t) {
             return minimalName(t, superType) + "$" + element.getSimpleName().toString();
         }
-        throw new UnsupportedOperationException("Cannot determine full name of " + element);
+        throw new ContextedRuntimeException("Cannot determine full name of " + element);
     }
 
     static void packageNames(Element element, List<String> names) {

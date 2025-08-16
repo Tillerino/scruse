@@ -9,9 +9,10 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 
 public record Converters(AnnotationProcessorUtils utils) {
-    public Optional<InstantiatedMethod> findInputConverter(ScruseBlueprint blueprint, TypeMirror targetType) {
+    public Optional<InstantiatedMethod> findInputConverter(
+            ScruseBlueprint blueprint, TypeMirror targetType, AnyConfig config) {
         Map<Generics.TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
-        return declaredMethodsFromSelfAndUsed(blueprint)
+        return declaredMethodsFromSelfAndUsed(blueprint, config)
                 .flatMap(method -> {
                     typeBindings.clear();
                     if (isInputConverter(method.element())
@@ -24,9 +25,10 @@ public record Converters(AnnotationProcessorUtils utils) {
                 .findFirst();
     }
 
-    public Optional<InstantiatedMethod> findOutputConverter(ScruseBlueprint blueprint, TypeMirror targetType) {
+    public Optional<InstantiatedMethod> findOutputConverter(
+            ScruseBlueprint blueprint, TypeMirror targetType, AnyConfig config) {
         Map<Generics.TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
-        return declaredMethodsFromSelfAndUsed(blueprint)
+        return declaredMethodsFromSelfAndUsed(blueprint, config)
                 .flatMap(method -> {
                     typeBindings.clear();
                     if (isOutputConverter(method.element())
@@ -39,9 +41,10 @@ public record Converters(AnnotationProcessorUtils utils) {
                 .findFirst();
     }
 
-    public Optional<InstantiatedMethod> findInputDefaultValue(ScruseBlueprint blueprint, TypeMirror targetType) {
+    public Optional<InstantiatedMethod> findInputDefaultValue(
+            ScruseBlueprint blueprint, TypeMirror targetType, AnyConfig config) {
         Map<Generics.TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
-        return declaredMethodsFromSelfAndUsed(blueprint)
+        return declaredMethodsFromSelfAndUsed(blueprint, config)
                 .flatMap(method -> {
                     typeBindings.clear();
                     if (isInputDefaultValue(method.element())
@@ -78,9 +81,10 @@ public record Converters(AnnotationProcessorUtils utils) {
                 && methodElement.getParameters().isEmpty();
     }
 
-    private static Stream<InstantiatedMethod> declaredMethodsFromSelfAndUsed(ScruseBlueprint blueprint) {
+    private static Stream<InstantiatedMethod> declaredMethodsFromSelfAndUsed(
+            ScruseBlueprint blueprint, AnyConfig config) {
         return Stream.concat(
                 blueprint.declaredMethods.stream(),
-                blueprint.reversedUses().stream().flatMap(use -> use.declaredMethods.stream()));
+                config.reversedUses().stream().flatMap(use -> use.declaredMethods.stream()));
     }
 }

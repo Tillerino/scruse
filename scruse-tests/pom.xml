@@ -22,7 +22,6 @@
     </modules>
 
     <properties>
-        <maven.build.cache.input>../scruse-tests-jackson/src</maven.build.cache.input>
         <copy.skip>true</copy.skip>
         <copy.package>-</copy.package>
         <copy.writer>-</copy.writer>

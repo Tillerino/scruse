@@ -9,6 +9,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2WriterGenerator> {
@@ -30,8 +31,20 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
             LHS lhs,
             RHS rhs,
             String propertyName,
-            boolean stackRelevantType) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, propertyName, rhs, lhs, stackRelevantType);
+            boolean stackRelevantType,
+            AnyConfig config) {
+        super(
+                utils,
+                parent.generatedClass,
+                prototype,
+                code,
+                parent,
+                type,
+                propertyName,
+                rhs,
+                lhs,
+                stackRelevantType,
+                config);
         this.writerVariable = writerVariable;
     }
 
@@ -153,7 +166,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 
     @Override
     protected Fastjson2WriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType) {
+            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new Fastjson2WriterGenerator(
                 prototype,
                 utils,
@@ -164,7 +177,8 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                 lhs,
                 rhs,
                 propertyName,
-                stackRelevantType);
+                stackRelevantType,
+                config);
     }
 
     private boolean writeNatively() {

@@ -1,12 +1,14 @@
 package org.tillerino.scruse.processor;
 
 import java.util.*;
+import java.util.stream.Stream;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
-import org.tillerino.scruse.processor.util.Config;
+import org.tillerino.scruse.processor.util.AnyConfig;
+import org.tillerino.scruse.processor.util.ConfigProperty;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -16,14 +18,14 @@ public final class ScruseBlueprint {
     public final TypeElement typeElement;
     public final List<ScrusePrototype> prototypes = new ArrayList<>();
     public final List<InstantiatedMethod> declaredMethods;
-    public final Config config;
+    public final AnyConfig config;
     public final Map<TypeVar, TypeMirror> typeBindings;
 
     private ScruseBlueprint(
             FullyQualifiedClassName className,
             TypeElement typeElement,
             List<InstantiatedMethod> declaredMethods,
-            Config config,
+            AnyConfig config,
             Map<TypeVar, TypeMirror> typeBindings) {
         this.className = className;
         this.typeElement = typeElement;
@@ -50,18 +52,12 @@ public final class ScruseBlueprint {
                 FullyQualifiedClassName.of(element),
                 element,
                 declaredMethods,
-                Config.defaultConfig(element, utils).merge(null),
+                AnyConfig.create(element, ConfigProperty.LocationKind.BLUEPRINT, utils),
                 typeBindings);
     }
 
-    /**
-     * Returns the used blueprints in the reverse order they are collected. This way earlier matches are more specific -
-     * i.e. closer to the location where the blueprint is used.
-     */
-    public List<ScruseBlueprint> reversedUses() {
-        List<ScruseBlueprint> uses = new ArrayList<>(config.uses());
-        Collections.reverse(uses);
-        return uses;
+    public Stream<ScruseBlueprint> includeUses() {
+        return Stream.concat(config.resolveProperty(ConfigProperty.USES).value().stream(), Stream.of(this));
     }
 
     @Override

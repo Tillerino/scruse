@@ -1,5 +1,7 @@
 package org.tillerino.scruse.api;
 
+import java.io.IOException;
+
 public interface ScruseReader<E extends Exception> {
     boolean isObjectStart(Advance advance) throws E;
 
@@ -38,6 +40,8 @@ public interface ScruseReader<E extends Exception> {
     String getFieldName(Advance advance) throws E;
 
     String getDiscriminator(String expectedName, boolean visible) throws E;
+
+    void skipChildren(Advance advance) throws IOException;
 
     E unexpectedToken(String expectedToken);
 

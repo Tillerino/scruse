@@ -1,14 +1,15 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.util.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.PrototypeKind;
@@ -30,6 +31,8 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 
     protected final boolean canBePolyChild;
 
+    protected final AnyConfig config;
+
     protected AbstractCodeGeneratorStack(
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
@@ -38,15 +41,17 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
             SELF parent,
             Type type,
             boolean stackRelevantType,
-            @Nullable String property) {
+            @Nullable String property,
+            AnyConfig config) {
         this.prototype = prototype;
         this.utils = utils;
         this.type = type;
         this.code = code;
         this.parent = parent;
-        this.generatedClass = Validate.notNull(generatedClass);
+        this.generatedClass = Objects.requireNonNull(generatedClass);
         this.stackRelevantType = stackRelevantType;
         this.property = property;
+        this.config = config;
         this.canBePolyChild = prototype.contextParameter().isPresent()
                 && stackDepth() == 1
                 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
@@ -80,7 +85,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
             if (property == null) {
                 return parent.stack();
             }
-            return parent.stack().append(" -> ").append(property + ": " + type.getName());
+            return parent.stack().append(" -> ").append(property).append(": ").append(type.getName());
         }
         if (property == null) {
             return new StringBuilder(type.getName());
@@ -111,7 +116,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         return Optional.empty();
     }
 
-    enum StringKind {
+    protected enum StringKind {
         STRING,
         CHAR_ARRAY
     }
@@ -120,5 +125,5 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         BYTE_ARRAY
     }
 
-    record Delegatee(String fieldOrParameter, InstantiatedMethod method) {}
+    protected record Delegatee(String fieldOrParameter, InstantiatedMethod method) {}
 }

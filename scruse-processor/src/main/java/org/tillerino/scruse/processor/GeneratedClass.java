@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor;
 
 import com.squareup.javapoet.*;
+import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -13,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.tillerino.scruse.helpers.EnumHelper;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName.TopLevelClassName;
+import org.tillerino.scruse.processor.util.AnyConfig;
+import org.tillerino.scruse.processor.util.ConfigProperty;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 /** Keeps track of the delegate readers/writers that are collected while processing a blueprint. */
@@ -51,16 +54,20 @@ public class GeneratedClass {
                 .name();
     }
 
-    public String getOrCreateUsedBlueprintWithTypeField(TypeMirror targetType) {
-        return getOrCreateUsedBlueprintWithTypeField(targetType, blueprint);
+    public String getOrCreateUsedBlueprintWithTypeField(TypeMirror targetType, AnyConfig config) {
+        return getOrCreateUsedBlueprintWithTypeField(targetType, blueprint, config);
     }
 
-    private String getOrCreateUsedBlueprintWithTypeField(TypeMirror targetType, ScruseBlueprint calleeBlueprint) {
+    private String getOrCreateUsedBlueprintWithTypeField(
+            TypeMirror targetType, ScruseBlueprint calleeBlueprint, @Nullable AnyConfig config) {
         if (utils.types.isAssignable(calleeBlueprint.typeElement.asType(), targetType)) {
             return getOrCreateDelegateeField(this.blueprint, calleeBlueprint);
         }
-        for (ScruseBlueprint use : calleeBlueprint.config.uses()) {
-            String found = getOrCreateUsedBlueprintWithTypeField(targetType, use);
+        if (config == null) {
+            return null;
+        }
+        for (ScruseBlueprint use : config.reversedUses()) {
+            String found = getOrCreateUsedBlueprintWithTypeField(targetType, use, null);
             if (found != null) {
                 return found;
             }
@@ -87,7 +94,8 @@ public class GeneratedClass {
                 return Pair.of(getOrCreateDelegateeField(blueprint, blueprint), method.name());
             }
         }
-        for (ScruseBlueprint use : blueprint.config.uses()) {
+        for (ScruseBlueprint use :
+                blueprint.config.resolveProperty(ConfigProperty.USES).value()) {
             for (ScrusePrototype method : use.prototypes) {
                 if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
                     return Pair.of(getOrCreateDelegateeField(blueprint, use), method.name());

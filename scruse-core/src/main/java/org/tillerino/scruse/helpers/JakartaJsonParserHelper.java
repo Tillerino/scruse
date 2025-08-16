@@ -35,6 +35,15 @@ public class JakartaJsonParserHelper {
         return true;
     }
 
+    public static void skip(JsonParserWrapper parser) {
+        if (parser.currentEvent() == Event.START_ARRAY) {
+            parser.skipArray();
+        }
+        if (parser.currentEvent() == Event.START_OBJECT) {
+            parser.skipObject();
+        }
+    }
+
     public static class JsonParserWrapper implements JsonParser {
         private boolean ended = false;
 
