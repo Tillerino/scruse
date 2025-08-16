@@ -31,6 +31,8 @@ public class ScruseProcessor extends AbstractProcessor {
 
     AnnotationProcessorUtils utils;
 
+    Set<String> generatedClasses = new LinkedHashSet<>();
+
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
@@ -45,12 +47,9 @@ public class ScruseProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (!roundEnv.processingOver()) {
-            collectElements(roundEnv);
-        } else {
-            generateCode();
-        }
-        return false;
+        collectElements(roundEnv);
+        generateCode();
+        return true;
     }
 
     private void collectElements(RoundEnvironment roundEnv) {
@@ -113,6 +112,9 @@ public class ScruseProcessor extends AbstractProcessor {
 
     private void generateCode() {
         for (ScruseBlueprint blueprint : utils.blueprints.values()) {
+            if (!generatedClasses.add(blueprint.generatedClassName())) {
+                continue;
+            }
             if (blueprint.prototypes.stream().anyMatch(method -> method.config()
                     .resolveProperty(ConfigProperty.IMPLEMENT)
                     .value()
@@ -160,9 +162,7 @@ public class ScruseProcessor extends AbstractProcessor {
         for (MethodSpec method : methods) {
             classBuilder.addMethod(method);
         }
-        JavaFileObject sourceFile = processingEnv
-                .getFiler()
-                .createSourceFile(blueprint.className.fileName().replace("/", ".") + "Impl");
+        JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(blueprint.generatedClassName());
         try (Writer writer = sourceFile.openWriter()) {
             JavaFile.Builder builder = JavaFile.builder(blueprint.className.packageName(), classBuilder.build());
             generatedClass.fileBuilderMods.forEach(mod -> mod.accept(builder));

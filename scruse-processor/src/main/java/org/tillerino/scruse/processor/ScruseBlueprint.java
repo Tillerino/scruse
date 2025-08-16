@@ -56,6 +56,10 @@ public final class ScruseBlueprint {
                 typeBindings);
     }
 
+    String generatedClassName() {
+        return className.fileName().replace("/", ".") + "Impl";
+    }
+
     public Stream<ScruseBlueprint> includeUses() {
         return Stream.concat(config.resolveProperty(ConfigProperty.USES).value().stream(), Stream.of(this));
     }

@@ -10,10 +10,8 @@ updates-flags := "-q '-Dmaven.version.ignore=.*\\.Beta\\d*,.*\\.android\\d*,.*-M
 format:
   {{mvn}} -q spotless:apply
 
-# install quickly. mvnd does not resolve the processor correctly unless it is installed
-install:
-  {{mvn}} clean spotless:apply install -pl scruse-processor -am
-  {{mvn}} clean spotless:apply install -pl scruse-tests -amd
+test:
+  {{mvn}} clean spotless:apply test
 
 # show all available updates
 updates:

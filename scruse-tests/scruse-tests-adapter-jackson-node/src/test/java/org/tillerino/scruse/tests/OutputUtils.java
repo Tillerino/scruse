@@ -34,7 +34,6 @@ public class OutputUtils {
             T obj, FailableBiConsumer<T, JacksonJsonNodeWriterAdapter, Exception> output) throws Exception {
         String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize(obj, output);
-        System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);
         return ours;
     }
@@ -50,7 +49,6 @@ public class OutputUtils {
             T obj, U obj2, FailableTriConsumer<T, JacksonJsonNodeWriterAdapter, U, Exception> output) throws Exception {
         String databind = InputUtils.objectMapper.writeValueAsString(obj);
         String ours = serialize2(obj, obj2, output);
-        System.out.println(ours);
         assertThatJson(ours).isEqualTo(databind);
         return ours;
     }
