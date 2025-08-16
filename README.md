@@ -33,15 +33,26 @@ Include the following in your POM:
     <artifactId>scruse-core</artifactId>
     <version>${scruse.version}</version>
 </dependency>
-<dependency>
-    <groupId>org.tillerino.scruse</groupId>
-    <artifactId>scruse-processor</artifactId>
-    <version>${scruse.version}</version>
-    <scope>provided</scope>
-</dependency>
 ```
 
-(Alternatively, you can use `scruse-processor` as an annotation processor, both work just fine.)
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <annotationProcessorPaths>
+            <annotationProcessorPath>
+                <groupId>org.tillerino.scruse</groupId>
+                <artifactId>scruse-processor</artifactId>
+                <version>${scruse.version}</version>
+            </annotationProcessorPath>
+        </annotationProcessorPaths>
+        <compilerArgs>
+            <arg>-parameters</arg>
+        </compilerArgs>
+    </configuration>
+</plugin>
+```
 
 To generate readers and writers, create an interface and annotate a method with `@JsonInput` or `@JsonOutput`:
 

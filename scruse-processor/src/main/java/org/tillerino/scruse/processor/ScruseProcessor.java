@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor;
 
 import static javax.tools.Diagnostic.Kind.ERROR;
 
+import com.google.auto.service.AutoService;
 import com.squareup.javapoet.*;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import org.tillerino.scruse.processor.util.PrototypeKind;
     "org.tillerino.scruse.annotations.JsonConfig",
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
+@AutoService(Processor.class)
 public class ScruseProcessor extends AbstractProcessor {
 
     AnnotationProcessorUtils utils;
