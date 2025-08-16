@@ -10,13 +10,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.api.ReflectionBridge.DeserializerDescription;
 import org.tillerino.scruse.api.ReflectionBridge.SerializerDescription;
-import org.tillerino.scruse.tests.InputUtils;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.base.ScalarFieldsRecord;
 import org.tillerino.scruse.tests.base.ScalarFieldsRecord$SerdeImpl;
 import org.tillerino.scruse.tests.model.AnEnum;
 
-class ReflectionBridgeTest {
+class ReflectionBridgeTest extends ReferenceTest {
     Type type = JaxRsInterfaceOrSomething.class.getMethods()[0].getGenericReturnType();
 
     @Test
@@ -27,7 +26,7 @@ class ReflectionBridgeTest {
                 reflectionBridge.findDeserializer(type, JsonParser.class);
 
         assertThat(deserializerMaybe).isNotEmpty();
-        InputUtils.withJsonParser("{}", parser -> {
+        inputUtils.withJsonParser("{}", parser -> {
             assertThat(deserializerMaybe.get().invoke(parser)).isInstanceOf(ScalarFieldsRecord.class);
             return null;
         });
@@ -41,7 +40,7 @@ class ReflectionBridgeTest {
                 reflectionBridge.findSerializer(type, JsonGenerator.class);
 
         assertThat(serializerMaybe).isNotEmpty();
-        assertThat(OutputUtils.withJsonGenerator(generator -> {
+        assertThat(outputUtils.withJsonGenerator(generator -> {
                     ScalarFieldsRecord value = new ScalarFieldsRecord(
                             false,
                             (byte) 1,

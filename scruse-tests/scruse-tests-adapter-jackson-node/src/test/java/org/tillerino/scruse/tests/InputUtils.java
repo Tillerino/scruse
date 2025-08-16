@@ -16,17 +16,17 @@ import org.tillerino.scruse.api.DeserializationContext;
 
 public class InputUtils {
 
-    static ObjectMapper objectMapper = new ObjectMapper()
+    public ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new ParameterNamesModule())
             .registerModule(new Jdk8Module())
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-    public static <T> T withJsonParser(
-            String json, FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer) throws Exception {
+    public <T> T withJsonParser(String json, FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer)
+            throws Exception {
         return consumer.apply(new JacksonJsonNodeReaderAdapter(new ObjectMapper().readTree(json)));
     }
 
-    public static <T> T assertIsEqualToDatabind(
+    public <T> T assertIsEqualToDatabind(
             String json,
             FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer,
             TypeReference<T> typeRef)
@@ -37,7 +37,7 @@ public class InputUtils {
         return ours;
     }
 
-    public static <T> void assertException(
+    public <T> void assertException(
             String json,
             FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer,
             TypeReference<T> typeRef,
@@ -47,18 +47,18 @@ public class InputUtils {
         assertThatThrownBy(() -> objectMapper.readValue(json, typeRef)).hasMessageContaining(theirMessage);
     }
 
-    public static <T> T deserialize(String json, FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer)
+    public <T> T deserialize(String json, FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer)
             throws Exception {
         return withJsonParser(json, consumer);
     }
 
-    public static <T, U> T deserialize2(
+    public <T, U> T deserialize2(
             String json, U obj2, FailableBiFunction<JacksonJsonNodeReaderAdapter, U, T, Exception> consumer)
             throws Exception {
         return withJsonParser(json, parser -> consumer.apply(parser, obj2));
     }
 
-    public static <T> T assertIsEqualToDatabind(
+    public <T> T assertIsEqualToDatabind(
             String json,
             FailableBiFunction<JacksonJsonNodeReaderAdapter, DeserializationContext, T, Exception> consumer,
             TypeReference<T> typeRef)
@@ -71,7 +71,7 @@ public class InputUtils {
         });
     }
 
-    public static <T, U> T assertIsEqualToDatabind2(
+    public <T, U> T assertIsEqualToDatabind2(
             String json,
             U arg2,
             FailableBiFunction<JacksonJsonNodeReaderAdapter, U, T, Exception> consumer,
@@ -83,7 +83,7 @@ public class InputUtils {
         return ours;
     }
 
-    public static <T> T assertIsEqualToDatabindComparingRecursively(
+    public <T> T assertIsEqualToDatabindComparingRecursively(
             String json,
             FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer,
             TypeReference<T> typeRef)
@@ -96,7 +96,7 @@ public class InputUtils {
         });
     }
 
-    private static <T> void assertEqualsComparingRecursively(T ours, T databind) {
+    private <T> void assertEqualsComparingRecursively(T ours, T databind) {
         assertThat(ours)
                 .usingRecursiveComparison(RecursiveComparisonConfiguration.builder()
                         .withStrictTypeChecking(true)

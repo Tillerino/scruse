@@ -7,6 +7,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
+import org.tillerino.scruse.processor.config.AnyConfig;
 
 public record Converters(AnnotationProcessorUtils utils) {
     public Optional<InstantiatedMethod> findInputConverter(

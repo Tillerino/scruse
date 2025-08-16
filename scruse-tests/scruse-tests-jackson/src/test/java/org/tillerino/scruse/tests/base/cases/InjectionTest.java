@@ -5,13 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.base.cases.InjectionSerde.InjectionSerializationContext;
 import org.tillerino.scruse.tests.model.SelfReferencingRecord;
 
 /** This test demonstrates how to hack injection into the serialization process. */
-class InjectionTest {
+class InjectionTest extends ReferenceTest {
     InjectionSerde serde = new InjectionSerdeImpl();
 
     SelfReferencingRecord b = new SelfReferencingRecord("b", null);
@@ -27,7 +26,7 @@ class InjectionTest {
     /** FEATURE-JSON */
     @Test
     void testInjectionOutput() throws Exception {
-        assertThatJson(OutputUtils.serialize2(list, new InjectionSerializationContext(), serde::writeList))
+        assertThatJson(outputUtils.serialize2(list, new InjectionSerializationContext(), serde::writeList))
                 .isEqualTo(json);
     }
 
@@ -37,7 +36,7 @@ class InjectionTest {
      */
     @Test
     void testInjectionInput() throws Exception {
-        List<SelfReferencingRecord> records = InputUtils.withJsonParser(
+        List<SelfReferencingRecord> records = inputUtils.withJsonParser(
                 json, parser -> serde.readList(parser, new InjectionSerde.InjectionDeserializationContext()));
         assertThat(records).isEqualTo(list);
         assertThat(records.get(1).self()).isSameAs(records.get(0));

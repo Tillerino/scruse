@@ -17,7 +17,7 @@ import javax.tools.JavaFileObject;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.annotations.*;
 import org.tillerino.scruse.processor.apis.*;
-import org.tillerino.scruse.processor.util.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.PrototypeKind;

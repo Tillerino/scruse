@@ -7,9 +7,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 
-class ScalarCollectionsReaderTest {
+class ScalarCollectionsReaderTest extends ReferenceTest {
     ScalarCollectionsReader impl = new ScalarCollectionsReaderImpl();
 
     @Test
@@ -19,7 +19,7 @@ class ScalarCollectionsReaderTest {
             "null", "[]", "[null]", "[true]", "[false]", "[true,false,null]",
         };
         for (String json : jsons) {
-            Set<Boolean> set = InputUtils.assertIsEqualToDatabind(json, impl::readBooleanSet, typeRef);
+            Set<Boolean> set = inputUtils.assertIsEqualToDatabind(json, impl::readBooleanSet, typeRef);
             if (set != null) {
                 assertThat(set).isInstanceOf(LinkedHashSet.class);
             }
@@ -34,7 +34,7 @@ class ScalarCollectionsReaderTest {
             "null", "[]", "[true]", "[false]", "[true,false]",
         };
         for (String json : jsons) {
-            Set<Boolean> set = InputUtils.assertIsEqualToDatabind(json, impl::readBooleanTreeSet, typeRef);
+            Set<Boolean> set = inputUtils.assertIsEqualToDatabind(json, impl::readBooleanTreeSet, typeRef);
             if (set != null) {
                 assertThat(set).isInstanceOf(TreeSet.class);
             }

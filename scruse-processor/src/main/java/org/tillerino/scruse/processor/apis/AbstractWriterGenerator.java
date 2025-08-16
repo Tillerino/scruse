@@ -13,8 +13,8 @@ import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
-import org.tillerino.scruse.processor.util.AnyConfig;
-import org.tillerino.scruse.processor.util.ConfigProperty;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>>

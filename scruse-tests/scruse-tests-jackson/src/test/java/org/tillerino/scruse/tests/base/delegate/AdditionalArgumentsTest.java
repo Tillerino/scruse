@@ -5,16 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.*;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 
-class AdditionalArgumentsTest {
+class AdditionalArgumentsTest extends ReferenceTest {
     AdditionalArgumentsSerde serde = new AdditionalArgumentsSerdeImpl();
 
     @Test
     void output() throws Exception {
         ArrayList<Integer> l = new ArrayList<>();
-        String json = OutputUtils.serialize2(Map.of("a", 1), l, serde::writeStringIntMap);
+        String json = outputUtils.serialize2(Map.of("a", 1), l, serde::writeStringIntMap);
         assertThatJson(json).isEqualTo("{\"a\":\"\"}");
         assertThat(l).containsExactly(1);
     }
@@ -22,7 +21,7 @@ class AdditionalArgumentsTest {
     @Test
     void input() throws Exception {
         Queue<Integer> l = new LinkedList<>(List.of(1));
-        Map<String, Integer> map = InputUtils.deserialize2("{\"a\":\"\"}", l, serde::readStringIntMap);
+        Map<String, Integer> map = inputUtils.deserialize2("{\"a\":\"\"}", l, serde::readStringIntMap);
         assertThat(map).containsExactly(Map.entry("a", 1));
         assertThat(l).isEmpty();
     }

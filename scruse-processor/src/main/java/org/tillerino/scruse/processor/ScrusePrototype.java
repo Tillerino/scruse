@@ -10,6 +10,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.*;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 
@@ -34,10 +36,6 @@ public record ScrusePrototype(
             AnnotationProcessorUtils utils) {
         AnyConfig config = AnyConfig.create(instantiated.element(), ConfigProperty.LocationKind.PROTOTYPE, utils)
                 .merge(blueprint.config);
-        if (kind.javaType() instanceof DeclaredType d) {
-            config = AnyConfig.create(d.asElement(), ConfigProperty.LocationKind.DTO, utils)
-                    .merge(config);
-        }
 
         return new ScrusePrototype(
                 blueprint,

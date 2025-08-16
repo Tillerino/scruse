@@ -4,10 +4,10 @@ import static org.tillerino.scruse.tests.CodeAssertions.assertThatCode;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.model.GenericRecord;
 
-class GenericsTest {
+class GenericsTest extends ReferenceTest {
     GenericRecordSerde genericRecordSerde = new GenericRecordSerdeImpl();
 
     StringRecordSerde stringRecordSerde = new StringRecordSerdeImpl();
@@ -16,7 +16,7 @@ class GenericsTest {
 
     @Test
     void passGenericImplExplicitly() throws Exception {
-        OutputUtils.roundTrip2(
+        outputUtils.roundTrip2(
                 new GenericRecord<>("x"),
                 new StringSerdeImpl(),
                 genericRecordSerde::writeGenericRecord,
@@ -32,7 +32,7 @@ class GenericsTest {
 
     @Test
     void takeGenericImplFromDelegatees() throws Exception {
-        OutputUtils.roundTrip(
+        outputUtils.roundTrip(
                 new GenericRecord<>("x"),
                 stringRecordSerde::writeStringRecord,
                 stringRecordSerde::readStringRecord,
@@ -44,7 +44,7 @@ class GenericsTest {
 
     @Test
     void createLambdaFromDelegatees() throws Exception {
-        OutputUtils.roundTrip(
+        outputUtils.roundTrip(
                 new GenericRecord<>(1),
                 integerRecordSerde::writeIntegerRecord,
                 integerRecordSerde::readIntegerRecord,

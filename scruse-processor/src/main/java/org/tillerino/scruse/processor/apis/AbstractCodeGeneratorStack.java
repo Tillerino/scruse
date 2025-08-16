@@ -9,7 +9,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
-import org.tillerino.scruse.processor.util.AnyConfig;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.PrototypeKind;
@@ -51,6 +52,10 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         this.generatedClass = Objects.requireNonNull(generatedClass);
         this.stackRelevantType = stackRelevantType;
         this.property = property;
+        if (stackRelevantType && type.getTypeElement() != null) {
+            config = AnyConfig.create(type.getTypeElement(), ConfigProperty.LocationKind.DTO, utils)
+                    .merge(config);
+        }
         this.config = config;
         this.canBePolyChild = prototype.contextParameter().isPresent()
                 && stackDepth() == 1

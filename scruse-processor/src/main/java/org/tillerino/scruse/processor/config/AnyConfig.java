@@ -1,4 +1,4 @@
-package org.tillerino.scruse.processor.util;
+package org.tillerino.scruse.processor.config;
 
 import jakarta.annotation.Nullable;
 import java.util.*;
@@ -11,8 +11,8 @@ import org.mapstruct.ap.internal.util.accessor.Accessor;
 import org.mapstruct.ap.internal.util.accessor.AccessorType;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
-import org.tillerino.scruse.processor.util.ConfigProperty.InstantiatedProperty;
-import org.tillerino.scruse.processor.util.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 
 public final class AnyConfig {
     static final ConfigProperty[] available = {

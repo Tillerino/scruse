@@ -1,4 +1,4 @@
-package org.tillerino.scruse.processor.util;
+package org.tillerino.scruse.processor.config;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +15,7 @@ public final class ConfigProperty<T> {
     private static final AtomicInteger counter = new AtomicInteger();
 
     public static ConfigProperty<JsonConfig.UnknownPropertiesMode> UNKNOWN_PROPERTIES = createConfigProperty(
-            List.of(LocationKind.BLUEPRINT, LocationKind.DTO, LocationKind.CREATOR),
+            List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE, LocationKind.CREATOR, LocationKind.DTO),
             List.of(
                     new ConfigPropertyRetriever<>(
                             "com.fasterxml.jackson.annotation.JsonIgnoreProperties",

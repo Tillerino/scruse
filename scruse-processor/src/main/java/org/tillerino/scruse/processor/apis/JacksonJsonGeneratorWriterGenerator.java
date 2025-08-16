@@ -9,7 +9,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
-import org.tillerino.scruse.processor.util.AnyConfig;
+import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator<JacksonJsonGeneratorWriterGenerator> {

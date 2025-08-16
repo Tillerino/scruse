@@ -1,21 +1,19 @@
 package org.tillerino.scruse.tests.base;
 
-import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
-import static org.tillerino.scruse.tests.OutputUtils.roundTripRecursive;
 import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.model.AnEnum;
 
-class ScalarArraysSerdeTest {
+class ScalarArraysSerdeTest extends ReferenceTest {
     ScalarArraysSerde impl = new ScalarArraysSerdeImpl();
 
     @Test
     void testBooleanArray() throws Exception {
         for (boolean[] object : SETTINGS.javaData().BOOLEAN_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBooleanArray, impl::readBooleanArray, new TypeReference<boolean[]>() {});
         }
     }
@@ -23,56 +21,63 @@ class ScalarArraysSerdeTest {
     @Test
     void testByteArray() throws Exception {
         for (byte[] object : SETTINGS.javaData().BYTE_ARRAYS) {
-            roundTripRecursive(object, impl::writeByteArray, impl::readByteArray, new TypeReference<byte[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeByteArray, impl::readByteArray, new TypeReference<byte[]>() {});
         }
     }
 
     @Test
     void testShortArray() throws Exception {
         for (short[] object : SETTINGS.javaData().SHORT_ARRAYS) {
-            roundTripRecursive(object, impl::writeShortArray, impl::readShortArray, new TypeReference<short[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeShortArray, impl::readShortArray, new TypeReference<short[]>() {});
         }
     }
 
     @Test
     void testIntArray() throws Exception {
         for (int[] object : SETTINGS.javaData().INT_ARRAYS) {
-            roundTripRecursive(object, impl::writeIntArray, impl::readIntArray, new TypeReference<int[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeIntArray, impl::readIntArray, new TypeReference<int[]>() {});
         }
     }
 
     @Test
     void testLongArray() throws Exception {
         for (long[] object : SETTINGS.javaData().LONG_ARRAYS) {
-            roundTripRecursive(object, impl::writeLongArray, impl::readLongArray, new TypeReference<long[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeLongArray, impl::readLongArray, new TypeReference<long[]>() {});
         }
     }
 
     @Test
     void testCharArray() throws Exception {
         for (char[] object : SETTINGS.javaData().CHAR_ARRAYS) {
-            roundTripRecursive(object, impl::writeCharArray, impl::readCharArray, new TypeReference<char[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeCharArray, impl::readCharArray, new TypeReference<char[]>() {});
         }
     }
 
     @Test
     void testFloatArray() throws Exception {
         for (float[] object : SETTINGS.javaData().floatArrays) {
-            roundTripRecursive(object, impl::writeFloatArray, impl::readFloatArray, new TypeReference<float[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeFloatArray, impl::readFloatArray, new TypeReference<float[]>() {});
         }
     }
 
     @Test
     void testDoubleArray() throws Exception {
         for (double[] object : SETTINGS.javaData().DOUBLE_ARRAYS) {
-            roundTripRecursive(object, impl::writeDoubleArray, impl::readDoubleArray, new TypeReference<double[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeDoubleArray, impl::readDoubleArray, new TypeReference<double[]>() {});
         }
     }
 
     @Test
     void testBoxedBooleanArray() throws Exception {
         for (Boolean[] object : SETTINGS.javaData().BOXED_BOOLEAN_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object,
                     impl::writeBoxedBooleanArray,
                     impl::readBoxedBooleanArray,
@@ -83,7 +88,7 @@ class ScalarArraysSerdeTest {
     @Test
     void testBoxedByteArray() throws Exception {
         for (Byte[] object : SETTINGS.javaData().BOXED_BYTE_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBoxedByteArray, impl::readBoxedByteArray, new TypeReference<Byte[]>() {});
         }
     }
@@ -91,7 +96,7 @@ class ScalarArraysSerdeTest {
     @Test
     void testBoxedShortArray() throws Exception {
         for (Short[] object : SETTINGS.javaData().BOXED_SHORT_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBoxedShortArray, impl::readBoxedShortArray, new TypeReference<Short[]>() {});
         }
     }
@@ -99,7 +104,7 @@ class ScalarArraysSerdeTest {
     @Test
     void testBoxedIntArray() throws Exception {
         for (Integer[] object : SETTINGS.javaData().BOXED_INT_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBoxedIntArray, impl::readBoxedIntArray, new TypeReference<Integer[]>() {});
         }
     }
@@ -107,7 +112,7 @@ class ScalarArraysSerdeTest {
     @Test
     void testBoxedLongArray() throws Exception {
         for (Long[] object : SETTINGS.javaData().BOXED_LONG_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBoxedLongArray, impl::readBoxedLongArray, new TypeReference<Long[]>() {});
         }
     }
@@ -116,14 +121,14 @@ class ScalarArraysSerdeTest {
     void testBoxedCharArray() throws Exception {
         for (Character[] object : SETTINGS.javaData().BOXED_CHAR_ARRAYS) {
             // only testing output since Jackson does not like reading boxed char arrays
-            assertIsEqualToDatabind(object, impl::writeBoxedCharArray);
+            outputUtils.assertIsEqualToDatabind(object, impl::writeBoxedCharArray);
         }
     }
 
     @Test
     void testBoxedFloatArray() throws Exception {
         for (Float[] object : SETTINGS.javaData().boxedFloatArrays) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBoxedFloatArray, impl::readBoxedFloatArray, new TypeReference<Float[]>() {});
         }
     }
@@ -131,7 +136,7 @@ class ScalarArraysSerdeTest {
     @Test
     void testBoxedDoubleArray() throws Exception {
         for (Double[] object : SETTINGS.javaData().BOXED_DOUBLE_ARRAYS) {
-            roundTripRecursive(
+            outputUtils.roundTripRecursive(
                     object, impl::writeBoxedDoubleArray, impl::readBoxedDoubleArray, new TypeReference<Double[]>() {});
         }
     }
@@ -139,14 +144,16 @@ class ScalarArraysSerdeTest {
     @Test
     void testStringArray() throws Exception {
         for (String[] object : SETTINGS.javaData().STRING_ARRAYS) {
-            roundTripRecursive(object, impl::writeStringArray, impl::readStringArray, new TypeReference<String[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeStringArray, impl::readStringArray, new TypeReference<String[]>() {});
         }
     }
 
     @Test
     void testEnumArray() throws Exception {
         for (AnEnum[] object : SETTINGS.javaData().ENUM_ARRAYS) {
-            roundTripRecursive(object, impl::writeEnumArray, impl::readEnumArray, new TypeReference<AnEnum[]>() {});
+            outputUtils.roundTripRecursive(
+                    object, impl::writeEnumArray, impl::readEnumArray, new TypeReference<AnEnum[]>() {});
         }
     }
 
@@ -167,6 +174,6 @@ class ScalarArraysSerdeTest {
 				90, 91, 92, 93, 94, 95, 96, 97, 98, 99
 			]
 		""";
-        InputUtils.assertIsEqualToDatabind(json, impl::readIntArray, new TypeReference<int[]>() {});
+        inputUtils.assertIsEqualToDatabind(json, impl::readIntArray, new TypeReference<int[]>() {});
     }
 }

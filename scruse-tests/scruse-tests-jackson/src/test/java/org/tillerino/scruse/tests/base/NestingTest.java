@@ -1,12 +1,10 @@
 package org.tillerino.scruse.tests.base;
 
-import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.model.NestingModel;
 
 /**
@@ -33,7 +31,7 @@ import org.tillerino.scruse.tests.model.NestingModel;
  *   <li>Outer map, inner map: testStringStringDoubleMapMap
  * </ul>
  */
-class NestingTest {
+class NestingTest extends ReferenceTest {
     @Test
     void testOuterObject() throws Exception {
         NestingSerde.OuterRecordSerde recordImpl = new NestingSerde$OuterRecordSerdeImpl();
@@ -57,17 +55,17 @@ class NestingTest {
         };
 
         for (String json : jsons) {
-            NestingModel.OuterRecord outerRecord = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            NestingModel.OuterRecord outerRecord = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, recordImpl::read, new TypeReference<>() {});
-            assertIsEqualToDatabind(outerRecord, recordImpl::write);
+            outputUtils.assertIsEqualToDatabind(outerRecord, recordImpl::write);
 
-            NestingModel.OuterFields outerFields = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            NestingModel.OuterFields outerFields = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, fieldsImpl::read, new TypeReference<>() {});
-            assertIsEqualToDatabind(outerFields, fieldsImpl::write);
+            outputUtils.assertIsEqualToDatabind(outerFields, fieldsImpl::write);
 
-            NestingModel.OuterAccessors outerAccessors = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            NestingModel.OuterAccessors outerAccessors = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, accessorsImpl::read, new TypeReference<>() {});
-            assertIsEqualToDatabind(outerAccessors, accessorsImpl::write);
+            outputUtils.assertIsEqualToDatabind(outerAccessors, accessorsImpl::write);
         }
     }
 
@@ -91,21 +89,21 @@ class NestingTest {
         };
 
         for (String json : jsons) {
-            Double[][] doubleArrayArray = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            Double[][] doubleArrayArray = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, arrayImpl::readDoubleArrayArray, new TypeReference<>() {});
-            assertIsEqualToDatabind(doubleArrayArray, arrayImpl::writeDoubleArrayArray);
+            outputUtils.assertIsEqualToDatabind(doubleArrayArray, arrayImpl::writeDoubleArrayArray);
 
-            List<Double>[] doubleListArray = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            List<Double>[] doubleListArray = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, arrayImpl::readDoubleListArray, new TypeReference<>() {});
-            assertIsEqualToDatabind(doubleListArray, arrayImpl::writeDoubleListArray);
+            outputUtils.assertIsEqualToDatabind(doubleListArray, arrayImpl::writeDoubleListArray);
 
-            List<Double[]> doubleArrayList = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            List<Double[]> doubleArrayList = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, listImpl::readDoubleArrayList, new TypeReference<>() {});
-            assertIsEqualToDatabind(doubleArrayList, listImpl::writeDoubleArrayList);
+            outputUtils.assertIsEqualToDatabind(doubleArrayList, listImpl::writeDoubleArrayList);
 
-            List<List<Double>> doubleListList = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            List<List<Double>> doubleListList = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, listImpl::readDoubleListList, new TypeReference<>() {});
-            assertIsEqualToDatabind(doubleListList, listImpl::writeDoubleListList);
+            outputUtils.assertIsEqualToDatabind(doubleListList, listImpl::writeDoubleListList);
         }
     }
 
@@ -129,13 +127,13 @@ class NestingTest {
         };
 
         for (String json : jsons) {
-            Map<String, Double>[] stringDoubleMapArray = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            Map<String, Double>[] stringDoubleMapArray = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, arrayImpl::readStringDoubleMapArray, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringDoubleMapArray, arrayImpl::writeStringDoubleMapArray);
+            outputUtils.assertIsEqualToDatabind(stringDoubleMapArray, arrayImpl::writeStringDoubleMapArray);
 
-            List<Map<String, Double>> stringDoubleMapList = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            List<Map<String, Double>> stringDoubleMapList = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, listImpl::readStringDoubleMapList, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringDoubleMapList, listImpl::writeStringDoubleMapList);
+            outputUtils.assertIsEqualToDatabind(stringDoubleMapList, listImpl::writeStringDoubleMapList);
         }
     }
 
@@ -161,19 +159,19 @@ class NestingTest {
 
         for (String json : jsons) {
             Map<String, NestingModel.InnerRecord> stringRecordMap =
-                    InputUtils.assertIsEqualToDatabindComparingRecursively(
+                    inputUtils.assertIsEqualToDatabindComparingRecursively(
                             json, mapImpl::readStringRecordMap, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringRecordMap, mapImpl::writeStringRecordMap);
+            outputUtils.assertIsEqualToDatabind(stringRecordMap, mapImpl::writeStringRecordMap);
 
             Map<String, NestingModel.InnerAccessors> stringAccessorsMap =
-                    InputUtils.assertIsEqualToDatabindComparingRecursively(
+                    inputUtils.assertIsEqualToDatabindComparingRecursively(
                             json, mapImpl::readStringAccessorsMap, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringAccessorsMap, mapImpl::writeStringAccessorsMap);
+            outputUtils.assertIsEqualToDatabind(stringAccessorsMap, mapImpl::writeStringAccessorsMap);
 
             Map<String, NestingModel.InnerFields> stringFieldsMap =
-                    InputUtils.assertIsEqualToDatabindComparingRecursively(
+                    inputUtils.assertIsEqualToDatabindComparingRecursively(
                             json, mapImpl::readStringFieldsMap, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringFieldsMap, mapImpl::writeStringFieldsMap);
+            outputUtils.assertIsEqualToDatabind(stringFieldsMap, mapImpl::writeStringFieldsMap);
         }
     }
 
@@ -199,30 +197,30 @@ class NestingTest {
         };
 
         for (String json : jsons) {
-            NestingModel.InnerRecord[] innerRecordArray = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            NestingModel.InnerRecord[] innerRecordArray = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, arrayImpl::readInnerRecordArray, new TypeReference<>() {});
-            assertIsEqualToDatabind(innerRecordArray, arrayImpl::writeInnerRecordArray);
+            outputUtils.assertIsEqualToDatabind(innerRecordArray, arrayImpl::writeInnerRecordArray);
 
-            NestingModel.InnerFields[] innerFieldsArray = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            NestingModel.InnerFields[] innerFieldsArray = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, arrayImpl::readInnerFieldsArray, new TypeReference<>() {});
-            assertIsEqualToDatabind(innerFieldsArray, arrayImpl::writeInnerFieldsArray);
+            outputUtils.assertIsEqualToDatabind(innerFieldsArray, arrayImpl::writeInnerFieldsArray);
 
-            NestingModel.InnerAccessors[] innerAccessorsArray = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            NestingModel.InnerAccessors[] innerAccessorsArray = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, arrayImpl::readInnerAccessorsArray, new TypeReference<>() {});
-            assertIsEqualToDatabind(innerAccessorsArray, arrayImpl::writeInnerAccessorsArray);
+            outputUtils.assertIsEqualToDatabind(innerAccessorsArray, arrayImpl::writeInnerAccessorsArray);
 
-            List<NestingModel.InnerRecord> innerRecordList = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            List<NestingModel.InnerRecord> innerRecordList = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, listImpl::readInnerRecordList, new TypeReference<>() {});
-            assertIsEqualToDatabind(innerRecordList, listImpl::writeInnerRecordList);
+            outputUtils.assertIsEqualToDatabind(innerRecordList, listImpl::writeInnerRecordList);
 
-            List<NestingModel.InnerFields> innerFieldsList = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            List<NestingModel.InnerFields> innerFieldsList = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, listImpl::readInnerFieldsList, new TypeReference<>() {});
-            assertIsEqualToDatabind(innerFieldsList, listImpl::writeInnerFieldsList);
+            outputUtils.assertIsEqualToDatabind(innerFieldsList, listImpl::writeInnerFieldsList);
 
             List<NestingModel.InnerAccessors> innerAccessorsList =
-                    InputUtils.assertIsEqualToDatabindComparingRecursively(
+                    inputUtils.assertIsEqualToDatabindComparingRecursively(
                             json, listImpl::readInnerAccessorsList, new TypeReference<>() {});
-            assertIsEqualToDatabind(innerAccessorsList, listImpl::writeInnerAccessorsList);
+            outputUtils.assertIsEqualToDatabind(innerAccessorsList, listImpl::writeInnerAccessorsList);
         }
     }
 
@@ -246,9 +244,9 @@ class NestingTest {
 
         for (String json : jsons) {
             Map<String, Map<String, Double>> stringStringDoubleMapMap =
-                    InputUtils.assertIsEqualToDatabindComparingRecursively(
+                    inputUtils.assertIsEqualToDatabindComparingRecursively(
                             json, mapImpl::readStringStringDoubleMapMap, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringStringDoubleMapMap, mapImpl::writeStringStringDoubleMapMap);
+            outputUtils.assertIsEqualToDatabind(stringStringDoubleMapMap, mapImpl::writeStringStringDoubleMapMap);
         }
     }
 
@@ -271,13 +269,13 @@ class NestingTest {
         };
 
         for (String json : jsons) {
-            Map<String, Double[]> stringDoubleArrayMap = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            Map<String, Double[]> stringDoubleArrayMap = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, mapImpl::readStringDoubleArrayMap, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringDoubleArrayMap, mapImpl::writeStringDoubleArrayMap);
+            outputUtils.assertIsEqualToDatabind(stringDoubleArrayMap, mapImpl::writeStringDoubleArrayMap);
 
-            Map<String, List<Double>> stringDoubleListMap = InputUtils.assertIsEqualToDatabindComparingRecursively(
+            Map<String, List<Double>> stringDoubleListMap = inputUtils.assertIsEqualToDatabindComparingRecursively(
                     json, mapImpl::readStringDoubleListMap, new TypeReference<>() {});
-            assertIsEqualToDatabind(stringDoubleListMap, mapImpl::writeStringDoubleListMap);
+            outputUtils.assertIsEqualToDatabind(stringDoubleListMap, mapImpl::writeStringDoubleListMap);
         }
     }
 }

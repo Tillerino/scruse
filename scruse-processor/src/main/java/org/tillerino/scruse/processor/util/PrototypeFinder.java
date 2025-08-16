@@ -5,6 +5,8 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.ScrusePrototype;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 
 public record PrototypeFinder(AnnotationProcessorUtils utils) {
     public Optional<Prototype> findPrototype(

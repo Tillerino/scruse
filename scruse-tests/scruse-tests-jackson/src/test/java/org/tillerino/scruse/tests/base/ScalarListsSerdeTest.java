@@ -1,23 +1,23 @@
 package org.tillerino.scruse.tests.base;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.tillerino.scruse.tests.OutputUtils.roundTrip;
 import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.model.AnEnum;
 
-class ScalarListsSerdeTest {
+class ScalarListsSerdeTest extends ReferenceTest {
     ScalarListsSerde impl = new ScalarListsSerdeImpl();
 
     @Test
     void testBooleanList() throws Exception {
         for (List<Boolean> object : SETTINGS.javaData().BOOLEAN_LISTS) {
-            List<Boolean> list =
-                    roundTrip(object, impl::writeBooleanList, impl::readBooleanList, new TypeReference<>() {});
+            List<Boolean> list = outputUtils.roundTrip(
+                    object, impl::writeBooleanList, impl::readBooleanList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -27,7 +27,8 @@ class ScalarListsSerdeTest {
     @Test
     void testByteList() throws Exception {
         for (List<Byte> object : SETTINGS.javaData().BYTE_LISTS) {
-            List<Byte> list = roundTrip(object, impl::writeByteList, impl::readByteList, new TypeReference<>() {});
+            List<Byte> list =
+                    outputUtils.roundTrip(object, impl::writeByteList, impl::readByteList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -37,7 +38,8 @@ class ScalarListsSerdeTest {
     @Test
     void testShortList() throws Exception {
         for (List<Short> object : SETTINGS.javaData().SHORT_LISTS) {
-            List<Short> list = roundTrip(object, impl::writeShortList, impl::readShortList, new TypeReference<>() {});
+            List<Short> list =
+                    outputUtils.roundTrip(object, impl::writeShortList, impl::readShortList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -47,7 +49,8 @@ class ScalarListsSerdeTest {
     @Test
     void testIntList() throws Exception {
         for (List<Integer> object : SETTINGS.javaData().INT_LISTS) {
-            List<Integer> list = roundTrip(object, impl::writeIntList, impl::readIntegerList, new TypeReference<>() {});
+            List<Integer> list =
+                    outputUtils.roundTrip(object, impl::writeIntList, impl::readIntegerList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -57,7 +60,8 @@ class ScalarListsSerdeTest {
     @Test
     void testLongList() throws Exception {
         for (List<Long> object : SETTINGS.javaData().LONG_LISTS) {
-            List<Long> list = roundTrip(object, impl::writeLongList, impl::readLongList, new TypeReference<>() {});
+            List<Long> list =
+                    outputUtils.roundTrip(object, impl::writeLongList, impl::readLongList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -67,8 +71,8 @@ class ScalarListsSerdeTest {
     @Test
     void testCharList() throws Exception {
         for (List<Character> object : SETTINGS.javaData().CHAR_LISTS) {
-            List<Character> list =
-                    roundTrip(object, impl::writeCharList, impl::readCharacterList, new TypeReference<>() {});
+            List<Character> list = outputUtils.roundTrip(
+                    object, impl::writeCharList, impl::readCharacterList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -78,7 +82,8 @@ class ScalarListsSerdeTest {
     @Test
     void testFloatList() throws Exception {
         for (List<Float> object : SETTINGS.javaData().floatLists) {
-            List<Float> list = roundTrip(object, impl::writeFloatList, impl::readFloatList, new TypeReference<>() {});
+            List<Float> list =
+                    outputUtils.roundTrip(object, impl::writeFloatList, impl::readFloatList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -88,8 +93,8 @@ class ScalarListsSerdeTest {
     @Test
     void testDoubleList() throws Exception {
         for (List<Double> object : SETTINGS.javaData().DOUBLE_LISTS) {
-            List<Double> list =
-                    roundTrip(object, impl::writeDoubleList, impl::readDoubleList, new TypeReference<>() {});
+            List<Double> list = outputUtils.roundTrip(
+                    object, impl::writeDoubleList, impl::readDoubleList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -99,8 +104,8 @@ class ScalarListsSerdeTest {
     @Test
     void testStringList() throws Exception {
         for (List<String> object : SETTINGS.javaData().STRING_LISTS) {
-            List<String> list =
-                    roundTrip(object, impl::writeStringList, impl::readStringList, new TypeReference<>() {});
+            List<String> list = outputUtils.roundTrip(
+                    object, impl::writeStringList, impl::readStringList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }
@@ -110,7 +115,8 @@ class ScalarListsSerdeTest {
     @Test
     void testEnumList() throws Exception {
         for (List<AnEnum> object : SETTINGS.javaData().ENUM_LISTS) {
-            List<AnEnum> list = roundTrip(object, impl::writeEnumList, impl::readEnumList, new TypeReference<>() {});
+            List<AnEnum> list =
+                    outputUtils.roundTrip(object, impl::writeEnumList, impl::readEnumList, new TypeReference<>() {});
             if (list != null) {
                 assertThat(list).isInstanceOf(ArrayList.class);
             }

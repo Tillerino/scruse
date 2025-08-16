@@ -3,11 +3,10 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.InputUtils;
-import org.tillerino.scruse.tests.OutputUtils;
+import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.model.AnEnum;
 
-class ScalarFieldsSerdeTest {
+class ScalarFieldsSerdeTest extends ReferenceTest {
 
     @Test
     void scalarFieldsRecordOutput() throws Exception {
@@ -38,7 +37,7 @@ class ScalarFieldsSerdeTest {
         ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
 
         for (ScalarFieldsRecord object : values) {
-            OutputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
+            outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
         }
     }
 
@@ -71,7 +70,7 @@ class ScalarFieldsSerdeTest {
         ScalarFieldsClass.Serde impl = new ScalarFieldsClass$SerdeImpl();
 
         for (ScalarFieldsClass object : values) {
-            OutputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
+            outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
         }
     }
 
@@ -104,7 +103,7 @@ class ScalarFieldsSerdeTest {
         ScalarAccessorsClass.Serde impl = new ScalarAccessorsClass$SerdeImpl();
 
         for (ScalarAccessorsClass object : values) {
-            OutputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
+            outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
         }
     }
 
@@ -112,7 +111,7 @@ class ScalarFieldsSerdeTest {
     void testUnknownPropertiesDefault() throws Exception {
         ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
 
-        InputUtils.assertException(
+        inputUtils.assertException(
                 "{ \"whatIsThis\": 1 }",
                 impl::read,
                 new TypeReference<ScalarFieldsRecord>() {},

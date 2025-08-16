@@ -1,21 +1,21 @@
 package org.tillerino.scruse.tests.base;
 
-import static org.tillerino.scruse.tests.OutputUtils.assertIsEqualToDatabind;
 import static org.tillerino.scruse.tests.TestSettingsBase.JavaData.map;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.ReferenceTest;
 
-class NestedScalarsTest {
+class NestedScalarsTest extends ReferenceTest {
     NestedScalarsWriter impl = new NestedScalarsWriterImpl();
 
     @Test
     void testDoubleArrayArray() throws Exception {
         Double[][][] values = {null, {null}, {{null}}, {null, {null}}, {null, {1D, null, 3D}}};
         for (Double[][] value : values) {
-            assertIsEqualToDatabind(value, impl::writeDoubleArrayArray);
+            outputUtils.assertIsEqualToDatabind(value, impl::writeDoubleArrayArray);
         }
     }
 
@@ -26,7 +26,7 @@ class NestedScalarsTest {
                     4D, 5D, null
                 }));
         for (Map<String, Double[]> value : values) {
-            assertIsEqualToDatabind(value, impl::writeStringDoubleArrayMap);
+            outputUtils.assertIsEqualToDatabind(value, impl::writeStringDoubleArrayMap);
         }
     }
 
@@ -39,7 +39,7 @@ class NestedScalarsTest {
                 List.of(map()),
                 List.of(map("a", 1D, "b", null, "c", 3D), map("d", 4D, "e", 5D, "f", null)));
         for (List<Map<String, Double>> value : values) {
-            assertIsEqualToDatabind(value, impl::writeStringDoubleMapList);
+            outputUtils.assertIsEqualToDatabind(value, impl::writeStringDoubleMapList);
         }
     }
 
@@ -51,7 +51,7 @@ class NestedScalarsTest {
                 map("a", null),
                 map("a", map("a", 1D, "b", null, "c", 3D), "b", null, "c", map("d", 4D, "e", 5D, "f", null)));
         for (Map<String, Map<String, Double>> value : values) {
-            assertIsEqualToDatabind(value, impl::writeStringDoubleMapMap);
+            outputUtils.assertIsEqualToDatabind(value, impl::writeStringDoubleMapMap);
         }
     }
 }

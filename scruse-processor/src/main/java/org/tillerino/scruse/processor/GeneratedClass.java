@@ -14,8 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.tillerino.scruse.helpers.EnumHelper;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName.TopLevelClassName;
-import org.tillerino.scruse.processor.util.AnyConfig;
-import org.tillerino.scruse.processor.util.ConfigProperty;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 /** Keeps track of the delegate readers/writers that are collected while processing a blueprint. */

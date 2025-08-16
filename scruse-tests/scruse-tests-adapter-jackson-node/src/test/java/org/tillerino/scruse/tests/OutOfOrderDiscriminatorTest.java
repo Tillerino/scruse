@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.alt.adapter.jsonnode.PolymorphismSerde;
 import org.tillerino.scruse.tests.alt.adapter.jsonnode.PolymorphismSerdeImpl;
 
-class OutOfOrderDiscriminatorTest {
+class OutOfOrderDiscriminatorTest extends ReferenceTest {
     PolymorphismSerde serde = new PolymorphismSerdeImpl();
 
     /**
@@ -13,7 +13,7 @@ class OutOfOrderDiscriminatorTest {
      */
     @Test
     void outOfOrderDiscriminator() throws Exception {
-        PolymorphismSerde.SealedInterface deserialize = InputUtils.deserialize(
+        PolymorphismSerde.SealedInterface deserialize = inputUtils.deserialize(
                 "{\"s\":\"abc\", \"@c\": \".PolymorphismSerde$RecordOne\"}", serde::readPolymorphism);
     }
 }

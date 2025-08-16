@@ -7,8 +7,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
-import org.tillerino.scruse.processor.util.AnyConfig;
-import org.tillerino.scruse.processor.util.ConfigProperty;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
