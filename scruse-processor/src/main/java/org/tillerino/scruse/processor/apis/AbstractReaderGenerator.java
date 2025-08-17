@@ -18,6 +18,7 @@ import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
@@ -490,13 +491,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             AnyConfig propertyConfig = AnyConfig.create(
                             parameter.element(), ConfigProperty.LocationKind.PROPERTY, utils)
                     .merge(creatorConfig);
-            String finalPropertyName =
-                    propertyConfig.resolveProperty(ConfigProperty.PROPERTY_NAME).value();
-            if (finalPropertyName.isEmpty()) {
-                finalPropertyName = parameter.name();
-            }
-            String varName = finalPropertyName + "$" + (stackDepth() + 1);
-            SELF nest = nest(parameter.type(), finalPropertyName, new LHS.Variable(varName), true, propertyConfig);
+
+            // use parameter name as variable name because we know it is valid - unlike the configured property name
+            String varName = parameter.name() + "$" + (stackDepth() + 1);
+            String propertyName = PropertyName.resolvePropertyName(propertyConfig, parameter.name());
+
+            SELF nest = nest(parameter.type(), propertyName, new LHS.Variable(varName), true, propertyConfig);
             Snippet defaultValue = utils.converters
                     .findInputDefaultValue(prototype.blueprint(), nest.type.getTypeMirror(), propertyConfig)
                     .map(m -> Snippet.of("$C()", m.callSymbol(utils)))
@@ -528,14 +528,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                             .value()) {
                         return;
                     }
-                    String finalPropertyName = propertyConfig
-                            .resolveProperty(ConfigProperty.PROPERTY_NAME)
-                            .value();
-                    if (finalPropertyName.isEmpty()) {
-                        finalPropertyName = canonicalPropertyName;
-                    }
+
                     LHS lhs = LHS.from(accessor, objectVar);
-                    SELF nest = nest(accessor.getAccessedType(), finalPropertyName, lhs, true, propertyConfig);
+                    String propertyName = PropertyName.resolvePropertyName(propertyConfig, canonicalPropertyName);
+                    SELF nest = nest(accessor.getAccessedType(), propertyName, lhs, true, propertyConfig);
                     nested.add(nest);
                 });
         readProperties(nested);

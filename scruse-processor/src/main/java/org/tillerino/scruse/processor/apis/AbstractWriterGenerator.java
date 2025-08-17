@@ -16,6 +16,7 @@ import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>>
@@ -321,19 +322,15 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             if (propertyConfig.resolveProperty(ConfigProperty.IGNORE_PROPERTY).value()) {
                 return;
             }
-            String finalPropertyName =
-                    propertyConfig.resolveProperty(ConfigProperty.PROPERTY_NAME).value();
-            if (finalPropertyName.isEmpty()) {
-                finalPropertyName = canonicalPropertyName;
-            }
+            String propertyName = PropertyName.resolvePropertyName(propertyConfig, canonicalPropertyName);
 
-            if (ignoredProperties.contains(finalPropertyName)) {
+            if (ignoredProperties.contains(propertyName)) {
                 return;
             }
 
-            LHS lhs = new LHS.Field("$S", new Object[] {finalPropertyName});
+            LHS lhs = new LHS.Field("$S", new Object[] {propertyName});
             RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
-            SELF nested = nest(accessor.getAccessedType(), lhs, finalPropertyName, nest, true, config);
+            SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest, true, config);
             nested.build();
             code.add("\n");
         });

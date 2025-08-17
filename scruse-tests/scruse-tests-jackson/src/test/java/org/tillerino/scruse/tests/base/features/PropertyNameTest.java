@@ -1,13 +1,13 @@
-package org.tillerino.scruse.tests.base.annotations;
+package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
-import org.tillerino.scruse.tests.model.annotations.JsonPropertyCustomName;
-import org.tillerino.scruse.tests.model.annotations.JsonPropertyCustomNameWithSetter;
+import org.tillerino.scruse.tests.model.features.PropertyNameModel.JsonPropertyCustomName;
+import org.tillerino.scruse.tests.model.features.PropertyNameModel.JsonPropertyCustomNameWithSetter;
 
-class JsonPropertyTest extends ReferenceTest {
-    JsonPropertySerde serde = new JsonPropertySerdeImpl();
+class PropertyNameTest extends ReferenceTest {
+    PropertyNameSerde serde = new PropertyNameSerdeImpl();
 
     @Test
     void customName() throws Exception {

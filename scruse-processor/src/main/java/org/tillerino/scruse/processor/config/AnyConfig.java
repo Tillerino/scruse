@@ -13,6 +13,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.features.PropertyName;
 
 public final class AnyConfig {
     static final ConfigProperty[] available = {
@@ -20,7 +21,7 @@ public final class AnyConfig {
         ConfigProperty.USES,
         ConfigProperty.DELEGATEE,
         ConfigProperty.IMPLEMENT,
-        ConfigProperty.PROPERTY_NAME,
+        PropertyName.PROPERTY_NAME,
         ConfigProperty.IGNORE_PROPERTY,
         ConfigProperty.IGNORED_PROPERTIES,
         // leave a trailing comma for cleaner diffs :)

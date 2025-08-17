@@ -55,14 +55,6 @@ public final class ConfigProperty<T> {
             JsonConfig.ImplementationMode.DEFAULT,
             MergeFunction.notDefault(JsonConfig.ImplementationMode.DEFAULT));
 
-    public static ConfigProperty<String> PROPERTY_NAME = createConfigProperty(
-            List.of(LocationKind.PROPERTY),
-            List.of(new ConfigPropertyRetriever<>(
-                    "com.fasterxml.jackson.annotation.JsonProperty",
-                    (ann, utils) -> ann.method("value", true).map(AnnotationValueWrapper::asString))),
-            "",
-            MergeFunction.notDefault(""));
-
     public static ConfigProperty<Boolean> IGNORE_PROPERTY = createConfigProperty(
             List.of(LocationKind.PROPERTY),
             List.of(new ConfigPropertyRetriever<>(
