@@ -51,7 +51,7 @@ public @interface JsonConfig {
         DELEGATE_TO,
         /** The annotated element cannot be called from other serializers. */
         DO_NOT_DELEGATE_TO,
-        /** Unspecified. Unless a specific value is inherited, {@link #DELEGATE_TO}. */
+        /** Defaults to {@link #DELEGATE_TO} */
         DEFAULT,
         ;
 
@@ -63,6 +63,7 @@ public @interface JsonConfig {
     enum ImplementationMode {
         DO_IMPLEMENT,
         DO_NOT_IMPLEMENT,
+        /** Defaults to {@link #DO_IMPLEMENT} */
         DEFAULT,
         ;
 
@@ -74,11 +75,8 @@ public @interface JsonConfig {
     enum UnknownPropertiesMode {
         THROW,
         IGNORE,
+        /** Defaults to {@link #THROW} */
         DEFAULT,
         ;
-
-        public boolean shouldThrow() {
-            return this != IGNORE;
-        }
     }
 }

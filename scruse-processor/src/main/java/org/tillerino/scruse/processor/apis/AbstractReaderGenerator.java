@@ -19,6 +19,7 @@ import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
+import org.tillerino.scruse.processor.features.UnknownProperties;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
@@ -572,9 +573,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
         {
             code.beginControlFlow("default:");
-            if (config.resolveProperty(ConfigProperty.UNKNOWN_PROPERTIES)
-                    .value()
-                    .shouldThrow()) {
+            if (UnknownProperties.shouldThrow(config)) {
                 code.addStatement(
                         "throw new $T($S + $L + $S)", IOException.class, "Unrecognized field \"", fieldVar, "\"");
             } else {

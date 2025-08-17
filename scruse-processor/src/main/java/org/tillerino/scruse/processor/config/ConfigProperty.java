@@ -14,21 +14,6 @@ import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
 public final class ConfigProperty<T> {
     private static final AtomicInteger counter = new AtomicInteger();
 
-    public static ConfigProperty<JsonConfig.UnknownPropertiesMode> UNKNOWN_PROPERTIES = createConfigProperty(
-            List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE, LocationKind.CREATOR, LocationKind.DTO),
-            List.of(
-                    new ConfigPropertyRetriever<>(
-                            "com.fasterxml.jackson.annotation.JsonIgnoreProperties",
-                            (wrapper, utils) -> wrapper.method("ignoreUnknown", true)
-                                    .map(AnnotationValueWrapper::asBoolean)
-                                    .map(i -> i
-                                            ? JsonConfig.UnknownPropertiesMode.IGNORE
-                                            : JsonConfig.UnknownPropertiesMode.THROW)),
-                    ConfigPropertyRetriever.jsonConfigPropertyRetriever(
-                            "unknownProperties", JsonConfig.UnknownPropertiesMode.class)),
-            JsonConfig.UnknownPropertiesMode.DEFAULT,
-            MergeFunction.notDefault(JsonConfig.UnknownPropertiesMode.DEFAULT));
-
     public static ConfigProperty<Set<ScruseBlueprint>> USES = createConfigProperty(
             List.of(LocationKind.values()),
             List.of(new ConfigPropertyRetriever<>(
@@ -166,7 +151,7 @@ public final class ConfigProperty<T> {
     public record ConfigPropertyRetriever<T>(
             String annotationClass, ConfigPropertyRetrieverFunction<T> valueRetriever) {
 
-        private static <T extends Enum<T>> ConfigPropertyRetriever<T> jsonConfigPropertyRetriever(
+        public static <T extends Enum<T>> ConfigPropertyRetriever<T> jsonConfigPropertyRetriever(
                 String method, Class<T> enumClass) {
             return new ConfigPropertyRetriever<>(
                     "org.tillerino.scruse.annotations.JsonConfig", (wrapper, utils) -> wrapper.method(method, false)

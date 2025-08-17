@@ -14,10 +14,11 @@ import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.PropertyName;
+import org.tillerino.scruse.processor.features.UnknownProperties;
 
 public final class AnyConfig {
     static final ConfigProperty[] available = {
-        ConfigProperty.UNKNOWN_PROPERTIES,
+        UnknownProperties.UNKNOWN_PROPERTIES,
         ConfigProperty.USES,
         ConfigProperty.DELEGATEE,
         ConfigProperty.IMPLEMENT,
