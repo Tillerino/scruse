@@ -424,7 +424,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonIdentityInfo
 - [ ] JsonIdentityReference
 - [X] JsonIgnore
-- [X] JsonIgnoreProperties (only `ignoreUnknown` property)
+- [X] JsonIgnoreProperties (`value` and `ignoreUnknown` properties)
 - [ ] JsonIgnoreType
 - [ ] JsonInclude
 - [ ] JsonIncludeProperties

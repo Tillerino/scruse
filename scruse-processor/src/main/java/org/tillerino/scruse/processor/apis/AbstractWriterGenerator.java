@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -311,6 +312,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             code.endControlFlow();
         }
 
+        Set<String> ignoredProperties =
+                config.resolveProperty(ConfigProperty.IGNORED_PROPERTIES).value();
+
         type.getPropertyReadAccessors().forEach((canonicalPropertyName, accessor) -> {
             AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
                     accessor, type.getTypeElement(), canonicalPropertyName, utils);
@@ -322,6 +326,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             if (finalPropertyName.isEmpty()) {
                 finalPropertyName = canonicalPropertyName;
             }
+
+            if (ignoredProperties.contains(finalPropertyName)) {
+                return;
+            }
+
             LHS lhs = new LHS.Field("$S", new Object[] {finalPropertyName});
             RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
             SELF nested = nest(accessor.getAccessedType(), lhs, finalPropertyName, nest, true, config);

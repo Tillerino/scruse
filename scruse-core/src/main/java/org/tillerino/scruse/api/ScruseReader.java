@@ -1,7 +1,5 @@
 package org.tillerino.scruse.api;
 
-import java.io.IOException;
-
 public interface ScruseReader<E extends Exception> {
     boolean isObjectStart(Advance advance) throws E;
 
@@ -41,10 +39,16 @@ public interface ScruseReader<E extends Exception> {
 
     String getDiscriminator(String expectedName, boolean visible) throws E;
 
-    void skipChildren(Advance advance) throws IOException;
+    /**
+     * If at array start / object start, skips all children. Will then point to array end / object.
+     *
+     * @param advance if {@link Advance#CONSUME}, will consume array end / object end as well.
+     */
+    void skipChildren(Advance advance) throws E;
 
     E unexpectedToken(String expectedToken);
 
+    /** Controls whether to advance while inspecting tokens or keep the token. */
     enum Advance {
         KEEP,
         CONSUME,

@@ -547,10 +547,30 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         startFieldCase(Branch.IF);
         String fieldVar = "field$" + stackDepth();
         readFieldNameInIteration(fieldVar);
+
+        Set<String> ignoredProperties =
+                config.resolveProperty(ConfigProperty.IGNORED_PROPERTIES).value();
+
         code.beginControlFlow("switch($L)", fieldVar);
         for (SELF nest : properties) {
+            if (ignoredProperties.contains(nest.property)) {
+                continue;
+            }
             code.beginControlFlow("case $S:", nest.property);
             nest.build(Branch.IF, true);
+            code.addStatement("break");
+            code.endControlFlow();
+        }
+        if (!ignoredProperties.isEmpty()) {
+            Snippet.of(
+                            "case $C:",
+                            Snippet.join(
+                                    ignoredProperties.stream()
+                                            .map(prop -> Snippet.of("$S", prop))
+                                            .toList(),
+                                    ", "))
+                    .beginControlFlowIn(code);
+            skipValue();
             code.addStatement("break");
             code.endControlFlow();
         }

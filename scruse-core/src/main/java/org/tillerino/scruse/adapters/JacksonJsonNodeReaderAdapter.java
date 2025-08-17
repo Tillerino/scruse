@@ -3,7 +3,6 @@ package org.tillerino.scruse.adapters;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.IOException;
 import java.util.*;
 import org.tillerino.scruse.api.ScruseReader;
 
@@ -231,7 +230,7 @@ public class JacksonJsonNodeReaderAdapter implements ScruseReader<RuntimeExcepti
     }
 
     @Override
-    public void skipChildren(Advance advance) throws IOException {
+    public void skipChildren(Advance advance) throws RuntimeException {
         if (isArrayStart(Advance.KEEP)) {
             node.push(new ArrayIterator(Collections.emptyIterator()));
         } else if (isObjectEnd(Advance.KEEP)) {

@@ -22,8 +22,13 @@ public final class AnyConfig {
         ConfigProperty.IMPLEMENT,
         ConfigProperty.PROPERTY_NAME,
         ConfigProperty.IGNORE_PROPERTY,
+        ConfigProperty.IGNORED_PROPERTIES,
         // leave a trailing comma for cleaner diffs :)
     };
+
+    static {
+        Arrays.sort(available, Comparator.comparingInt(p -> p.index));
+    }
 
     static final Comparator<InstantiatedProperty> COMPARATOR = Comparator.<InstantiatedProperty>comparingInt(
                     prop -> prop.property().index)
