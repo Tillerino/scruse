@@ -65,7 +65,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     CodeBlock.Builder build(Branch branch, boolean nullable) {
-        Optional<Delegatee> delegate = utils.prototypeFinder
+        Optional<Delegatee> delegate = utils.delegation
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
                 .map(d -> new Delegatee(
                         generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
@@ -435,7 +435,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         Branch branch = Branch.IF;
         for (Polymorphism.Child child : polymorphism.children()) {
             branch.controlFlow(code, "$L.equals($S)", discriminator.name(), child.name());
-            utils.prototypeFinder
+            utils.delegation
                     .findPrototype(utils.tf.getType(child.type()), prototype, false, true, config)
                     .ifPresentOrElse(
                             delegate -> {

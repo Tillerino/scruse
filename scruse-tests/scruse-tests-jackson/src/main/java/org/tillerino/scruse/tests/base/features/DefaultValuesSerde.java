@@ -1,15 +1,14 @@
 package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.JsonParser;
+import java.util.Arrays;
+import java.util.List;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonInputDefaultValue;
 import org.tillerino.scruse.tests.base.features.DefaultValuesSerde.SomeDefaultValues;
 import org.tillerino.scruse.tests.model.AnEnum;
 import org.tillerino.scruse.tests.model.features.DefaultValuesModel.Mixed;
-
-import java.util.Arrays;
-import java.util.List;
 
 @JsonConfig(uses = SomeDefaultValues.class)
 public interface DefaultValuesSerde {

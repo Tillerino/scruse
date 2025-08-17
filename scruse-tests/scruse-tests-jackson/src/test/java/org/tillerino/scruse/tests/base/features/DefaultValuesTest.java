@@ -1,12 +1,11 @@
 package org.tillerino.scruse.tests.base.features;
 
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.model.AnEnum;
 import org.tillerino.scruse.tests.model.features.DefaultValuesModel.Mixed;
-
-import java.util.Arrays;
 
 public class DefaultValuesTest extends ReferenceTest {
     DefaultValuesSerde serde = new DefaultValuesSerdeImpl();

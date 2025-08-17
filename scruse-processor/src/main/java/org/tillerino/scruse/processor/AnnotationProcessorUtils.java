@@ -27,14 +27,14 @@ import org.tillerino.scruse.processor.features.Converters;
 import org.tillerino.scruse.processor.features.DefaultValues;
 import org.tillerino.scruse.processor.util.Annotations;
 import org.tillerino.scruse.processor.util.Generics;
-import org.tillerino.scruse.processor.util.PrototypeFinder;
+import org.tillerino.scruse.processor.features.Delegation;
 
 public class AnnotationProcessorUtils {
     public final Elements elements;
     public final Types types;
     public final CommonTypes commonTypes;
     public final TypeFactory tf;
-    public final PrototypeFinder prototypeFinder;
+    public final Delegation delegation;
     public final Generics generics;
     public final Converters converters;
     public final DefaultValues defaultValues;
@@ -46,7 +46,7 @@ public class AnnotationProcessorUtils {
         elements = processingEnv.getElementUtils();
         types = processingEnv.getTypeUtils();
         commonTypes = new CommonTypes();
-        prototypeFinder = new PrototypeFinder(this);
+        delegation = new Delegation(this);
         generics = new Generics(this);
         annotations = new Annotations(this);
         converters = new Converters(this);

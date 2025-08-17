@@ -63,7 +63,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     }
 
     public CodeBlock.Builder build() {
-        Optional<Delegatee> delegate = utils.prototypeFinder
+        Optional<Delegatee> delegate = utils.delegation
                 // delegate to any of the used blueprints
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
                 .map(d -> new Delegatee(
@@ -241,7 +241,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             code.addStatement(
                     "$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
 
-            utils.prototypeFinder
+            utils.delegation
                     .findPrototype(utils.tf.getType(child.type()), prototype, false, true, config)
                     .ifPresentOrElse(
                             delegate -> {

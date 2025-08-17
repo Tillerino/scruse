@@ -1,6 +1,7 @@
 package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
@@ -8,8 +9,6 @@ import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.TestSettingsBase;
 import org.tillerino.scruse.tests.function.Zip;
 import org.tillerino.scruse.tests.model.features.ConvertersModel.OptionalComponentsRecord;
-
-import java.util.*;
 
 class ConvertersTest extends ReferenceTest {
     ConvertersSerde serde = new ConvertersSerdeImpl();
