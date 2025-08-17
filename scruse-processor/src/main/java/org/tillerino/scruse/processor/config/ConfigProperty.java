@@ -40,14 +40,6 @@ public final class ConfigProperty<T> {
             JsonConfig.ImplementationMode.DEFAULT,
             MergeFunction.notDefault(JsonConfig.ImplementationMode.DEFAULT));
 
-    public static ConfigProperty<Boolean> IGNORE_PROPERTY = createConfigProperty(
-            List.of(LocationKind.PROPERTY),
-            List.of(new ConfigPropertyRetriever<>(
-                    "com.fasterxml.jackson.annotation.JsonIgnore",
-                    (ann, utils) -> ann.method("value", true).map(AnnotationValueWrapper::asBoolean))),
-            false,
-            MergeFunction.notDefault(false));
-
     public static ConfigProperty<Set<String>> IGNORED_PROPERTIES = createConfigProperty(
             List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE, LocationKind.CREATOR, LocationKind.DTO),
             List.of(new ConfigPropertyRetriever<>(

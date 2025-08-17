@@ -1,11 +1,11 @@
-package org.tillerino.scruse.tests.base.annotations;
+package org.tillerino.scruse.tests.base.features;
 
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
-import org.tillerino.scruse.tests.model.annotations.*;
+import org.tillerino.scruse.tests.model.features.IgnorePropertyModel.*;
 
-class JsonIgnoreTest extends ReferenceTest {
-    JsonIgnoreSerde serde = new JsonIgnoreSerdeImpl();
+class IgnorePropertyTest extends ReferenceTest {
+    IgnorePropertySerde serde = new IgnorePropertySerdeImpl();
 
     @Test
     void fieldWithGetter() throws Exception {

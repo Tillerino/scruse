@@ -16,6 +16,7 @@ import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -319,7 +320,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         type.getPropertyReadAccessors().forEach((canonicalPropertyName, accessor) -> {
             AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
                     accessor, type.getTypeElement(), canonicalPropertyName, utils);
-            if (propertyConfig.resolveProperty(ConfigProperty.IGNORE_PROPERTY).value()) {
+            if (propertyConfig.resolveProperty(IgnoreProperty.IGNORE_PROPERTY).value()) {
                 return;
             }
             String propertyName = PropertyName.resolvePropertyName(propertyConfig, canonicalPropertyName);

@@ -1,10 +1,10 @@
-package org.tillerino.scruse.tests.base.annotations;
+package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.model.annotations.*;
+import org.tillerino.scruse.tests.model.features.IgnorePropertyModel.*;
 
-public interface JsonIgnoreSerde {
+public interface IgnorePropertySerde {
     @JsonOutput
     void writeFieldWithGetter(JsonIgnoreOnFieldWithGetter obj, JsonGenerator out) throws Exception;
 

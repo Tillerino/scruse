@@ -13,6 +13,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.features.UnknownProperties;
 
@@ -23,7 +24,7 @@ public final class AnyConfig {
         ConfigProperty.DELEGATEE,
         ConfigProperty.IMPLEMENT,
         PropertyName.PROPERTY_NAME,
-        ConfigProperty.IGNORE_PROPERTY,
+        IgnoreProperty.IGNORE_PROPERTY,
         ConfigProperty.IGNORED_PROPERTIES,
         // leave a trailing comma for cleaner diffs :)
     };

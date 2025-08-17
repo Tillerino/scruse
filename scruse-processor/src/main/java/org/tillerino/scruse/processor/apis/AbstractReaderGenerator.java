@@ -18,6 +18,7 @@ import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.features.UnknownProperties;
 import org.tillerino.scruse.processor.util.Generics.TypeVar;
@@ -504,7 +505,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     .orElse(Snippet.of("$L", nest.type.getNull()));
             Snippet.of("$T $L = $C", nest.type.getTypeMirror(), varName, defaultValue)
                     .addStatementTo(code);
-            if (propertyConfig.resolveProperty(ConfigProperty.IGNORE_PROPERTY).value()) {
+            if (propertyConfig.resolveProperty(IgnoreProperty.IGNORE_PROPERTY).value()) {
                 // we do need the default value to call the creator, so we only skip reading the value
                 continue;
             }
@@ -525,7 +526,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                     accessor, type.getTypeElement(), canonicalPropertyName, utils)
                             .merge(config);
                     if (propertyConfig
-                            .resolveProperty(ConfigProperty.IGNORE_PROPERTY)
+                            .resolveProperty(IgnoreProperty.IGNORE_PROPERTY)
                             .value()) {
                         return;
                     }
