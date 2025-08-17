@@ -1,6 +1,9 @@
-package org.tillerino.scruse.processor.util;
+package org.tillerino.scruse.processor.features;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -11,6 +14,9 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
+import org.tillerino.scruse.processor.util.InstantiatedVariable;
+import org.tillerino.scruse.processor.util.RebuildingTypeVisitor;
 
 public record Generics(AnnotationProcessorUtils utils) {
     public Map<TypeVar, TypeMirror> recordTypeBindings(DeclaredType d) {

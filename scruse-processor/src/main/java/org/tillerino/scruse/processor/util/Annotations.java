@@ -12,7 +12,7 @@ import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.Validate;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
+import org.tillerino.scruse.processor.features.Generics.TypeVar;
 
 public record Annotations(AnnotationProcessorUtils utils) {
     public Optional<InstantiatedMethod> findJsonValueMethod(TypeMirror tm) {

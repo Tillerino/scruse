@@ -10,7 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.AnyConfig;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
+import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public record Converters(AnnotationProcessorUtils utils) {

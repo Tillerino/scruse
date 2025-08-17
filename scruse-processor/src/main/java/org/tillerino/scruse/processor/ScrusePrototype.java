@@ -12,8 +12,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.*;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
 
 /**
  * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or

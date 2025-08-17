@@ -18,11 +18,11 @@ import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.features.UnknownProperties;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 

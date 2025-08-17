@@ -1,18 +1,17 @@
 package org.tillerino.scruse.processor.features;
 
-import org.tillerino.scruse.processor.AnnotationProcessorUtils;
-import org.tillerino.scruse.processor.ScruseBlueprint;
-import org.tillerino.scruse.processor.config.AnyConfig;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
-import org.tillerino.scruse.processor.util.InstantiatedMethod;
-
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeMirror;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeMirror;
+import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.ScruseBlueprint;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.features.Generics.TypeVar;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public record DefaultValues(AnnotationProcessorUtils utils) {
 

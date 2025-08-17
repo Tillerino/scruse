@@ -1,4 +1,4 @@
-package org.tillerino.scruse.tests.base.generics;
+package org.tillerino.scruse.tests.base.features;
 
 import static org.tillerino.scruse.tests.CodeAssertions.assertThatCode;
 
@@ -6,9 +6,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
-import org.tillerino.scruse.tests.model.GenericRecord;
+import org.tillerino.scruse.tests.base.features.GenericsSerde.GenericRecordSerde;
+import org.tillerino.scruse.tests.base.features.GenericsSerde.IntegerRecordSerde;
+import org.tillerino.scruse.tests.base.features.GenericsSerde.StringRecordSerde;
+import org.tillerino.scruse.tests.base.features.GenericsSerde.StringSerde;
+import org.tillerino.scruse.tests.model.features.GenericsModel.GenericRecord;
 
 class GenericsTest extends ReferenceTest {
+    StringSerde stringSerde = SerdeUtil.impl(StringSerde.class);
+
     GenericRecordSerde genericRecordSerde = SerdeUtil.impl(GenericRecordSerde.class);
 
     StringRecordSerde stringRecordSerde = SerdeUtil.impl(StringRecordSerde.class);
@@ -19,16 +25,18 @@ class GenericsTest extends ReferenceTest {
     void passGenericImplExplicitly() throws Exception {
         outputUtils.roundTrip2(
                 new GenericRecord<>("x"),
-                new StringSerdeImpl(),
+                stringSerde,
                 genericRecordSerde::writeGenericRecord,
                 genericRecordSerde::readGenericRecord,
                 new TypeReference<>() {});
 
-        assertThatCode(GenericRecordSerdeImpl.class)
+        assertThatCode(SerdeUtil.implClass(GenericRecordSerde.class))
                 .method("writeGenericRecord")
                 .calls("writeOnGenericInterface");
 
-        assertThatCode(GenericRecordSerdeImpl.class).method("readGenericRecord").calls("readOnGenericInterface");
+        assertThatCode(SerdeUtil.implClass(GenericRecordSerde.class))
+                .method("readGenericRecord")
+                .calls("readOnGenericInterface");
     }
 
     @Test
@@ -39,8 +47,12 @@ class GenericsTest extends ReferenceTest {
                 stringRecordSerde::readStringRecord,
                 new TypeReference<>() {});
 
-        assertThatCode(StringRecordSerdeImpl.class).method("writeStringRecord").calls("writeGenericRecord");
-        assertThatCode(StringRecordSerdeImpl.class).method("readStringRecord").calls("readGenericRecord");
+        assertThatCode(SerdeUtil.implClass(StringRecordSerde.class))
+                .method("writeStringRecord")
+                .calls("writeGenericRecord");
+        assertThatCode(SerdeUtil.implClass(StringRecordSerde.class))
+                .method("readStringRecord")
+                .calls("readGenericRecord");
     }
 
     @Test
@@ -51,11 +63,11 @@ class GenericsTest extends ReferenceTest {
                 integerRecordSerde::readIntegerRecord,
                 new TypeReference<>() {});
 
-        assertThatCode(IntegerRecordSerdeImpl.class)
+        assertThatCode(SerdeUtil.implClass(IntegerRecordSerde.class))
                 .method("writeIntegerRecord")
                 .calls("writeGenericRecord")
                 .bodyContains("::writeBoxedIntX");
-        assertThatCode(IntegerRecordSerdeImpl.class)
+        assertThatCode(SerdeUtil.implClass(IntegerRecordSerde.class))
                 .method("readIntegerRecord")
                 .calls("readGenericRecord")
                 .bodyContains("::readBoxedInt");

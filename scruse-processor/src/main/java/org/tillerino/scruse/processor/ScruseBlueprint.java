@@ -9,7 +9,7 @@ import javax.lang.model.util.ElementFilter;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
-import org.tillerino.scruse.processor.util.Generics.TypeVar;
+import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 /** Accessor object for the interface which contains Scruse methods. */

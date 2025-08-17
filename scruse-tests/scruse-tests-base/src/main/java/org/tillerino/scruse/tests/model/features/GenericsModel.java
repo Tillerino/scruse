@@ -1,0 +1,5 @@
+package org.tillerino.scruse.tests.model.features;
+
+public interface GenericsModel {
+    record GenericRecord<F>(F f) {}
+}

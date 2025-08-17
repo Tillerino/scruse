@@ -25,9 +25,9 @@ import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 import org.tillerino.scruse.processor.features.Converters;
 import org.tillerino.scruse.processor.features.DefaultValues;
-import org.tillerino.scruse.processor.util.Annotations;
-import org.tillerino.scruse.processor.util.Generics;
 import org.tillerino.scruse.processor.features.Delegation;
+import org.tillerino.scruse.processor.features.Generics;
+import org.tillerino.scruse.processor.util.Annotations;
 
 public class AnnotationProcessorUtils {
     public final Elements elements;
