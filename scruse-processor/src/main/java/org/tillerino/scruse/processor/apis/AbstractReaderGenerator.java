@@ -18,6 +18,7 @@ import org.tillerino.scruse.input.EmptyArrays;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.features.UnknownProperties;
@@ -547,7 +548,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         readFieldNameInIteration(fieldVar);
 
         Set<String> ignoredProperties =
-                config.resolveProperty(ConfigProperty.IGNORED_PROPERTIES).value();
+                config.resolveProperty(IgnoreProperties.IGNORED_PROPERTIES).value();
 
         code.beginControlFlow("switch($L)", fieldVar);
         for (SELF nest : properties) {
@@ -560,13 +561,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             code.endControlFlow();
         }
         if (!ignoredProperties.isEmpty()) {
-            Snippet.of(
-                            "case $C:",
-                            Snippet.join(
-                                    ignoredProperties.stream()
-                                            .map(prop -> Snippet.of("$S", prop))
-                                            .toList(),
-                                    ", "))
+            Snippet.of("case $C:", IgnoreProperties.toSnippet(ignoredProperties))
                     .beginControlFlowIn(code);
             skipValue();
             code.addStatement("break");

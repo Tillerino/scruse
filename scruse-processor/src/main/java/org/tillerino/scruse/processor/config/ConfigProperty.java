@@ -40,18 +40,6 @@ public final class ConfigProperty<T> {
             JsonConfig.ImplementationMode.DEFAULT,
             MergeFunction.notDefault(JsonConfig.ImplementationMode.DEFAULT));
 
-    public static ConfigProperty<Set<String>> IGNORED_PROPERTIES = createConfigProperty(
-            List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE, LocationKind.CREATOR, LocationKind.DTO),
-            List.of(new ConfigPropertyRetriever<>(
-                    "com.fasterxml.jackson.annotation.JsonIgnoreProperties",
-                    (wrapper, utils) -> wrapper.method("value", true)
-                            .map(AnnotationValueWrapper::asArray)
-                            .map(arr -> arr.stream()
-                                    .map(AnnotationValueWrapper::asString)
-                                    .collect(toUnmodifiableSet())))),
-            Set.of(),
-            MergeFunction.mergeSets());
-
     final int index = counter.incrementAndGet();
 
     public final List<LocationKind> locationKind;
@@ -94,7 +82,7 @@ public final class ConfigProperty<T> {
                 .reduce(merger::merge);
     }
 
-    private static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {
+    public static <T> Collector<T, ?, Set<T>> toUnmodifiableSet() {
         // this set preserves order
         return Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), Collections::unmodifiableSet);
     }

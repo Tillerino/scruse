@@ -1,13 +1,13 @@
-package org.tillerino.scruse.tests.base.annotations;
+package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
-import org.tillerino.scruse.tests.model.annotations.JsonIgnorePropertiesValue;
+import org.tillerino.scruse.tests.model.features.IgnorePropertiesModel.JsonIgnorePropertiesValue;
 
-class JsonIgnorePropertiesValueTest extends ReferenceTest {
+class IgnorePropertiesTest extends ReferenceTest {
 
-    JsonIgnorePropertiesValueSerde serde = new JsonIgnorePropertiesValueSerdeImpl();
+    IgnorePropertiesSerde serde = new IgnorePropertiesSerdeImpl();
 
     @Test
     void ignoreSpecificPropertiesInInput() throws Exception {

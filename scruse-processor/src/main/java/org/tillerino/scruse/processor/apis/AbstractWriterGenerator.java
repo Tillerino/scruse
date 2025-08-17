@@ -1,11 +1,7 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -15,7 +11,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.config.AnyConfig;
-import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
@@ -315,7 +311,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         }
 
         Set<String> ignoredProperties =
-                config.resolveProperty(ConfigProperty.IGNORED_PROPERTIES).value();
+                config.resolveProperty(IgnoreProperties.IGNORED_PROPERTIES).value();
 
         type.getPropertyReadAccessors().forEach((canonicalPropertyName, accessor) -> {
             AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
