@@ -20,6 +20,40 @@ Note that Scruse is not a beginner-friendly library.
 It optimizes for constraints that are not common in most applications.
 If you _just_ want to serialize and deserialize JSON and do not have any of the constraints above, you are probably better off with Jackson.
 
+<!-- toc -->
+
+- [Usage](#usage)
+- [Features](#features)
+  * [Delegators](#delegators)
+  * [Converters](#converters)
+  * [Generics](#generics)
+  * [Polymorphism](#polymorphism)
+  * [Default Values](#default-values)
+- [Configuration](#configuration)
+  * [@JsonConfig Annotation](#jsonconfig-annotation)
+  * [Jackson Annotation Compatibility](#jackson-annotation-compatibility)
+- [Exotic use cases](#exotic-use-cases)
+  * [Custom implementation](#custom-implementation)
+  * [Deduplication / Injection](#deduplication--injection)
+  * [Pointing individual properties to serializers](#pointing-individual-properties-to-serializers)
+  * [Custom state](#custom-state)
+- [Backends](#backends)
+  * [Jackson Core (streaming)](#jackson-core-streaming)
+  * [Jackson Databind (objects)](#jackson-databind-objects)
+  * [Gson](#gson)
+  * [fastjson2](#fastjson2)
+  * [Jakarta JSON-P](#jakarta-json-p)
+  * [Nanojson](#nanojson)
+- [Alternatives](#alternatives)
+- [Compatibility](#compatibility)
+  * [Notable exceptions](#notable-exceptions)
+  * [Features](#features-1)
+  * [Jackson annotations compatibility](#jackson-annotations-compatibility)
+- [Roadmap](#roadmap)
+  * [Short-term:](#short-term)
+  * [Long-term:](#long-term)
+
+<!-- tocstop -->
 
 ## Usage
 
@@ -69,6 +103,8 @@ interface MyObjectSerde {
 The example above is based on Jackson streaming, which provides `JsonParser` for parsing and `JsonGenerator` for writing JSON.
 The Scruse annotation processor will generate `MyJsonMapperImpl`, which implements the interface.
 The context parameters can be omitted if they are not explicitly needed.
+
+## Features
 
 ### Delegators
 
@@ -190,10 +226,144 @@ will be passed as the `subSerializer` parameter,
 or a _suitable lambda expression_ will be passed to instantiate the sub-(de-)serializer from any method in all available (de-)serializers.
 
 This is a fairly involved feature. Please see the examples in
-[GenericsTest](scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/generics/GenericsTest.java)
+[GenericsTest](scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/features/GenericsTest.java)
 and compare the generated code.
 
-## Backends (Parser/formatter implementations)
+### Polymorphism
+
+Scruse supports polymorphism through Jackson's `@JsonTypeInfo` and `@JsonSubTypes` annotations, as well as automatic detection for sealed interfaces and classes. It handles various type identification strategies:
+
+1. **Class-based identification** (`JsonTypeInfo.Id.CLASS`): Uses the full class name as the type identifier
+2. **Name-based identification** (`JsonTypeInfo.Id.NAME`): Uses custom names defined in `@JsonSubTypes`
+3. **Simple name identification** (`JsonTypeInfo.Id.SIMPLE_NAME`): Uses the simple class name or custom names from `@Type`
+4. **Minimal class identification** (`JsonTypeInfo.Id.MINIMAL_CLASS`): Uses a minimal class identifier
+
+**Limitations:**
+- Does not support `JsonTypeInfo.Id.CUSTOM` or `JsonTypeInfo.Id.DEDUCTION` (throws an exception)
+- Always uses `include = PROPERTY` (does not support other inclusion mechanisms like `WRAPPER_OBJECT` or `WRAPPER_ARRAY`)
+- `defaultImpl` is ignored
+- `visible` is always `false`
+
+Example with explicit subtypes:
+```java
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@type")
+@JsonSubTypes({
+    @Type(value = RecordOne.class, name = "1"),
+    @Type(value = RecordTwo.class, name = "2")
+})
+interface MyInterface {
+    record RecordOne(String s) implements MyInterface {}
+    record RecordTwo(int i) implements MyInterface {}
+}
+
+interface MySerde {
+    @JsonOutput
+    void writeMyInterface(MyInterface obj, JsonGenerator generator) throws Exception;
+    
+    @JsonInput
+    MyInterface readMyInterface(JsonParser parser) throws Exception;
+}
+```
+
+Example with sealed interfaces (no explicit subtypes needed):
+```java
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, property = "@c")
+sealed interface SealedInterface permits RecordOne, RecordTwo {}
+
+record RecordOne(String s) implements SealedInterface {}
+record RecordTwo(int i) implements SealedInterface {}
+
+interface SealedSerde {
+    @JsonOutput
+    void writeSealed(SealedInterface obj, JsonGenerator generator) throws Exception;
+    
+    @JsonInput
+    SealedInterface readSealed(JsonParser parser) throws Exception;
+}
+```
+
+The generated serializer will include a type discriminator in the JSON output (e.g., `{"@type": "1", "s": "value"}`), and the deserializer will use this discriminator to instantiate the correct subtype.
+
+### Default Values
+
+When deserializing JSON and a property is missing, Scruse can use default values defined with the `@JsonInputDefaultValue` annotation.
+
+```java
+interface MySerde {
+    @JsonInput
+    MyObject read(JsonParser parser) throws IOException;
+    
+    @JsonInputDefaultValue
+    static String defaultString() {
+        return "N/A";
+    }
+}
+```
+
+Default value methods can be defined as siblingsor in separate classes referenced with `@JsonConfig(uses = {...})`.
+
+## Configuration
+
+Scruse supports several configuration options through annotations that can be applied at different levels:
+
+### @JsonConfig Annotation
+
+The `@JsonConfig` annotation provides several configuration options:
+
+- `uses`: References other classes containing serializers/deserializers for delegation
+- `implement`: Controls whether methods should be implemented (`DO_IMPLEMENT`, `DO_NOT_IMPLEMENT`)
+- `delegateTo`: Controls whether methods can be called from other serializers (`DELEGATE_TO`, `DO_NOT_DELEGATE_TO`)
+- `unknownProperties`: Controls handling of unknown properties (`THROW`, `IGNORE`)
+
+### Jackson Annotation Compatibility
+
+Scruse supports several Jackson annotations for configuration:
+
+- `@JsonProperty`: Customize property names in JSON
+- `@JsonIgnore`: Ignore specific properties during serialization/deserialization
+- `@JsonIgnoreProperties`: Ignore multiple properties or control unknown properties handling
+
+## Exotic use cases
+
+Obviously, Scruse is not complete in any sense, and you may reach the limits of the core functionality.
+In this section, we show some ways to get your own functionality into scruse.
+
+### Custom implementation
+
+You can always simply implement serializers yourself:
+
+```java
+interface CustomizedSerialization {
+    @JsonOutput
+    void writeMyObj(MyObj o, JsonGenerator generator) throws IOException;
+
+    @JsonOutput
+    default void writeOffsetDate(OffsetDateTime timestamp, JsonGenerator generator) throws IOException {       
+        generator.writeString(timestamp.toString());
+    }
+
+    record MyObj(OffsetDateTime t) { }
+}
+```
+
+This works for output and input.
+
+### Deduplication / Injection
+
+Using custom serializers and custom contexts, you can implement simple deduplication during serialization and
+injection during deserialization.
+
+Refer to [InjectionTest.java](scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/cases/InjectionTest.java) for details.
+
+### Pointing individual properties to serializers
+
+(TODO; something like @JsonSerializer, but this annotation is in databind, so off limits)
+
+### Custom state
+
+(TODO; allow extending context classes, allow abstract classes as mappers, handle constructors of those)
+
+## Backends
 
 Scruse supports multiple backends for reading and writing JSON.
 You can choose the backend that best fits your requirements and dependencies.
@@ -334,39 +504,6 @@ The required dependency is:
 ```
 
 Overhead: 30kiB
-
-## Escape hatches (hacking Scruse)
-
-Obviously, Scruse is not complete in any sense, and you will soon reach the limits of the core functionality.
-We have included some _escape hatches_, a.k.a. ways to hack your way around missing functionalities.
-
-### Custom implementation
-
-You can always simply serializers yourself:
-
-```java
-interface CustomizedSerialization {
-    @JsonOutput
-    void writeMyObj(MyObj o, JsonGenerator generator) throws IOException;
-
-    @JsonOutput
-    default void writeOffsetDate(OffsetDateTime timestamp, JsonGenerator generator) throws IOException {       
-        generator.writeString(timestamp.toString());
-    }
-
-    record MyObj(OffsetDateTime t) { }
-}
-```
-
-This works for output and input.
-
-### Pointing individual properties to serializers
-
-(TODO; something like @JsonSerializer, but this annotation is in databind, so off limits)
-
-### Custom state
-
-(TODO; allow extending context classes, allow abstract classes as mappers, handle constructors of those)
 
 ## Alternatives
 

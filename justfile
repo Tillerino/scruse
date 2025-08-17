@@ -20,6 +20,14 @@ updates:
   {{mvn}} versions:display-dependency-updates {{updates-flags}} && { grep -- "->" updates.txt */updates.txt */*/updates.txt | sed 's/\.\+/./g'; }
   rm updates.txt */updates.txt */*/updates.txt
 
+# regenerate the TOC in README.md
+readme-update-toc:
+  docker run --rm -v .:/work --entrypoint=/bin/sh mkenney/npm -c 'npm install -g markdown-toc; markdown-toc -i /work/README.md'
+
+# check links in readme
+readme-links:
+  docker run -v .:/tmp:ro --rm -i ghcr.io/tcort/markdown-link-check:stable /tmp/README.md
+
 # estimate size of shaded libraries
 shaded-sizes:
   #!/bin/sh
@@ -41,6 +49,7 @@ shaded-sizes:
     fi
   done
 
+# check if features and their test organization are aligned
 check-feature-organization:
     #!/usr/bin/env python3
     import os
