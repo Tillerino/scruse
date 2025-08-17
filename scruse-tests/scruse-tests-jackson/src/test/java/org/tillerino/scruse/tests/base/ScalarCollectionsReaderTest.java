@@ -8,9 +8,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 
 class ScalarCollectionsReaderTest extends ReferenceTest {
-    ScalarCollectionsReader impl = new ScalarCollectionsReaderImpl();
+    ScalarCollectionsReader impl = SerdeUtil.impl(ScalarCollectionsReader.class);
 
     @Test
     void testBooleanSet() throws Exception {

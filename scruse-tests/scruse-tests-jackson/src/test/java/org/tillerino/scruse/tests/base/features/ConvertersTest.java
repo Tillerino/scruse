@@ -5,13 +5,14 @@ import java.util.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.TestSettingsBase;
 import org.tillerino.scruse.tests.function.Zip;
 import org.tillerino.scruse.tests.model.features.ConvertersModel.OptionalComponentsRecord;
 
 class ConvertersTest extends ReferenceTest {
-    ConvertersSerde serde = new ConvertersSerdeImpl();
+    ConvertersSerde serde = SerdeUtil.impl(ConvertersSerde.class);
 
     @Test
     void optionalComponentsRecordRountrips() throws Exception {

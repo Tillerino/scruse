@@ -8,7 +8,7 @@ import org.tillerino.scruse.tests.CustomizedContextSerde.CustomSerializationCont
 import org.tillerino.scruse.tests.CustomizedContextSerde.MyObj;
 
 class CustomizedContextTest extends ReferenceTest {
-    CustomizedContextSerde serde = new CustomizedContextSerdeImpl();
+    CustomizedContextSerde serde = SerdeUtil.impl(CustomizedContextSerde.class);
 
     @Test
     void testCustomizedContextSerialization() throws Exception {

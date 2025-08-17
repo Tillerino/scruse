@@ -8,10 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.AnEnum;
 
 class ScalarMapsSerdeTest extends ReferenceTest {
-    ScalarMapsSerde impl = new ScalarMapsSerdeImpl();
+    ScalarMapsSerde impl = SerdeUtil.impl(ScalarMapsSerde.class);
 
     @Test
     void testStringBooleanMap() throws Exception {

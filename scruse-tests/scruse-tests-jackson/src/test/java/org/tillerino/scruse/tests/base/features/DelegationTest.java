@@ -11,11 +11,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.CodeAssertions;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
+import org.tillerino.scruse.tests.base.features.DelegationSerde.AdditionalArgumentsSerde;
 
 public class DelegationTest {
     @Nested
     class AdditionalArgumentsTest extends ReferenceTest {
-        DelegationSerde.AdditionalArgumentsSerde serde = new DelegationSerde$AdditionalArgumentsSerdeImpl();
+        AdditionalArgumentsSerde serde = SerdeUtil.impl(AdditionalArgumentsSerde.class);
 
         @Test
         void output() throws Exception {

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.CustomizedSerialization.MyObj;
 
 class CustomizedSerializationTest extends ReferenceTest {
-    CustomizedSerialization serde = new CustomizedSerializationImpl();
+    CustomizedSerialization serde = SerdeUtil.impl(CustomizedSerialization.class);
 
     @Test
     void offsetDateTimeSerializationExample() throws Exception {

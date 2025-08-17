@@ -4,13 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.annotations.JsonTypeInfoUseClass.RecordOne;
 import org.tillerino.scruse.tests.model.annotations.JsonTypeInfoUseClass.RecordTwo;
 import org.tillerino.scruse.tests.model.annotations.JsonTypeInfoUseName;
 import org.tillerino.scruse.tests.model.annotations.JsonTypeInfoUseSimpleName;
 
 class JsonTypeInfoAndJsonSubTypesTest extends ReferenceTest {
-    JsonTypeInfoAndJsonSubTypesSerde serde = new JsonTypeInfoAndJsonSubTypesSerdeImpl();
+    JsonTypeInfoAndJsonSubTypesSerde serde = SerdeUtil.impl(JsonTypeInfoAndJsonSubTypesSerde.class);
 
     // minimal class is used in our basic polymorphism tests
 

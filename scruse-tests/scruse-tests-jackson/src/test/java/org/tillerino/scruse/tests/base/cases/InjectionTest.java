@@ -6,12 +6,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.base.cases.InjectionSerde.InjectionSerializationContext;
 import org.tillerino.scruse.tests.model.SelfReferencingRecord;
 
 /** This test demonstrates how to hack injection into the serialization process. */
 class InjectionTest extends ReferenceTest {
-    InjectionSerde serde = new InjectionSerdeImpl();
+    InjectionSerde serde = SerdeUtil.impl(InjectionSerde.class);
 
     SelfReferencingRecord b = new SelfReferencingRecord("b", null);
     SelfReferencingRecord a = new SelfReferencingRecord("a", b);

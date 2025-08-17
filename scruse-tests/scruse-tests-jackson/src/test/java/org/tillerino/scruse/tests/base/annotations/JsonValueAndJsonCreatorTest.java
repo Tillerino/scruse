@@ -5,11 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.model.annotations.*;
 
 class JsonValueAndJsonCreatorTest extends ReferenceTest {
-    JsonValueAndJsonCreatorSerde serde = new JsonValueAndJsonCreatorSerdeImpl();
+    JsonValueAndJsonCreatorSerde serde = SerdeUtil.impl(JsonValueAndJsonCreatorSerde.class);
 
     @Test
     public void jsonValueOutput() throws Exception {

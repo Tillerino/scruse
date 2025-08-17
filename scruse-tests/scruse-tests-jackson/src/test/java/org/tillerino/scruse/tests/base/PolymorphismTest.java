@@ -3,9 +3,10 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 
 class PolymorphismTest extends ReferenceTest {
-    PolymorphismSerde serde = new PolymorphismSerdeImpl();
+    PolymorphismSerde serde = SerdeUtil.impl(PolymorphismSerde.class);
 
     PolymorphismSerde.WithDelegate withDelegate = new PolymorphismSerde$WithDelegateImpl();
 

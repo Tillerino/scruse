@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 
 class UnknownPropertiesTest extends ReferenceTest {
 
-    UnknownPropertiesSerde serde = new UnknownPropertiesSerdeImpl();
+    UnknownPropertiesSerde serde = SerdeUtil.impl(UnknownPropertiesSerde.class);
 
     @Test
     void jsonIgnorePropertiesIgnoreUnknownStringProperty() throws Exception {

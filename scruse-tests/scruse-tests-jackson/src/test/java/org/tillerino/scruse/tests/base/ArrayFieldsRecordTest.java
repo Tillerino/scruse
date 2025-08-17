@@ -3,12 +3,13 @@ package org.tillerino.scruse.tests.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.model.PrimitiveArrayFieldsRecord;
 import org.tillerino.scruse.tests.model.ReferenceArrayFieldsRecord;
 
 class ArrayFieldsRecordTest extends ReferenceTest {
-    ArrayFieldsRecordSerde serde = new ArrayFieldsRecordSerdeImpl();
+    ArrayFieldsRecordSerde serde = SerdeUtil.impl(ArrayFieldsRecordSerde.class);
 
     @Test
     void roundtripPrimitive() throws Exception {

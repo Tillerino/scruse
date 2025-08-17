@@ -5,11 +5,12 @@ import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.AnEnum;
 
 class ScalarsSerdeTest extends ReferenceTest {
-    PrimitiveScalarsSerde primitive = new PrimitiveScalarsSerdeImpl();
-    BoxedScalarsSerde boxed = new BoxedScalarsSerdeImpl();
+    PrimitiveScalarsSerde primitive = SerdeUtil.impl(PrimitiveScalarsSerde.class);
+    BoxedScalarsSerde boxed = SerdeUtil.impl(BoxedScalarsSerde.class);
 
     @Test
     void testBoolean() throws Exception {

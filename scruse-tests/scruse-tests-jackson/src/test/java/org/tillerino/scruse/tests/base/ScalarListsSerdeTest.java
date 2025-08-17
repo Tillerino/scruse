@@ -8,10 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.AnEnum;
 
 class ScalarListsSerdeTest extends ReferenceTest {
-    ScalarListsSerde impl = new ScalarListsSerdeImpl();
+    ScalarListsSerde impl = SerdeUtil.impl(ScalarListsSerde.class);
 
     @Test
     void testBooleanList() throws Exception {

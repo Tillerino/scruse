@@ -2,10 +2,11 @@ package org.tillerino.scruse.tests.base.features;
 
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.features.IgnorePropertyModel.*;
 
 class IgnorePropertyTest extends ReferenceTest {
-    IgnorePropertySerde serde = new IgnorePropertySerdeImpl();
+    IgnorePropertySerde serde = SerdeUtil.impl(IgnorePropertySerde.class);
 
     @Test
     void fieldWithGetter() throws Exception {

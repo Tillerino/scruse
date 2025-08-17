@@ -2,10 +2,9 @@ package org.tillerino.scruse.tests;
 
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.alt.adapter.jsonnode.PolymorphismSerde;
-import org.tillerino.scruse.tests.alt.adapter.jsonnode.PolymorphismSerdeImpl;
 
 class OutOfOrderDiscriminatorTest extends ReferenceTest {
-    PolymorphismSerde serde = new PolymorphismSerdeImpl();
+    PolymorphismSerde serde = SerdeUtil.impl(PolymorphismSerde.class);
 
     /**
      * This tests a special case that we can only handle with {@link com.fasterxml.jackson.databind.JsonNode}. The

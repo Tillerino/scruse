@@ -5,14 +5,15 @@ import static org.tillerino.scruse.tests.CodeAssertions.assertThatCode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.GenericRecord;
 
 class GenericsTest extends ReferenceTest {
-    GenericRecordSerde genericRecordSerde = new GenericRecordSerdeImpl();
+    GenericRecordSerde genericRecordSerde = SerdeUtil.impl(GenericRecordSerde.class);
 
-    StringRecordSerde stringRecordSerde = new StringRecordSerdeImpl();
+    StringRecordSerde stringRecordSerde = SerdeUtil.impl(StringRecordSerde.class);
 
-    IntegerRecordSerde integerRecordSerde = new IntegerRecordSerdeImpl();
+    IntegerRecordSerde integerRecordSerde = SerdeUtil.impl(IntegerRecordSerde.class);
 
     @Test
     void passGenericImplExplicitly() throws Exception {

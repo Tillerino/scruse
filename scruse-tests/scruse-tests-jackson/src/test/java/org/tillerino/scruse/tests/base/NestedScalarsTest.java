@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 
 class NestedScalarsTest extends ReferenceTest {
-    NestedScalarsWriter impl = new NestedScalarsWriterImpl();
+    NestedScalarsWriter impl = SerdeUtil.impl(NestedScalarsWriter.class);
 
     @Test
     void testDoubleArrayArray() throws Exception {
