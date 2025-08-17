@@ -1,4 +1,4 @@
-package org.tillerino.scruse.tests.base;
+package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -7,7 +7,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.converters.OptionalInputConverters;
 import org.tillerino.scruse.converters.OptionalOutputConverters;
-import org.tillerino.scruse.tests.model.OptionalComponentsRecord;
+import org.tillerino.scruse.tests.model.features.ConvertersModel.OptionalComponentsRecord;
 
 @JsonConfig(uses = {OptionalInputConverters.class, OptionalOutputConverters.class})
 interface ConvertersSerde {

@@ -1,7 +1,10 @@
 package org.tillerino.scruse.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationValue;
@@ -20,7 +23,11 @@ import org.mapstruct.ap.internal.util.AnnotationProcessorContext;
 import org.mapstruct.ap.internal.util.RoundContext;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
-import org.tillerino.scruse.processor.util.*;
+import org.tillerino.scruse.processor.features.Converters;
+import org.tillerino.scruse.processor.features.DefaultValues;
+import org.tillerino.scruse.processor.util.Annotations;
+import org.tillerino.scruse.processor.util.Generics;
+import org.tillerino.scruse.processor.util.PrototypeFinder;
 
 public class AnnotationProcessorUtils {
     public final Elements elements;
@@ -30,6 +37,7 @@ public class AnnotationProcessorUtils {
     public final PrototypeFinder prototypeFinder;
     public final Generics generics;
     public final Converters converters;
+    public final DefaultValues defaultValues;
     public final Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
     public final Annotations annotations;
     public final Messager messager;
@@ -42,6 +50,7 @@ public class AnnotationProcessorUtils {
         generics = new Generics(this);
         annotations = new Annotations(this);
         converters = new Converters(this);
+        defaultValues = new DefaultValues(this);
         messager = processingEnv.getMessager();
 
         AnnotationProcessorContext apc = new AnnotationProcessorContext(

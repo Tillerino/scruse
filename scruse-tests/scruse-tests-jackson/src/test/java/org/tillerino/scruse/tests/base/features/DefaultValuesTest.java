@@ -1,0 +1,27 @@
+package org.tillerino.scruse.tests.base.features;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.model.AnEnum;
+import org.tillerino.scruse.tests.model.features.DefaultValuesModel.Mixed;
+
+import java.util.Arrays;
+
+public class DefaultValuesTest extends ReferenceTest {
+    DefaultValuesSerde serde = new DefaultValuesSerdeImpl();
+
+    @Test
+    void testAllMissing() throws Exception {
+        Mixed deserialized = inputUtils.deserialize("{}", serde::read);
+        Assertions.assertThat(deserialized)
+                .usingRecursiveComparison()
+                .isEqualTo(new Mixed(
+                        "foo",
+                        42,
+                        new double[] {1.0, 2.0},
+                        AnEnum.ANOTHER_VALUE,
+                        Arrays.asList("foo", "bar"),
+                        new Mixed(null, 0, null, null, null, null)));
+    }
+}

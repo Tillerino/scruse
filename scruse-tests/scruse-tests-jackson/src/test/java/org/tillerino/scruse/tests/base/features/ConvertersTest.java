@@ -1,14 +1,15 @@
-package org.tillerino.scruse.tests.base;
+package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.TestSettingsBase;
 import org.tillerino.scruse.tests.function.Zip;
-import org.tillerino.scruse.tests.model.OptionalComponentsRecord;
+import org.tillerino.scruse.tests.model.features.ConvertersModel.OptionalComponentsRecord;
+
+import java.util.*;
 
 class ConvertersTest extends ReferenceTest {
     ConvertersSerde serde = new ConvertersSerdeImpl();
@@ -35,6 +36,7 @@ class ConvertersTest extends ReferenceTest {
     /** FEATURE-JSON */
     @Test
     void testAllMissing() throws Exception {
+        // This is a crossover-test since we also need default values configured.
         OptionalComponentsRecord deserialized = inputUtils.deserialize("{}", serde::readOptionalComponentsRecord);
         // We differ from Jackson here, which returns Optional.of(Optional.empty()) for the nested optional.
         // Since this is obscure enough, we don't mind.

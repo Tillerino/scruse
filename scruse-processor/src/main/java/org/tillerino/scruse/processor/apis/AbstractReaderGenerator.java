@@ -500,7 +500,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             String propertyName = PropertyName.resolvePropertyName(propertyConfig, parameter.name());
 
             SELF nest = nest(parameter.type(), propertyName, new LHS.Variable(varName), true, propertyConfig);
-            Snippet defaultValue = utils.converters
+            Snippet defaultValue = utils.defaultValues
                     .findInputDefaultValue(prototype.blueprint(), nest.type.getTypeMirror(), propertyConfig)
                     .map(m -> Snippet.of("$C()", m.callSymbol(utils)))
                     .orElse(Snippet.of("$L", nest.type.getNull()));
