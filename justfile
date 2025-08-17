@@ -41,6 +41,55 @@ shaded-sizes:
     fi
   done
 
+check-feature-organization:
+    #!/usr/bin/env python3
+    import os
+    import sys
+    from pathlib import Path
+    
+    # Check if features and their tests are properly organized
+    processor_features_dir = Path("scruse-processor/src/main/java/org/tillerino/scruse/processor/features")
+    jackson_tests_dir = Path("scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/features")
+    jackson_serde_dir = Path("scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features")
+    base_model_dir = Path("scruse-tests/scruse-tests-base/src/main/java/org/tillerino/scruse/tests/model/features")
+    
+    # Get all feature classes
+    feature_files = list(processor_features_dir.glob("*.java"))
+    feature_names = [f.stem for f in feature_files]
+    
+    missing_tests = []
+    missing_serde = []
+    missing_models = []
+    
+    for feature_name in feature_names:
+        # Check if test exists
+        test_file = jackson_tests_dir / f"{feature_name}Test.java"
+        if not test_file.exists():
+            missing_tests.append(feature_name)
+            
+        # Check if serde exists
+        serde_file = jackson_serde_dir / f"{feature_name}Serde.java"
+        if not serde_file.exists():
+            missing_serde.append(feature_name)
+            
+        # Check if model exists
+        model_file = base_model_dir / f"{feature_name}Model.java"
+        if not model_file.exists():
+            missing_models.append(feature_name)
+    
+    # Report any missing files
+    if missing_tests or missing_serde or missing_models:
+        print("Feature organization issues found:")
+        if missing_tests:
+            print(f"  Missing tests: {', '.join(missing_tests)}")
+        if missing_serde:
+            print(f"  Missing serde: {', '.join(missing_serde)}")
+        if missing_models:
+            print(f"  Missing models: {', '.join(missing_models)}")
+        sys.exit(1)
+    else:
+        print("All features are properly organized.")
+
 release:
     # format so that we fail earlier if there are issues (release plugin will notice dirty working directory)
     just format
