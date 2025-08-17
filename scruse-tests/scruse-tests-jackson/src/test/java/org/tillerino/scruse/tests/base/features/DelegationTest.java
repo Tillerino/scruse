@@ -13,6 +13,7 @@ import org.tillerino.scruse.tests.CodeAssertions;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.base.features.DelegationSerde.AdditionalArgumentsSerde;
+import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsWriter;
 import org.tillerino.scruse.tests.base.features.DelegationSerde.SelfReferencingSerde;
 import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
@@ -53,7 +54,7 @@ public class DelegationTest {
 
     @Nested
     class BoxedScalarsSerdeTest extends ReferenceTest {
-        DelegationSerde.BoxedScalarsWriter boxed = new DelegationSerde$BoxedScalarsWriterImpl();
+        BoxedScalarsWriter boxed = SerdeUtil.impl(BoxedScalarsWriter.class);
 
         @Test
         void testBoxedBoolean() throws Exception {
@@ -171,7 +172,7 @@ public class DelegationTest {
 
     @Nested
     class ScalarArraysSerdeTest extends ReferenceTest {
-        DelegationSerde.ScalarArraysWriter impl = new DelegationSerde$ScalarArraysWriterImpl();
+        DelegationSerde.ScalarArraysWriter impl = SerdeUtil.impl(DelegationSerde.ScalarArraysWriter.class);
 
         @Test
         void testBooleanArray() throws Exception {

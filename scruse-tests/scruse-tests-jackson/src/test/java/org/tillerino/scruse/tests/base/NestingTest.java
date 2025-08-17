@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
+import org.tillerino.scruse.tests.base.NestingSerde.*;
 import org.tillerino.scruse.tests.model.NestingModel;
 
 /**
@@ -34,9 +36,9 @@ import org.tillerino.scruse.tests.model.NestingModel;
 class NestingTest extends ReferenceTest {
     @Test
     void testOuterObject() throws Exception {
-        NestingSerde.OuterRecordSerde recordImpl = new NestingSerde$OuterRecordSerdeImpl();
-        NestingSerde.OuterFieldsSerde fieldsImpl = new NestingSerde$OuterFieldsSerdeImpl();
-        NestingSerde.OuterAccessorsSerde accessorsImpl = new NestingSerde$OuterAccessorsSerdeImpl();
+        OuterRecordSerde recordImpl = SerdeUtil.impl(OuterRecordSerde.class);
+        OuterFieldsSerde fieldsImpl = SerdeUtil.impl(OuterFieldsSerde.class);
+        OuterAccessorsSerde accessorsImpl = SerdeUtil.impl(OuterAccessorsSerde.class);
 
         String[] jsons = {
             "null",
@@ -71,8 +73,8 @@ class NestingTest extends ReferenceTest {
 
     @Test
     void testDoubleArrayArray() throws Exception {
-        NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
-        NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
+        ArraySerde arrayImpl = SerdeUtil.impl(ArraySerde.class);
+        ListSerde listImpl = SerdeUtil.impl(ListSerde.class);
 
         String[] jsons = {
             "null",
@@ -109,8 +111,8 @@ class NestingTest extends ReferenceTest {
 
     @Test
     void testStringDoubleMapArray() throws Exception {
-        NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
-        NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
+        ArraySerde arrayImpl = SerdeUtil.impl(ArraySerde.class);
+        ListSerde listImpl = SerdeUtil.impl(ListSerde.class);
 
         String[] jsons = {
             "null",
@@ -139,7 +141,7 @@ class NestingTest extends ReferenceTest {
 
     @Test
     void testStringInnerObjectMap() throws Exception {
-        NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
+        MapSerde mapImpl = SerdeUtil.impl(MapSerde.class);
 
         String[] jsons = {
             "null",
@@ -177,8 +179,8 @@ class NestingTest extends ReferenceTest {
 
     @Test
     void testInnerObjectArray() throws Exception {
-        NestingSerde.ArraySerde arrayImpl = new NestingSerde$ArraySerdeImpl();
-        NestingSerde.ListSerde listImpl = new NestingSerde$ListSerdeImpl();
+        ArraySerde arrayImpl = SerdeUtil.impl(ArraySerde.class);
+        ListSerde listImpl = SerdeUtil.impl(ListSerde.class);
 
         String[] jsons = {
             "null",
@@ -226,7 +228,7 @@ class NestingTest extends ReferenceTest {
 
     @Test
     void testStringStringDoubleMapMap() throws Exception {
-        NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
+        MapSerde mapImpl = SerdeUtil.impl(MapSerde.class);
 
         String[] jsons = {
             "null",
@@ -252,7 +254,7 @@ class NestingTest extends ReferenceTest {
 
     @Test
     void testStringDoubleArrayMap() throws Exception {
-        NestingSerde.MapSerde mapImpl = new NestingSerde$MapSerdeImpl();
+        MapSerde mapImpl = SerdeUtil.impl(MapSerde.class);
 
         String[] jsons = {
             "null",

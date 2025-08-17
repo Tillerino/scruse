@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
+import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.AnEnum;
 
 class ScalarFieldsSerdeTest extends ReferenceTest {
@@ -34,7 +35,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
                         false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null,
                         null, null, null, null, null));
 
-        ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
+        ScalarFieldsRecord.Serde impl = SerdeUtil.impl(ScalarFieldsRecord.Serde.class);
 
         for (ScalarFieldsRecord object : values) {
             outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
@@ -67,7 +68,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
                         false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null,
                         null, null, null, null, null));
 
-        ScalarFieldsClass.Serde impl = new ScalarFieldsClass$SerdeImpl();
+        ScalarFieldsClass.Serde impl = SerdeUtil.impl(ScalarFieldsClass.Serde.class);
 
         for (ScalarFieldsClass object : values) {
             outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
@@ -100,7 +101,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
                         false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null,
                         null, null, null, null, null));
 
-        ScalarAccessorsClass.Serde impl = new ScalarAccessorsClass$SerdeImpl();
+        ScalarAccessorsClass.Serde impl = SerdeUtil.impl(ScalarAccessorsClass.Serde.class);
 
         for (ScalarAccessorsClass object : values) {
             outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
@@ -109,7 +110,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
 
     @Test
     void testUnknownPropertiesDefault() throws Exception {
-        ScalarFieldsRecord.Serde impl = new ScalarFieldsRecord$SerdeImpl();
+        ScalarFieldsRecord.Serde impl = SerdeUtil.impl(ScalarFieldsRecord.Serde.class);
 
         inputUtils.assertException(
                 "{ \"whatIsThis\": 1 }",
