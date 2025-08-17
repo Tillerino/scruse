@@ -10,7 +10,7 @@ import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.api.SerializationContext;
-import org.tillerino.scruse.tests.model.SelfReferencingRecord;
+import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
 public interface InjectionSerde {
     @JsonOutput

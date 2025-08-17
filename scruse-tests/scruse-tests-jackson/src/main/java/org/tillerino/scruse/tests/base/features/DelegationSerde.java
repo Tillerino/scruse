@@ -10,6 +10,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.tests.base.PrimitiveScalarsSerde;
 import org.tillerino.scruse.tests.model.PrimitiveArrayFieldsRecord;
+import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
 public interface DelegationSerde {
     interface AdditionalArgumentsSerde {
@@ -208,5 +209,13 @@ public interface DelegationSerde {
 
         @JsonInput
         String[] readStringArrayX(JsonParser parser) throws Exception;
+    }
+
+    interface SelfReferencingSerde {
+        @JsonOutput
+        void serialize(SelfReferencingRecord record, JsonGenerator output) throws Exception;
+
+        @JsonInput
+        SelfReferencingRecord deserialize(JsonParser input) throws Exception;
     }
 }

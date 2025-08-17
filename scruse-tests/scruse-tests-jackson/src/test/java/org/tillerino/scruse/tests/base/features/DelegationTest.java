@@ -13,8 +13,23 @@ import org.tillerino.scruse.tests.CodeAssertions;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.base.features.DelegationSerde.AdditionalArgumentsSerde;
+import org.tillerino.scruse.tests.base.features.DelegationSerde.SelfReferencingSerde;
+import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
 public class DelegationTest {
+
+    @Nested
+    class SelfReferencingSerdeTest extends ReferenceTest {
+        SelfReferencingSerde serde = SerdeUtil.impl(SelfReferencingSerde.class);
+
+        @Test
+        void selfReferencingSerialization() throws Exception {
+            for (SelfReferencingRecord instance : SelfReferencingRecord.INSTANCES) {
+                outputUtils.roundTrip(instance, serde::serialize, serde::deserialize, new TypeReference<>() {});
+            }
+        }
+    }
+
     @Nested
     class AdditionalArgumentsTest extends ReferenceTest {
         AdditionalArgumentsSerde serde = SerdeUtil.impl(AdditionalArgumentsSerde.class);

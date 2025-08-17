@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.base.cases.InjectionSerde.InjectionSerializationContext;
-import org.tillerino.scruse.tests.model.SelfReferencingRecord;
+import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
 /** This test demonstrates how to hack injection into the serialization process. */
 class InjectionTest extends ReferenceTest {
