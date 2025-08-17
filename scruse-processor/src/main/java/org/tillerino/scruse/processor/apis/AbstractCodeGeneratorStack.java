@@ -11,6 +11,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.features.Polymorphism;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.PrototypeKind;

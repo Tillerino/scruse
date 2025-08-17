@@ -1,4 +1,4 @@
-package org.tillerino.scruse.processor;
+package org.tillerino.scruse.processor.features;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
+import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
 
 public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child> children) {

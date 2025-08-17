@@ -13,6 +13,7 @@ import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
+import org.tillerino.scruse.processor.features.Polymorphism;
 import org.tillerino.scruse.processor.features.PropertyName;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 

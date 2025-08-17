@@ -1,7 +1,9 @@
 package org.tillerino.scruse.tests;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.tillerino.scruse.tests.alt.adapter.jsonnode.PolymorphismSerde;
+import org.tillerino.scruse.tests.alt.adapter.jsonnode.features.PolymorphismSerde;
+import org.tillerino.scruse.tests.model.features.PolymorphismModel.RecordOne;
 
 class OutOfOrderDiscriminatorTest extends ReferenceTest {
     PolymorphismSerde serde = SerdeUtil.impl(PolymorphismSerde.class);
@@ -12,7 +14,8 @@ class OutOfOrderDiscriminatorTest extends ReferenceTest {
      */
     @Test
     void outOfOrderDiscriminator() throws Exception {
-        PolymorphismSerde.SealedInterface deserialize = inputUtils.deserialize(
-                "{\"s\":\"abc\", \"@c\": \".PolymorphismSerde$RecordOne\"}", serde::readPolymorphism);
+        Assertions.assertThat(inputUtils.deserialize(
+                        "{\"s\":\"abc\", \"@c\": \".PolymorphismModel$RecordOne\"}", serde::readPolymorphism))
+                .isInstanceOf(RecordOne.class);
     }
 }

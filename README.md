@@ -449,6 +449,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 
 ### Short-term:
 - Sort out missing properties.
+- Allow polymorphism for sealed interfaces without further annotations.
 
 ### Long-term:
 

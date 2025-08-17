@@ -1,12 +1,12 @@
-package org.tillerino.scruse.tests.base;
+package org.tillerino.scruse.tests.base.features;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
+import org.tillerino.scruse.tests.model.features.PolymorphismModel.*;
 
 public interface PolymorphismSerde {
     @JsonOutput
@@ -30,10 +30,23 @@ public interface PolymorphismSerde {
         RecordOne readOne(JsonParser parser, DeserializationContext context) throws Exception;
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
-    sealed interface SealedInterface {}
+    interface JsonTypeInfoAndJsonSubTypesSerde {
+        @JsonOutput
+        void writeUseClass(JsonTypeInfoUseClass obj, JsonGenerator generator) throws Exception;
 
-    record RecordOne(String s) implements SealedInterface {}
+        @JsonInput
+        JsonTypeInfoUseClass readUseClass(JsonParser parser) throws Exception;
 
-    record RecordTwo(int i) implements SealedInterface {}
+        @JsonOutput
+        void writeUseName(JsonTypeInfoUseName obj, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        JsonTypeInfoUseName readUseName(JsonParser parser) throws Exception;
+
+        @JsonOutput
+        void writeUseSimpleName(JsonTypeInfoUseSimpleName obj, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        JsonTypeInfoUseSimpleName readUseSimpleName(JsonParser parser) throws Exception;
+    }
 }
