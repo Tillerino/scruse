@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsWriter;
+import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsSerde;
 import org.tillerino.scruse.tests.model.features.GenericsModel.GenericRecord;
 
 public interface GenericsSerde {
@@ -34,7 +34,7 @@ public interface GenericsSerde {
 
     @JsonConfig(
             uses = {
-                BoxedScalarsWriter.class,
+                BoxedScalarsSerde.class,
                 GenericRecordSerde.class,
             })
     interface IntegerRecordSerde {

@@ -9,10 +9,19 @@ import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.tests.base.PrimitiveScalarsSerde;
+import org.tillerino.scruse.tests.base.ScalarFieldsRecord;
 import org.tillerino.scruse.tests.model.PrimitiveArrayFieldsRecord;
 import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
 public interface DelegationSerde {
+    interface SimpleDelegationSerde {
+        @JsonInput
+        ScalarFieldsRecord deserializeSingle(JsonParser parser) throws Exception;
+
+        @JsonInput
+        List<ScalarFieldsRecord> deserializeList(JsonParser parser) throws Exception;
+    }
+
     interface AdditionalArgumentsSerde {
         @JsonOutput
         void writeStringIntMap(Map<String, Integer> obj, JsonGenerator out, List<Integer> collector) throws Exception;
@@ -45,74 +54,84 @@ public interface DelegationSerde {
      * other libraries' methods.
      */
     @JsonConfig(uses = PrimitiveScalarsSerde.class)
-    interface BoxedScalarsWriter {
+    interface BoxedScalarsSerde {
         @JsonOutput
         void writeBoxedBooleanX(Boolean b, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        Boolean readBoxedBooleanX(JsonParser parser) throws Exception;
 
         @JsonOutput
         void writeBoxedByteX(Byte b, JsonGenerator generator) throws Exception;
 
+        @JsonInput
+        Byte readBoxedByteX(JsonParser parser) throws Exception;
+
         @JsonOutput
         void writeBoxedShortX(Short s, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        Short readBoxedShortX(JsonParser parser) throws Exception;
 
         @JsonOutput
         void writeBoxedIntX(Integer i, JsonGenerator generator) throws Exception;
 
+        @JsonInput
+        Integer readBoxedIntX(JsonParser parser) throws Exception;
+
         @JsonOutput
         void writeBoxedLongX(Long l, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        Long readBoxedLongX(JsonParser parser) throws Exception;
 
         @JsonOutput
         void writeBoxedCharX(Character c, JsonGenerator generator) throws Exception;
 
+        @JsonInput
+        Character readBoxedCharX(JsonParser parser) throws Exception;
+
         @JsonOutput
         void writeBoxedFloatX(Float f, JsonGenerator generator) throws Exception;
 
+        @JsonInput
+        Float readBoxedFloatX(JsonParser parser) throws Exception;
+
         @JsonOutput
         void writeBoxedDoubleX(Double d, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        Double readBoxedDoubleX(JsonParser parser) throws Exception;
 
         @JsonOutput
         void writeStringX(String s, JsonGenerator generator) throws Exception;
 
         @JsonInput
-        Boolean readBoxedBooleanX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Byte readBoxedByteX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Short readBoxedShortX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Integer readBoxedIntX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Long readBoxedLongX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Character readBoxedCharX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Float readBoxedFloatX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Double readBoxedDoubleX(JsonParser parser) throws Exception;
-
-        @JsonInput
         String readStringX(JsonParser parser) throws Exception;
     }
 
-    @JsonConfig(uses = ScalarArraysWriter.class)
+    @JsonConfig(uses = ScalarArraysSerde.class)
     interface PrimitiveArrayFieldsRecordSerde {
         @JsonOutput
         void writePrimitiveArrayFieldsRecord(PrimitiveArrayFieldsRecord input, JsonGenerator generator)
                 throws Exception;
     }
-
     // methods are marked with X to make sure no methods of the backend are named identically
-    @JsonConfig(uses = BoxedScalarsWriter.class)
-    interface ScalarArraysWriter {
+    @JsonConfig(uses = BoxedScalarsSerde.class)
+    interface ScalarArraysSerde {
         @JsonOutput
         void writeBooleanArrayX(boolean[] input, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        boolean[] readBooleanArrayX(JsonParser parser) throws Exception;
+
+        @JsonOutput
+        void writeBoxedBooleanArrayX(Boolean[] input, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        Boolean[] readBoxedBooleanArrayX(JsonParser parser) throws Exception;
+
+        // Sorting changes here. Sorting above is for doc and I got lazy...
 
         @JsonOutput
         void writeByteArrayX(byte[] input, JsonGenerator generator) throws Exception;
@@ -134,9 +153,6 @@ public interface DelegationSerde {
 
         @JsonOutput
         void writeDoubleArrayX(double[] input, JsonGenerator generator) throws Exception;
-
-        @JsonOutput
-        void writeBoxedBooleanArrayX(Boolean[] input, JsonGenerator generator) throws Exception;
 
         @JsonOutput
         void writeBoxedByteArrayX(Byte[] input, JsonGenerator generator) throws Exception;
@@ -163,9 +179,6 @@ public interface DelegationSerde {
         void writeStringArrayX(String[] input, JsonGenerator generator) throws Exception;
 
         @JsonInput
-        boolean[] readBooleanArrayX(JsonParser parser) throws Exception;
-
-        @JsonInput
         byte[] readByteArrayX(JsonParser parser) throws Exception;
 
         @JsonInput
@@ -185,9 +198,6 @@ public interface DelegationSerde {
 
         @JsonInput
         double[] readDoubleArrayX(JsonParser parser) throws Exception;
-
-        @JsonInput
-        Boolean[] readBoxedBooleanArrayX(JsonParser parser) throws Exception;
 
         @JsonInput
         Byte[] readBoxedByteArrayX(JsonParser parser) throws Exception;
@@ -216,6 +226,9 @@ public interface DelegationSerde {
         void serialize(SelfReferencingRecord record, JsonGenerator output) throws Exception;
 
         @JsonInput
-        SelfReferencingRecord deserialize(JsonParser input) throws Exception;
+        SelfReferencingRecord deserializeRecord(JsonParser input) throws Exception;
+
+        @JsonInput
+        List<SelfReferencingRecord> deserializeList(JsonParser input) throws Exception;
     }
 }

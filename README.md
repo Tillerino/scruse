@@ -108,8 +108,7 @@ The context parameters can be omitted if they are not explicitly needed.
 
 ### Delegators
 
-Scruse can delegate to other suitable `@JsonInput` and `@JsonOutput` methods whenever possible.
-This is very important for keeping the generated code small.
+To keep the generated code small, Scruse can split up implementations across multiple, reusable methods.
 Take the following example:
 
 ```java
@@ -126,21 +125,7 @@ Here, the implementation of the first method will call the second method for eac
 It is recommended to view the generated code and declare further methods to break down large generated methods.
 This will work at any level, and you can even declare methods for primitive types.
 
-To organize your methods, you can use the `uses` attribute of the `@JsonConfig` annotation:
-
-```java
-@JsonConfig(uses = {PrimitivesSerde.class})
-interface MyObjectSerde {
-  ...
-}
-
-interface PrimitivesSerde {
-  @JsonInput
-  int readInt(JsonParser parser) throws IOException;
-
-  ...
-}
-```
+[more](docs/delegators.md)
 
 ### Converters
 
