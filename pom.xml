@@ -5,6 +5,7 @@
     <artifactId>scruse-parent</artifactId>
     <version>0.3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>Scruse parent POM</name>
     <description>A databind annotation processor for Java</description>
     <url>https://github.com/Tillerino/scruse</url>
 
