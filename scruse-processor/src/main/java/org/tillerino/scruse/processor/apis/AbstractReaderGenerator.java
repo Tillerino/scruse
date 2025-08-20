@@ -382,11 +382,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         Snippet cond = objectCaseCondition();
         branch.controlFlow(code, cond.format(), flatten(cond.args()));
         {
-            Type keyType = type.determineTypeArguments(Map.class).get(0).getTypeBound();
+            Type keyType = type.determineTypeArguments(Map.class).get(0);
             if (!utils.types.isSameType(keyType.getTypeMirror(), utils.commonTypes.string)) {
                 throw new ContextedRuntimeException("Only String keys supported for now.");
             }
-            Type valueType = type.determineTypeArguments(Map.class).get(1).getTypeBound();
+            Type valueType = type.determineTypeArguments(Map.class).get(1);
             TypeMirror mapType = determineMapType();
             String varName = instantiateContainer(mapType);
             iterateOverFields();

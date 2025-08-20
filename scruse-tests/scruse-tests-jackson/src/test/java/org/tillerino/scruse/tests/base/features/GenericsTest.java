@@ -5,6 +5,7 @@ import static org.tillerino.scruse.tests.CodeAssertions.assertThatImpl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
@@ -21,6 +22,8 @@ class GenericsTest extends ReferenceTest {
     IntegerRecordSerde integerRecordSerde = SerdeUtil.impl(IntegerRecordSerde.class);
 
     GenericListSerde genericListSerde = SerdeUtil.impl(GenericListSerde.class);
+
+    GenericMapSerde genericMapSerde = SerdeUtil.impl(GenericMapSerde.class);
 
     @Test
     void passGenericImplExplicitly() throws Exception {
@@ -90,6 +93,25 @@ class GenericsTest extends ReferenceTest {
         assertThatImpl(GenericListSerde.class)
                 .method("readDoubleList")
                 .calls("readGenericList")
+                .references("readBoxedDoubleX");
+    }
+
+    @Test
+    void genericMapSerde() throws Exception {
+        outputUtils.roundTrip(
+                Map.of("a", 1.0, "b", 2.0, "c", 3.0),
+                genericMapSerde::writeStringDoubleMap,
+                genericMapSerde::readStringDoubleMap,
+                new TypeReference<>() {});
+
+        assertThatImpl(GenericMapSerde.class)
+                .method("writeStringDoubleMap")
+                .calls("writeGenericMap")
+                .references("writeBoxedDoubleX");
+
+        assertThatImpl(GenericMapSerde.class)
+                .method("readStringDoubleMap")
+                .calls("readGenericMap")
                 .references("readBoxedDoubleX");
     }
 }

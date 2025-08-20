@@ -3,6 +3,7 @@ package org.tillerino.scruse.tests.base.features;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import java.util.List;
+import java.util.Map;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
@@ -86,6 +87,13 @@ public interface GenericsSerde {
 
         @JsonInput
         <T> List<T> readGenericList(JsonParser parser, GenericInputSerde<T> componentReader) throws Exception;
+
+        @JsonOutput
+        <V> void writeGenericMap(Map<String, V> map, JsonGenerator gen, GenericOutputSerde<V> valueWriter)
+                throws Exception;
+
+        @JsonInput
+        <V> Map<String, V> readGenericMap(JsonParser parser, GenericInputSerde<V> valueReader) throws Exception;
     }
 
     @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
@@ -95,5 +103,14 @@ public interface GenericsSerde {
 
         @JsonInput
         List<Double> readDoubleList(JsonParser parser) throws Exception;
+    }
+
+    @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
+    interface GenericMapSerde {
+        @JsonOutput
+        void writeStringDoubleMap(Map<String, Double> map, JsonGenerator gen) throws Exception;
+
+        @JsonInput
+        Map<String, Double> readStringDoubleMap(JsonParser parser) throws Exception;
     }
 }
