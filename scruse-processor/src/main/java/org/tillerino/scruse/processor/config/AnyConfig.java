@@ -78,6 +78,10 @@ public final class AnyConfig {
                 .orElse(accessorConfig);
     }
 
+    /**
+     * Uses are appended during merging of configuration. So when we search them, we do it in reverse to make sure that
+     * the latest gets prio.
+     */
     public List<ScruseBlueprint> reversedUses() {
         Set<ScruseBlueprint> uses = resolveProperty(ConfigProperty.USES).value();
         List<ScruseBlueprint> reversedUses = new ArrayList<>(uses);

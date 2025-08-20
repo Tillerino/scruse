@@ -1,9 +1,6 @@
 package org.tillerino.scruse.processor.features;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -13,7 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.RebuildingTypeVisitor;
@@ -126,6 +123,53 @@ public record Generics(AnnotationProcessorUtils utils) {
             return true;
         }
         return false;
+    }
+
+    public Optional<Snippet> getOrCreateLambda(
+            GeneratedClass callingClass, TypeMirror targetType, List<InstantiatedVariable> availableValues, int depth) {
+        if (depth > 10) {
+            // this depth is pretty arbitrary, but surely larger than anything useful and it's just important that we
+            // do not explode here.
+            return Optional.empty();
+        }
+        return instantiateFunctionalInterface(targetType)
+                .flatMap(functionalInterface -> createMethodReference(callingClass, functionalInterface));
+    }
+
+    private Optional<InstantiatedMethod> instantiateFunctionalInterface(TypeMirror functionalInterface) {
+        if (!(functionalInterface instanceof DeclaredType d)) {
+            return Optional.empty();
+        }
+        TypeElement typeElement = (TypeElement) d.asElement();
+        if (!typeElement.getKind().isInterface()) {
+            return Optional.empty();
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(utils.elements.getAllMembers(typeElement)).stream()
+                .filter(method -> !method.getEnclosingElement().toString().equals("java.lang.Object"))
+                .toList();
+        if (methods.size() != 1) {
+            return Optional.empty();
+        }
+        return Optional.of(utils.generics.instantiateMethods(d).get(0));
+    }
+
+    private Optional<Snippet> createMethodReference(GeneratedClass callingClass, InstantiatedMethod targetMethod) {
+        ScruseBlueprint blueprint = callingClass.blueprint;
+        for (ScrusePrototype method : blueprint.prototypes) {
+            if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
+                return Optional.of(Snippet.of(
+                        "$L::$L", callingClass.getOrCreateDelegateeField(blueprint, blueprint), method.name()));
+            }
+        }
+        for (ScruseBlueprint use : blueprint.config.reversedUses()) {
+            for (ScrusePrototype method : use.prototypes) {
+                if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
+                    return Optional.of(Snippet.of(
+                            "$L::$L", callingClass.getOrCreateDelegateeField(blueprint, use), method.name()));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /** Required since {@link TypeVariable} and its corresponding element do not implement hashCode and equals? */

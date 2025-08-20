@@ -2,21 +2,17 @@ package org.tillerino.scruse.processor;
 
 import com.squareup.javapoet.*;
 import jakarta.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.tillerino.scruse.helpers.EnumHelper;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName.TopLevelClassName;
 import org.tillerino.scruse.processor.config.AnyConfig;
-import org.tillerino.scruse.processor.config.ConfigProperty;
-import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 /** Keeps track of the delegate readers/writers that are collected while processing a blueprint. */
 public class GeneratedClass {
@@ -25,7 +21,7 @@ public class GeneratedClass {
     public final TypeSpec.Builder typeBuilder;
     public final List<Consumer<JavaFile.Builder>> fileBuilderMods = new ArrayList<>();
     private final AnnotationProcessorUtils utils;
-    private final ScruseBlueprint blueprint;
+    public final ScruseBlueprint blueprint;
 
     public GeneratedClass(TypeSpec.Builder typeBuilder, AnnotationProcessorUtils utils, ScruseBlueprint blueprint) {
         this.typeBuilder = typeBuilder;
@@ -70,36 +66,6 @@ public class GeneratedClass {
             String found = getOrCreateUsedBlueprintWithTypeField(targetType, use, null);
             if (found != null) {
                 return found;
-            }
-        }
-        return null;
-    }
-
-    public Pair<String, String> getOrCreateLambda(TypeMirror targetType) {
-        if (!(targetType instanceof DeclaredType d)) {
-            return null;
-        }
-        TypeElement typeElement = (TypeElement) d.asElement();
-        if (!typeElement.getKind().isInterface()) {
-            return null;
-        }
-        Stream<ExecutableElement> methods = ElementFilter.methodsIn(utils.elements.getAllMembers(typeElement)).stream()
-                .filter(method -> !method.getEnclosingElement().toString().equals("java.lang.Object"));
-        if (methods.count() != 1) {
-            return null;
-        }
-        InstantiatedMethod targetMethod = utils.generics.instantiateMethods(d).get(0);
-        for (ScrusePrototype method : blueprint.prototypes) {
-            if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
-                return Pair.of(getOrCreateDelegateeField(blueprint, blueprint), method.name());
-            }
-        }
-        for (ScruseBlueprint use :
-                blueprint.config.resolveProperty(ConfigProperty.USES).value()) {
-            for (ScrusePrototype method : use.prototypes) {
-                if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
-                    return Pair.of(getOrCreateDelegateeField(blueprint, use), method.name());
-                }
             }
         }
         return null;
