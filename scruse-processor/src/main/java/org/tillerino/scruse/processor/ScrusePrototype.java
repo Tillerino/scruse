@@ -13,7 +13,9 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
-import org.tillerino.scruse.processor.util.*;
+import org.tillerino.scruse.processor.util.InstantiatedMethod;
+import org.tillerino.scruse.processor.util.InstantiatedVariable;
+import org.tillerino.scruse.processor.util.PrototypeKind;
 
 /**
  * Accessor object for a method which is annotated with {@link org.tillerino.scruse.annotations.JsonInput} or
@@ -49,10 +51,9 @@ public record ScrusePrototype(
     }
 
     /** Checks if reads/writes the given type and matches the signature of a reference method. */
-    public InstantiatedMethod matches(ScrusePrototype referenceSignature, Type targetType, boolean allowExact) {
-        if (kind.direction() != referenceSignature.kind().direction()
-                || !utils.types.isSameType(
-                        kind().jsonType(), referenceSignature.kind().jsonType())) {
+    public InstantiatedMethod matches(ScrusePrototype caller, Type callerType, boolean allowExact) {
+        if (kind.direction() != caller.kind().direction()
+                || !utils.types.isSameType(kind().jsonType(), caller.kind().jsonType())) {
             return null;
         }
 
@@ -63,7 +64,7 @@ public record ScrusePrototype(
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         LinkedHashMap<TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
 
-        if (isSameTypeWithBindings(kind().javaType(), targetType.getTypeMirror(), localTypeVars, typeBindings)) {
+        if (isSameTypeWithBindings(kind().javaType(), callerType.getTypeMirror(), localTypeVars, typeBindings)) {
             if (!allowExact && typeBindings.isEmpty()) {
                 return null;
             }
@@ -73,39 +74,42 @@ public record ScrusePrototype(
     }
 
     private static boolean isSameTypeWithBindings(
-            TypeMirror javaType,
-            TypeMirror targetType,
-            LinkedHashSet<TypeVar> localTypeVars,
-            LinkedHashMap<TypeVar, TypeMirror> typeBindings) {
-        if (javaType instanceof TypeVariable t) {
+            TypeMirror calleeType,
+            TypeMirror callerType,
+            LinkedHashSet<TypeVar> calleeTypeVars,
+            LinkedHashMap<TypeVar, TypeMirror> calleeBindings) {
+        if (calleeType instanceof TypeVariable t) {
             TypeVar typeVar = TypeVar.of(t);
-            if (typeBindings.containsKey(typeVar)) {
-                return typeBindings.get(typeVar).equals(targetType);
+            if (calleeBindings.containsKey(typeVar)) {
+                return calleeBindings.get(typeVar).equals(callerType);
             }
-            if (localTypeVars.contains(typeVar)) {
-                typeBindings.put(typeVar, targetType);
+            if (calleeTypeVars.contains(typeVar)) {
+                if (callerType.getKind().isPrimitive()) {
+                    return false;
+                }
+                calleeBindings.put(typeVar, callerType);
                 return true;
             }
             return false;
         }
-        if (javaType instanceof DeclaredType t) {
-            if (!(targetType instanceof DeclaredType tt) || !t.asElement().equals(tt.asElement())) {
+        if (calleeType instanceof DeclaredType t) {
+            if (!(callerType instanceof DeclaredType tt) || !t.asElement().equals(tt.asElement())) {
                 return false;
             }
             for (int i = 0; i < t.getTypeArguments().size(); i++) {
                 TypeMirror type = t.getTypeArguments().get(i);
                 TypeMirror targetTypeArg = tt.getTypeArguments().get(i);
-                if (!isSameTypeWithBindings(type, targetTypeArg, localTypeVars, typeBindings)) {
+                if (!isSameTypeWithBindings(type, targetTypeArg, calleeTypeVars, calleeBindings)) {
                     return false;
                 }
             }
             return true;
         }
-        if (javaType instanceof PrimitiveType p && targetType instanceof PrimitiveType pt) {
+        if (calleeType instanceof PrimitiveType p && callerType instanceof PrimitiveType pt) {
             return p.getKind().equals(pt.getKind());
         }
-        if (javaType instanceof ArrayType a && targetType instanceof ArrayType at) {
-            return isSameTypeWithBindings(a.getComponentType(), at.getComponentType(), localTypeVars, typeBindings);
+        if (calleeType instanceof ArrayType a && callerType instanceof ArrayType at) {
+            return isSameTypeWithBindings(a.getComponentType(), at.getComponentType(), calleeTypeVars, calleeBindings);
         }
         return false;
     }

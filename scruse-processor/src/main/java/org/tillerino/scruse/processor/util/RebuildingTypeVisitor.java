@@ -4,6 +4,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
 import javax.lang.model.util.AbstractTypeVisitor8;
 import javax.lang.model.util.Types;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 
 public class RebuildingTypeVisitor extends AbstractTypeVisitor8<TypeMirror, Types> {
 
@@ -29,11 +30,15 @@ public class RebuildingTypeVisitor extends AbstractTypeVisitor8<TypeMirror, Type
 
     @Override
     public TypeMirror visitDeclared(DeclaredType t, Types types) {
-        return types.getDeclaredType(
-                (TypeElement) t.asElement(),
-                t.getTypeArguments().stream()
-                        .map(arg -> arg.accept(this, types))
-                        .toArray(TypeMirror[]::new));
+        try {
+            return types.getDeclaredType(
+                    (TypeElement) t.asElement(),
+                    t.getTypeArguments().stream()
+                            .map(arg -> arg.accept(this, types))
+                            .toArray(TypeMirror[]::new));
+        } catch (IllegalArgumentException e) {
+            throw new ContextedRuntimeException(e);
+        }
     }
 
     @Override

@@ -60,4 +60,21 @@ public interface GenericsSerde {
 
     @JsonConfig(implement = JsonConfig.ImplementationMode.DO_IMPLEMENT)
     interface StringSerde extends GenericOutputSerde<String>, GenericInputSerde<String> {}
+
+    /**
+     * Primitive types cannot be used to instantiate generics (not yet anyway #JEP218believe). If we are not careful,
+     * the implementation of this interface will try to pass writeDouble to writeGenericArray, which will not compile.
+     * We do not need to use the implementation in tests. Compiling this is sufficient.
+     */
+    interface PrimitivesVsGenerics {
+        @JsonOutput
+        void writeDouble(double d, JsonGenerator gen) throws Exception;
+
+        @JsonOutput
+        <T> void writeGenericArray(T[] array, JsonGenerator gen, GenericOutputSerde<T> componentDelegator)
+                throws Exception;
+
+        @JsonOutput
+        void writeDoubleArray(double[] array, JsonGenerator gen) throws Exception;
+    }
 }

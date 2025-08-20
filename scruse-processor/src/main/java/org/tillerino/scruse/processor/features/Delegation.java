@@ -11,33 +11,29 @@ import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public record Delegation(AnnotationProcessorUtils utils) {
     public Optional<InstantiatedPrototype> findPrototype(
-            Type type,
-            ScrusePrototype signatureReference,
-            boolean allowRecursion,
-            boolean allowExact,
-            AnyConfig config) {
-        ScruseBlueprint blueprint = signatureReference.blueprint();
-        for (ScrusePrototype method : blueprint.prototypes) {
-            if (method.config()
+            Type type, ScrusePrototype caller, boolean allowRecursion, boolean allowExact, AnyConfig config) {
+        ScruseBlueprint blueprint = caller.blueprint();
+        for (ScrusePrototype callee : blueprint.prototypes) {
+            if (callee.config()
                             .resolveProperty(ConfigProperty.DELEGATEE)
                             .value()
                             .canBeDelegatedTo()
-                    && (method != signatureReference || allowRecursion)) {
-                InstantiatedMethod match = method.matches(signatureReference, type, allowExact);
+                    && (callee != caller || allowRecursion)) {
+                InstantiatedMethod match = callee.matches(caller, type, allowExact);
                 if (match != null) {
-                    return Optional.of(new InstantiatedPrototype(blueprint, method, match));
+                    return Optional.of(new InstantiatedPrototype(blueprint, callee, match));
                 }
             }
         }
         for (ScruseBlueprint use : config.reversedUses()) {
-            for (ScrusePrototype method : use.prototypes) {
-                if (method.config()
+            for (ScrusePrototype callee : use.prototypes) {
+                if (callee.config()
                         .resolveProperty(ConfigProperty.DELEGATEE)
                         .value()
                         .canBeDelegatedTo()) {
-                    InstantiatedMethod match = method.matches(signatureReference, type, allowExact);
+                    InstantiatedMethod match = callee.matches(caller, type, allowExact);
                     if (match != null) {
-                        return Optional.of(new InstantiatedPrototype(use, method, match));
+                        return Optional.of(new InstantiatedPrototype(use, callee, match));
                     }
                 }
             }
