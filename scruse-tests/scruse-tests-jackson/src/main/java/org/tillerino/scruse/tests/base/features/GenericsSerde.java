@@ -98,7 +98,7 @@ public interface GenericsSerde {
     }
 
     @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
-    interface GenericListSerde {
+    interface DoubleListSerde {
         @JsonOutput
         void writeDoubleList(List<Double> l, JsonGenerator gen) throws Exception;
 

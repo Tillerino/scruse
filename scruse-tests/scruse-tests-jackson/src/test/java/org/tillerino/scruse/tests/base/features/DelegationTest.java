@@ -2,7 +2,7 @@ package org.tillerino.scruse.tests.base.features;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.tillerino.scruse.tests.CodeAssertions.assertThatCode;
+import static org.tillerino.scruse.tests.CodeAssertions.assertThatImpl;
 import static org.tillerino.scruse.tests.TestSettings.SETTINGS;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,10 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.CodeAssertions;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
-import org.tillerino.scruse.tests.base.features.DelegationSerde.AdditionalArgumentsSerde;
-import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsSerde;
-import org.tillerino.scruse.tests.base.features.DelegationSerde.ScalarArraysSerde;
-import org.tillerino.scruse.tests.base.features.DelegationSerde.SelfReferencingSerde;
+import org.tillerino.scruse.tests.base.features.DelegationSerde.*;
 import org.tillerino.scruse.tests.model.features.DelegationModel;
 import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
@@ -64,12 +61,8 @@ public class DelegationTest {
                 outputUtils.roundTrip(
                         b, boxed::writeBoxedBooleanX, boxed::readBoxedBooleanX, new TypeReference<Boolean>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedBooleanX")
-                    .calls("writePrimitiveBooleanX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedBooleanX")
-                    .calls("readPrimitiveBooleanX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedBooleanX").calls("writePrimitiveBooleanX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedBooleanX").calls("readPrimitiveBooleanX");
         }
 
         @Test
@@ -77,12 +70,8 @@ public class DelegationTest {
             for (Byte b : SETTINGS.javaData().BOXED_BYTES) {
                 outputUtils.roundTrip(b, boxed::writeBoxedByteX, boxed::readBoxedByteX, new TypeReference<Byte>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedByteX")
-                    .calls("writePrimitiveByteX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedByteX")
-                    .calls("readPrimitiveByteX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedByteX").calls("writePrimitiveByteX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedByteX").calls("readPrimitiveByteX");
         }
 
         @Test
@@ -91,12 +80,8 @@ public class DelegationTest {
                 outputUtils.roundTrip(
                         b, boxed::writeBoxedShortX, boxed::readBoxedShortX, new TypeReference<Short>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedShortX")
-                    .calls("writePrimitiveShortX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedShortX")
-                    .calls("readPrimitiveShortX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedShortX").calls("writePrimitiveShortX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedShortX").calls("readPrimitiveShortX");
         }
 
         @Test
@@ -104,12 +89,8 @@ public class DelegationTest {
             for (Integer b : SETTINGS.javaData().BOXED_INTS) {
                 outputUtils.roundTrip(b, boxed::writeBoxedIntX, boxed::readBoxedIntX, new TypeReference<Integer>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedIntX")
-                    .calls("writePrimitiveIntX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedIntX")
-                    .calls("readPrimitiveIntX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedIntX").calls("writePrimitiveIntX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedIntX").calls("readPrimitiveIntX");
         }
 
         @Test
@@ -117,12 +98,8 @@ public class DelegationTest {
             for (Long b : SETTINGS.javaData().BOXED_LONGS) {
                 outputUtils.roundTrip(b, boxed::writeBoxedLongX, boxed::readBoxedLongX, new TypeReference<Long>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedLongX")
-                    .calls("writePrimitiveLongX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedLongX")
-                    .calls("readPrimitiveLongX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedLongX").calls("writePrimitiveLongX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedLongX").calls("readPrimitiveLongX");
         }
 
         @Test
@@ -131,12 +108,8 @@ public class DelegationTest {
                 outputUtils.roundTrip(
                         b, boxed::writeBoxedCharX, boxed::readBoxedCharX, new TypeReference<Character>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedCharX")
-                    .calls("writePrimitiveCharX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedCharX")
-                    .calls("readPrimitiveCharX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedCharX").calls("writePrimitiveCharX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedCharX").calls("readPrimitiveCharX");
         }
 
         @Test
@@ -145,12 +118,8 @@ public class DelegationTest {
                 outputUtils.roundTrip(
                         b, boxed::writeBoxedFloatX, boxed::readBoxedFloatX, new TypeReference<Float>() {});
             }
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("writeBoxedFloatX")
-                    .calls("writePrimitiveFloatX");
-            assertThatCode(DelegationSerde$BoxedScalarsSerdeImpl.class)
-                    .method("readBoxedFloatX")
-                    .calls("readPrimitiveFloatX");
+            assertThatImpl(BoxedScalarsSerde.class).method("writeBoxedFloatX").calls("writePrimitiveFloatX");
+            assertThatImpl(BoxedScalarsSerde.class).method("readBoxedFloatX").calls("readPrimitiveFloatX");
         }
     }
 
@@ -159,7 +128,7 @@ public class DelegationTest {
 
         @Test
         void delegationWorks() throws Exception {
-            assertThatCode(DelegationSerde$PrimitiveArrayFieldsRecordSerdeImpl.class)
+            assertThatImpl(PrimitiveArrayFieldsRecordSerde.class)
                     .method("writePrimitiveArrayFieldsRecord")
                     .calls("writeBooleanArrayX")
                     .calls("writeByteArrayX")
@@ -339,7 +308,7 @@ public class DelegationTest {
 
         private static void assertThatCalls(String caller, String callee, boolean doesCall) throws Exception {
             CodeAssertions.MethodAssert method =
-                    assertThatCode(DelegationSerde$ScalarArraysSerdeImpl.class).method(caller);
+                    assertThatImpl(ScalarArraysSerde.class).method(caller);
             if (doesCall) {
                 method.calls(callee);
             } else {
