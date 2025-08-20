@@ -9,6 +9,7 @@ import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsSerde;
 import org.tillerino.scruse.tests.model.features.GenericsModel.GenericRecord;
+import org.tillerino.scruse.tests.model.features.GenericsModel.PointlessGenericsRecord;
 
 public interface GenericsSerde {
     // use 'V' instead of 'T' to make sure that we actually instantiate the type
@@ -112,5 +113,13 @@ public interface GenericsSerde {
 
         @JsonInput
         Map<String, Double> readStringDoubleMap(JsonParser parser) throws Exception;
+    }
+
+    interface PointlessGenericsSerde {
+        @JsonOutput
+        <T> void write(PointlessGenericsRecord<T> r, JsonGenerator gen) throws Exception;
+
+        @JsonInput
+        <T> PointlessGenericsRecord<T> read(JsonParser parser) throws Exception;
     }
 }

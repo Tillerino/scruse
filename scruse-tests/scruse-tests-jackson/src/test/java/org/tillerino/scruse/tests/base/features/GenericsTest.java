@@ -11,6 +11,7 @@ import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.base.features.GenericsSerde.*;
 import org.tillerino.scruse.tests.model.features.GenericsModel.GenericRecord;
+import org.tillerino.scruse.tests.model.features.GenericsModel.PointlessGenericsRecord;
 
 class GenericsTest extends ReferenceTest {
     StringSerde stringSerde = SerdeUtil.impl(StringSerde.class);
@@ -24,6 +25,8 @@ class GenericsTest extends ReferenceTest {
     GenericListSerde genericListSerde = SerdeUtil.impl(GenericListSerde.class);
 
     GenericMapSerde genericMapSerde = SerdeUtil.impl(GenericMapSerde.class);
+
+    PointlessGenericsSerde pointlessGenericsSerde = SerdeUtil.impl(PointlessGenericsSerde.class);
 
     @Test
     void passGenericImplExplicitly() throws Exception {
@@ -113,5 +116,14 @@ class GenericsTest extends ReferenceTest {
                 .method("readStringDoubleMap")
                 .calls("readGenericMap")
                 .references("readBoxedDoubleX");
+    }
+
+    @Test
+    void pointlessGenericsSerde() throws Exception {
+        outputUtils.roundTrip(
+                new PointlessGenericsRecord<>("hello"),
+                pointlessGenericsSerde::write,
+                pointlessGenericsSerde::read,
+                new TypeReference<>() {});
     }
 }
