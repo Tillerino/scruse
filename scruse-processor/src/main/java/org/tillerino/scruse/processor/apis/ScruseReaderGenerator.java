@@ -6,6 +6,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.api.ScruseReader;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -100,7 +101,8 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
                     case LONG -> "getLong";
                     case FLOAT -> "getFloat";
                     case DOUBLE -> "getDouble";
-                    default -> throw new AssertionError(type.getKind());
+                    default -> throw new ContextedRuntimeException(
+                            type.getKind().toString());
                 };
         Snippet snippet = Snippet.of("$L.$L($L)", parserVariable.getSimpleName(), method, importAdvance(CONSUME));
         lhs.assign(code, snippet);

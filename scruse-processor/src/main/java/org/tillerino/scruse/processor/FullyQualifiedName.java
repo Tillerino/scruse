@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 
 public sealed interface FullyQualifiedName {
     /** slashes instead of dots, no file extension */
@@ -59,7 +60,7 @@ public sealed interface FullyQualifiedName {
                         FullyQualifiedClassName.of(parentType),
                         typeElement.getSimpleName().toString());
             }
-            throw new IllegalArgumentException(typeElement.toString());
+            throw new ContextedRuntimeException(typeElement.toString());
         }
 
         record TopLevelClassName(PackageName parentPackage, String className) implements FullyQualifiedClassName {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.GsonJsonReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -104,7 +105,8 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
                     case LONG -> new R("", "nextLong");
                     case FLOAT -> new R("(float) ", "nextDouble");
                     case DOUBLE -> new R("", "nextDouble");
-                    default -> throw new AssertionError(type.getKind());
+                    default -> throw new ContextedRuntimeException(
+                            type.getKind().toString());
                 };
         lhs.assign(code, "$L$L.$L()", readMethod.cast, parserVariable.getSimpleName(), readMethod.method);
     }

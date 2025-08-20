@@ -9,8 +9,6 @@ public class Exceptions {
             return supplier.get();
         } catch (ContextedRuntimeException e) {
             throw e.addContextValue(label, value);
-        } catch (Exception e) {
-            throw e;
         }
     }
 

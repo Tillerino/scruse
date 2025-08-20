@@ -6,6 +6,7 @@ import jakarta.annotation.Nullable;
 import java.io.IOException;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.JacksonJsonParserReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -105,7 +106,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
                     case LONG -> "getLongValue";
                     case FLOAT -> "getFloatValue";
                     case DOUBLE -> "getDoubleValue";
-                    default -> throw new AssertionError(type.getKind());
+                    default -> throw new ContextedRuntimeException(
+                            type.getKind().toString());
                 };
         if (lhs instanceof LHS.Return) {
             String tmp = "tmp$" + stackDepth();

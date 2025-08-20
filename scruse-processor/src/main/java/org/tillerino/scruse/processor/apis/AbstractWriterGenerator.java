@@ -2,13 +2,17 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import java.util.*;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
+import org.tillerino.scruse.processor.ScrusePrototype;
+import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
@@ -225,7 +229,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     }
 
     protected void writeObjectAsMap() {
-        Polymorphism.of(type.getTypeElement(), utils).ifPresentOrElse(this::writePolymorphicObject, () -> {
+        TypeElement typeElement = type.getTypeElement();
+        if (typeElement == null) {
+            throw new ContextedRuntimeException("Trying to write object which has no type element: " + type);
+        }
+        Polymorphism.of(typeElement, utils).ifPresentOrElse(this::writePolymorphicObject, () -> {
             startObject();
             code.add("\n");
             writeObjectPropertiesAsFields();

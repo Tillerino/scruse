@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.helpers.Fastjson2ReaderHelper;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -122,7 +123,8 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
                     case LONG -> "readInt64Value";
                     case FLOAT -> "readFloatValue";
                     case DOUBLE -> "readDoubleValue";
-                    default -> throw new AssertionError(type.getKind());
+                    default -> throw new ContextedRuntimeException(
+                            type.getKind().toString());
                 };
         lhs.assign(code, "$L.$L()", parserVariable.getSimpleName(), readMethod);
     }

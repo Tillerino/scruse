@@ -4,6 +4,7 @@ import com.squareup.javapoet.CodeBlock;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
@@ -113,7 +114,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                         case SHORT -> "writeInt16";
                         case INT -> "writeInt32";
                         case LONG -> "writeInt64";
-                        default -> throw new AssertionError("Unexpected type: " + kind);
+                        default -> throw new ContextedRuntimeException("Unexpected type: " + kind);
                     };
             code.addStatement(
                     "$L.$L(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), write, rhs.args()));

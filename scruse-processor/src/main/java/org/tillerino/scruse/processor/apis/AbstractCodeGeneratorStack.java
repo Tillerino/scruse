@@ -8,7 +8,10 @@ import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
-import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.AnnotationProcessorUtils;
+import org.tillerino.scruse.processor.GeneratedClass;
+import org.tillerino.scruse.processor.ScrusePrototype;
+import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.features.Polymorphism;
@@ -67,8 +70,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         if (stackRelevantType && parent != null && parent.stackContainsType(type)) {
             throw new ContextedRuntimeException(
                             "Self-referencing type detected. Define a separate method for this type.")
-                    .addContextValue("type", type)
-                    .addContextValue("stack", stack());
+                    .addContextValue("type", type);
         }
     }
 

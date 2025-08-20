@@ -5,6 +5,7 @@ import com.squareup.javapoet.CodeBlock;
 import java.io.IOException;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -108,7 +109,8 @@ public class NanojsonReaderGenerator extends AbstractReaderGenerator<NanojsonRea
                     case LONG -> Pair.of("long", "longVal");
                     case FLOAT -> Pair.of(null, "floatVal");
                     case DOUBLE -> Pair.of(null, "doubleVal");
-                    default -> throw new AssertionError(type.getKind());
+                    default -> throw new ContextedRuntimeException(
+                            type.getKind().toString());
                 };
         String cast = readMethod.getLeft() == null ? "" : "(" + readMethod.getLeft() + ") ";
         String method = readMethod.getRight();
