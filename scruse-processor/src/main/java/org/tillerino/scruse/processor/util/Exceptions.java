@@ -1,5 +1,7 @@
 package org.tillerino.scruse.processor.util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 
@@ -18,5 +20,26 @@ public class Exceptions {
         } catch (ContextedRuntimeException e) {
             throw e.addContextValue(label, value);
         }
+    }
+
+    public static <T> @Nonnull T notNull(@Nullable T t, String message, Object... args) {
+        if (t == null) {
+            throw new ContextedRuntimeException(message.formatted(args));
+        }
+        return t;
+    }
+
+    public static <T> @Nonnull T notNull(@Nullable T t, String message) {
+        if (t == null) {
+            throw new ContextedRuntimeException(message);
+        }
+        return t;
+    }
+
+    public static <T> @Nonnull T notNull(@Nullable T t) {
+        if (t == null) {
+            throw new ContextedRuntimeException("null");
+        }
+        return t;
     }
 }

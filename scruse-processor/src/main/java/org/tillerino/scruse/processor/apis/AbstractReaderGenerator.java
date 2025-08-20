@@ -333,8 +333,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     private void readCollection(Branch branch) {
         startArrayCase(branch);
         {
-            Type componentType =
-                    type.determineTypeArguments(Iterable.class).get(0).getTypeBound();
+            Type componentType = type.determineTypeArguments(Iterable.class).get(0);
             TypeMirror collectionType = determineCollectionType();
             String varName = instantiateContainer(collectionType);
 

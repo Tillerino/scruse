@@ -7,7 +7,10 @@ import com.squareup.javapoet.*;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -15,7 +18,9 @@ import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.JavaFileObject;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
-import org.tillerino.scruse.annotations.*;
+import org.tillerino.scruse.annotations.JsonConfig;
+import org.tillerino.scruse.annotations.JsonInput;
+import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.apis.*;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.util.Exceptions;
@@ -60,23 +65,30 @@ public class ScruseProcessor extends AbstractProcessor {
                 return;
             }
             mapStructSetup(processingEnv, type);
-            ScruseBlueprint blueprint = utils.blueprint(type);
-            for (ExecutableElement exec :
-                    ElementFilter.methodsIn(utils.elements.getAllMembers((TypeElement) element))) {
-                if (!exec.getEnclosingElement().equals(element)) {
-                    InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
-                    PrototypeKind.of(instantiated, utils).ifPresent(kind -> {
-                        ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
-                        // should actually check if super method is not being generated and THIS is being generated
-                        if (method.config()
-                                .resolveProperty(ConfigProperty.IMPLEMENT)
-                                .value()
-                                .shouldImplement()) {
-                            blueprint.prototypes.add(method);
+            Exceptions.runWithContext(
+                    () -> {
+                        ScruseBlueprint blueprint = utils.blueprint(type);
+                        for (ExecutableElement exec :
+                                ElementFilter.methodsIn(utils.elements.getAllMembers((TypeElement) element))) {
+                            if (!exec.getEnclosingElement().equals(element)) {
+                                InstantiatedMethod instantiated =
+                                        utils.generics.instantiateMethod(exec, blueprint.typeBindings);
+                                PrototypeKind.of(instantiated, utils).ifPresent(kind -> {
+                                    ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
+                                    // should actually check if super method is not being generated and THIS is being
+                                    // generated
+                                    if (method.config()
+                                            .resolveProperty(ConfigProperty.IMPLEMENT)
+                                            .value()
+                                            .shouldImplement()) {
+                                        blueprint.prototypes.add(method);
+                                    }
+                                });
+                            }
                         }
-                    });
-                }
-            }
+                    },
+                    "config",
+                    element);
         });
         roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
             ExecutableElement exec = (ExecutableElement) element;

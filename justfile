@@ -10,8 +10,8 @@ updates-flags := "-q '-Dmaven.version.ignore=.*\\.Beta\\d*,.*\\.android\\d*,.*-M
 format:
   {{mvn}} -q spotless:apply
 
-test:
-  {{mvn}} clean spotless:apply test
+test args="":
+  {{mvn}} clean spotless:apply test {{args}}
 
 # show all available updates
 updates:

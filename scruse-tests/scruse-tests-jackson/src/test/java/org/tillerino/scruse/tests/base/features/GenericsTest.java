@@ -1,15 +1,14 @@
 package org.tillerino.scruse.tests.base.features;
 
 import static org.tillerino.scruse.tests.CodeAssertions.assertThatCode;
+import static org.tillerino.scruse.tests.CodeAssertions.assertThatImpl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
-import org.tillerino.scruse.tests.base.features.GenericsSerde.GenericRecordSerde;
-import org.tillerino.scruse.tests.base.features.GenericsSerde.IntegerRecordSerde;
-import org.tillerino.scruse.tests.base.features.GenericsSerde.StringRecordSerde;
-import org.tillerino.scruse.tests.base.features.GenericsSerde.StringSerde;
+import org.tillerino.scruse.tests.base.features.GenericsSerde.*;
 import org.tillerino.scruse.tests.model.features.GenericsModel.GenericRecord;
 
 class GenericsTest extends ReferenceTest {
@@ -20,6 +19,8 @@ class GenericsTest extends ReferenceTest {
     StringRecordSerde stringRecordSerde = SerdeUtil.impl(StringRecordSerde.class);
 
     IntegerRecordSerde integerRecordSerde = SerdeUtil.impl(IntegerRecordSerde.class);
+
+    GenericListSerde genericListSerde = SerdeUtil.impl(GenericListSerde.class);
 
     @Test
     void passGenericImplExplicitly() throws Exception {
@@ -71,5 +72,24 @@ class GenericsTest extends ReferenceTest {
                 .method("readIntegerRecord")
                 .calls("readGenericRecord")
                 .bodyContains("::readBoxedInt");
+    }
+
+    @Test
+    void genericListSerde() throws Exception {
+        outputUtils.roundTrip(
+                List.of(1.0, 2.0, 3.0),
+                genericListSerde::writeDoubleList,
+                genericListSerde::readDoubleList,
+                new TypeReference<>() {});
+
+        assertThatImpl(GenericListSerde.class)
+                .method("writeDoubleList")
+                .calls("writeGenericList")
+                .references("writeBoxedDoubleX");
+
+        assertThatImpl(GenericListSerde.class)
+                .method("readDoubleList")
+                .calls("readGenericList")
+                .references("readBoxedDoubleX");
     }
 }

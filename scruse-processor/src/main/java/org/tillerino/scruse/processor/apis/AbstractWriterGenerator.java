@@ -19,6 +19,7 @@ import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.Polymorphism;
 import org.tillerino.scruse.processor.features.PropertyName;
+import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerator<SELF>>
@@ -180,7 +181,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     protected void writeIterable() {
         Type componentType = type.isArrayType()
                 ? type.getComponentType()
-                : type.determineTypeArguments(Iterable.class).iterator().next().getTypeBound();
+                : type.determineTypeArguments(Iterable.class).get(0);
 
         RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1), true);
         SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), "item", elemVar, true, config);
@@ -189,7 +190,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         code.beginControlFlow(
                 "for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
         writeCommaIfNecessary();
-        nested.build();
+        Exceptions.runWithContext(nested::build, "component", componentType);
         code.endControlFlow();
         endArray();
     }
@@ -223,7 +224,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         code.beginControlFlow(
                 "for ($T<$T, $T> $L : " + rhs.format() + ".entrySet())",
                 flatten(Map.Entry.class, keyType.getTypeMirror(), valueType.getTypeMirror(), entry.name(), rhs.args()));
-        valueNested.build();
+        Exceptions.runWithContext(valueNested::build, "value", valueType);
         code.endControlFlow();
         endObject();
     }
@@ -273,8 +274,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                                         polymorphism.discriminator(),
                                         child.name());
                                 // TODO crude call
-                                nest(child.type(), lhs, "instance", casted, true, config)
-                                        .invokeDelegate(delegateField, delegate.method());
+                                Exceptions.runWithContext(
+                                        () -> nest(child.type(), lhs, "instance", casted, true, config)
+                                                .invokeDelegate(delegateField, delegate.method()),
+                                        "instance",
+                                        child.type());
                             },
                             () -> {
                                 startObject();
@@ -287,8 +291,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                                                 false,
                                                 config)
                                         .build();
-                                nest(child.type(), lhs, "instance", casted, true, config)
-                                        .writeObjectPropertiesAsFields();
+                                Exceptions.runWithContext(
+                                        () -> nest(child.type(), lhs, "instance", casted, true, config)
+                                                .writeObjectPropertiesAsFields(),
+                                        "instance",
+                                        child.type());
                                 endObject();
                             });
         }
@@ -337,7 +344,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             LHS lhs = new LHS.Field("$S", new Object[] {propertyName});
             RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
             SELF nested = nest(accessor.getAccessedType(), lhs, propertyName, nest, true, config);
-            nested.build();
+            Exceptions.runWithContext(() -> nested.build(), "property", canonicalPropertyName);
             code.add("\n");
         });
     }

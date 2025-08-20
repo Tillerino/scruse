@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import java.util.List;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
@@ -76,5 +77,23 @@ public interface GenericsSerde {
 
         @JsonOutput
         void writeDoubleArray(double[] array, JsonGenerator gen) throws Exception;
+    }
+
+    interface GenericContainersSerde {
+        @JsonOutput
+        <T> void writeGenericList(List<T> list, JsonGenerator gen, GenericOutputSerde<T> componentWriter)
+                throws Exception;
+
+        @JsonInput
+        <T> List<T> readGenericList(JsonParser parser, GenericInputSerde<T> componentReader) throws Exception;
+    }
+
+    @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
+    interface GenericListSerde {
+        @JsonOutput
+        void writeDoubleList(List<Double> l, JsonGenerator gen) throws Exception;
+
+        @JsonInput
+        List<Double> readDoubleList(JsonParser parser) throws Exception;
     }
 }

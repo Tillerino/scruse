@@ -8,6 +8,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.utils.CodeGenerationUtils;
 import com.github.javaparser.utils.SourceRoot;
@@ -27,6 +28,10 @@ public class CodeAssertions {
             compilationUnitCache.put(clazz.getCanonicalName(), parseClass(clazz));
         }
         return compilationUnitCache.get(clazz.getCanonicalName());
+    }
+
+    public static CompileUnitAssert assertThatImpl(Class<?> clazz) throws Exception {
+        return assertThatCode(SerdeUtil.implClass(clazz));
     }
 
     private static CompileUnitAssert parseClass(Class<?> clazz) throws Exception {
@@ -83,6 +88,18 @@ public class CodeAssertions {
                             .toString())
                     .contains(code);
             return this;
+        }
+
+        public MethodAssert references(String name) {
+            allReferences().contains(name);
+            return this;
+        }
+
+        private AbstractListAssert<?, List<? extends String>, String, ObjectAssert<String>> allReferences() {
+            BlockStmt blockStmt =
+                    decl.getBody().orElseThrow(() -> new AssertionError("No body in " + decl.getNameAsString()));
+            return assertThat(blockStmt.findAll(MethodReferenceExpr.class))
+                    .extracting(MethodReferenceExpr::getIdentifier);
         }
     }
 }

@@ -9,7 +9,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.apache.commons.lang3.Validate;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
@@ -97,7 +96,7 @@ public record Annotations(AnnotationProcessorUtils utils) {
 
     public record AnnotationValueWrapper(AnnotationValue value) {
         public List<AnnotationValueWrapper> asArray() {
-            return Validate.notNull(
+            return Exceptions.notNull(
                     value.accept(
                             new GetAnnotationValues<List<AnnotationValueWrapper>, Void>() {
                                 @Override
@@ -109,12 +108,13 @@ public record Annotations(AnnotationProcessorUtils utils) {
                                 }
                             },
                             null),
-                    "not an array");
+                    "not an array: %s",
+                    value);
         }
 
         public AnnotationMirrorWrapper asAnnotation() {
             return new AnnotationMirrorWrapper(
-                    Validate.notNull(
+                    Exceptions.notNull(
                             value.accept(
                                     new GetAnnotationValues<AnnotationMirror, Void>() {
                                         @Override
@@ -123,12 +123,13 @@ public record Annotations(AnnotationProcessorUtils utils) {
                                         }
                                     },
                                     null),
-                            "not an annotation"),
+                            "not an annotation: %s",
+                            value),
                     null);
         }
 
         public String asString() {
-            return Validate.notNull(
+            return Exceptions.notNull(
                     value.accept(
                             new GetAnnotationValues<String, Void>() {
                                 @Override
@@ -142,7 +143,7 @@ public record Annotations(AnnotationProcessorUtils utils) {
         }
 
         public TypeMirror asTypeMirror() {
-            return Validate.notNull(
+            return Exceptions.notNull(
                     value.accept(
                             new GetAnnotationValues<TypeMirror, Void>() {
                                 @Override
@@ -151,11 +152,12 @@ public record Annotations(AnnotationProcessorUtils utils) {
                                 }
                             },
                             null),
-                    "not a type");
+                    "not a type: %s",
+                    value);
         }
 
         public <T extends Enum<T>> T asEnum(Class<T> cls) {
-            return Validate.notNull(
+            return Exceptions.notNull(
                     value.accept(
                             new GetAnnotationValues<T, Void>() {
                                 @Override
@@ -164,11 +166,12 @@ public record Annotations(AnnotationProcessorUtils utils) {
                                 }
                             },
                             null),
-                    "not an enum");
+                    "not an enum: %s",
+                    value);
         }
 
         public boolean asBoolean() {
-            return Validate.notNull(
+            return Exceptions.notNull(
                     value.accept(
                             new GetAnnotationValues<Boolean, Void>() {
                                 @Override
@@ -177,7 +180,8 @@ public record Annotations(AnnotationProcessorUtils utils) {
                                 }
                             },
                             null),
-                    "not a boolean");
+                    "not a boolean: %s",
+                    value);
         }
     }
 }
