@@ -32,4 +32,19 @@ class IgnorePropertyTest extends ReferenceTest {
     void recordComponent() throws Exception {
         outputUtils.assertIsEqualToDatabind(new JsonIgnoreOnRecordComponent("x"), serde::writeRecordComponent);
     }
+
+    @Test
+    void childInheritsParentIgnore() throws Exception {
+        // The parentField should be ignored because @JsonIgnore is inherited from parent
+        outputUtils.assertIsEqualToDatabind(
+                new ChildInheritsParentIgnore("parentValue", "childValue"), serde::writeChildInheritsParentIgnore);
+    }
+
+    @Test
+    void childImplementsParentInterface() throws Exception {
+        // The parentField should be ignored because @JsonIgnore is inherited from parent interface
+        outputUtils.assertIsEqualToDatabind(
+                new ChildImplementsParentInterface("parentValue", "childValue"),
+                serde::writeChildImplementsParentInterface);
+    }
 }

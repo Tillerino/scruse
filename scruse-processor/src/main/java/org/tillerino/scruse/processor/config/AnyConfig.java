@@ -4,11 +4,14 @@ import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
+import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.util.accessor.Accessor;
 import org.mapstruct.ap.internal.util.accessor.AccessorType;
+import org.mapstruct.ap.internal.util.accessor.ExecutableElementAccessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
@@ -61,21 +64,39 @@ public final class AnyConfig {
     }
 
     public static AnyConfig fromAccessorConsideringField(
-            Accessor property, TypeElement dto, String canonicalPropertyName, AnnotationProcessorUtils utils) {
-        // TODO inheritance!
-
+            Accessor property, Type dto, String canonicalPropertyName, AnnotationProcessorUtils utils) {
         AnyConfig accessorConfig = create(property.getElement(), LocationKind.PROPERTY, utils);
         if (property.getAccessorType() == AccessorType.FIELD) {
             return accessorConfig;
         }
 
-        return Optional.ofNullable(dto)
-                .flatMap(d -> ElementFilter.fieldsIn(d.getEnclosedElements()).stream()
-                        .filter(f -> f.getSimpleName().contentEquals(canonicalPropertyName))
-                        .findFirst()
-                        .map(f -> create(f, LocationKind.PROPERTY, utils)))
+        AnyConfig config = ElementFilter.fieldsIn(dto.getTypeElement().getEnclosedElements()).stream()
+                .filter(f -> f.getSimpleName().contentEquals(canonicalPropertyName))
+                .findFirst()
+                .map(f -> create(f, LocationKind.PROPERTY, utils))
                 .map(fieldConfig -> fieldConfig.merge(accessorConfig))
                 .orElse(accessorConfig);
+
+        if (property.getAccessorType() == AccessorType.GETTER || property.getAccessorType() == AccessorType.SETTER) {
+            for (Type directSuperType : dto.getDirectSuperTypes()) {
+                TypeElement superTypeElement = directSuperType.getTypeElement();
+                Optional<ExecutableElement> superMethod =
+                        ElementFilter.methodsIn(superTypeElement.getEnclosedElements()).stream()
+                                .filter(m -> m.getSimpleName().contentEquals(property.getSimpleName()))
+                                .findFirst();
+                if (superMethod.isPresent()) {
+                    AnyConfig superConfig = fromAccessorConsideringField(
+                            new ExecutableElementAccessor(
+                                    superMethod.get(), property.getAccessedType(), property.getAccessorType()),
+                            directSuperType,
+                            canonicalPropertyName,
+                            utils);
+                    config = config.merge(superConfig);
+                }
+            }
+        }
+
+        return config;
     }
 
     /**

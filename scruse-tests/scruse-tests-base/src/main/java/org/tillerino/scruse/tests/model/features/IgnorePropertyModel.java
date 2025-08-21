@@ -54,4 +54,56 @@ public interface IgnorePropertyModel {
     }
 
     record JsonIgnoreOnRecordComponent(@JsonIgnore String s) {}
+
+    /** Test JsonIgnore inheritance from parent to child class */
+    class ParentWithIgnoredField {
+        @JsonIgnore
+        private String parentField;
+
+        public ParentWithIgnoredField(String parentField) {
+            this.parentField = parentField;
+        }
+
+        public String getParentField() {
+            return parentField;
+        }
+    }
+
+    class ChildInheritsParentIgnore extends ParentWithIgnoredField {
+        private String childField;
+
+        public ChildInheritsParentIgnore(String parentField, String childField) {
+            super(parentField);
+            this.childField = childField;
+        }
+
+        public String getChildField() {
+            return childField;
+        }
+    }
+
+    /** Test JsonIgnore inheritance from parent interface */
+    interface ParentInterfaceWithIgnoredField {
+        @JsonIgnore
+        String getParentField();
+    }
+
+    class ChildImplementsParentInterface implements ParentInterfaceWithIgnoredField {
+        private String parentField;
+        private String childField;
+
+        public ChildImplementsParentInterface(String parentField, String childField) {
+            this.parentField = parentField;
+            this.childField = childField;
+        }
+
+        @Override
+        public String getParentField() {
+            return parentField;
+        }
+
+        public String getChildField() {
+            return childField;
+        }
+    }
 }

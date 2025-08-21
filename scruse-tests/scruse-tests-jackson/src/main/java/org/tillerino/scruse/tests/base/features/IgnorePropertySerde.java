@@ -19,4 +19,10 @@ public interface IgnorePropertySerde {
 
     @JsonOutput
     void writeRecordComponent(JsonIgnoreOnRecordComponent obj, JsonGenerator out) throws Exception;
+
+    @JsonOutput
+    void writeChildInheritsParentIgnore(ChildInheritsParentIgnore obj, JsonGenerator out) throws Exception;
+
+    @JsonOutput
+    void writeChildImplementsParentInterface(ChildImplementsParentInterface obj, JsonGenerator out) throws Exception;
 }
