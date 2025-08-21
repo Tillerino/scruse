@@ -10,4 +10,10 @@ public interface DelegationModel {
             new SelfReferencingRecord("c", new SelfReferencingRecord("d", null)));
 
     record SelfReferencingRecord(String prop, SelfReferencingRecord self) {}
+
+    interface GenericInterface<T> {}
+
+    record UsesGenericInterfaceRaw(GenericInterface i) {}
+
+    record UsesGenericInterfaceWildcard(GenericInterface<?> i) {}
 }

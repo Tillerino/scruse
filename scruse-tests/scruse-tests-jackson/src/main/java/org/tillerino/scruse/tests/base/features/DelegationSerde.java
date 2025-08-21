@@ -8,10 +8,15 @@ import java.util.Queue;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.api.DeserializationContext;
+import org.tillerino.scruse.api.SerializationContext;
 import org.tillerino.scruse.tests.base.PrimitiveScalarsSerde;
 import org.tillerino.scruse.tests.base.ScalarFieldsRecord;
 import org.tillerino.scruse.tests.model.PrimitiveArrayFieldsRecord;
+import org.tillerino.scruse.tests.model.features.DelegationModel.GenericInterface;
 import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
+import org.tillerino.scruse.tests.model.features.DelegationModel.UsesGenericInterfaceRaw;
+import org.tillerino.scruse.tests.model.features.DelegationModel.UsesGenericInterfaceWildcard;
 
 public interface DelegationSerde {
     interface SimpleDelegationSerde {
@@ -230,5 +235,67 @@ public interface DelegationSerde {
 
         @JsonInput
         List<SelfReferencingRecord> deserializeList(JsonParser input) throws Exception;
+    }
+
+    interface WithGenericsWildcardEdition {
+        @JsonOutput
+        default void writeGenericInterfaceWildcard(
+                GenericInterface<?> genericInterface, JsonGenerator gen, SerializationContext ctx) throws Exception {
+            // do nothing, just want to test delegation
+        }
+
+        @JsonInput
+        default GenericInterface<?> readGenericInterfaceWildcard(JsonParser parser, DeserializationContext ctx)
+                throws Exception {
+            // do nothing, just want to test delegation
+            return null;
+        }
+
+        @JsonOutput
+        void writeOuterWildcard(
+                UsesGenericInterfaceWildcard usesGenericInterfaceWildcard, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        UsesGenericInterfaceWildcard readOuterWildcard(JsonParser parser, DeserializationContext ctx) throws Exception;
+
+        @JsonOutput
+        void writeOuterRaw(
+                UsesGenericInterfaceRaw usesGenericInterfaceWildcard, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        UsesGenericInterfaceRaw readOuterRaw(JsonParser parser, DeserializationContext ctx) throws Exception;
+    }
+
+    interface WithGenericsRawEdition {
+        @JsonOutput
+        default void writeGenericInterfaceRaw(
+                GenericInterface genericInterface, JsonGenerator gen, SerializationContext ctx) throws Exception {
+            // do nothing, just want to test delegation
+        }
+
+        @JsonInput
+        default GenericInterface readGenericInterfaceRaw(JsonParser parser, DeserializationContext ctx)
+                throws Exception {
+            // do nothing, just want to test delegation
+            return null;
+        }
+
+        @JsonOutput
+        void writeOuterWildcard(
+                UsesGenericInterfaceWildcard usesGenericInterfaceWildcard, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        UsesGenericInterfaceWildcard readOuterWildcard(JsonParser parser, DeserializationContext ctx) throws Exception;
+
+        @JsonOutput
+        void writeOuterRaw(
+                UsesGenericInterfaceRaw usesGenericInterfaceWildcard, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        UsesGenericInterfaceRaw readOuterRaw(JsonParser parser, DeserializationContext ctx) throws Exception;
     }
 }

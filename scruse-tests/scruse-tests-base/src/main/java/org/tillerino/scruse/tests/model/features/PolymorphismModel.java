@@ -3,9 +3,10 @@ package org.tillerino.scruse.tests.model.features;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 public interface PolymorphismModel {
-    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+    @JsonTypeInfo(use = Id.NAME)
     @JsonSubTypes({
         @Type(value = JsonTypeInfoUseName.RecordOne.class, name = "1"),
         @Type(value = JsonTypeInfoUseName.RecordTwo.class, name = "2")
@@ -16,7 +17,7 @@ public interface PolymorphismModel {
         record RecordTwo(int i) implements JsonTypeInfoUseName {}
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    @JsonTypeInfo(use = Id.CLASS)
     @JsonSubTypes({
         @Type(value = JsonTypeInfoUseClass.RecordOne.class, name = "1"),
         @Type(value = JsonTypeInfoUseClass.RecordTwo.class, name = "2")
@@ -27,7 +28,7 @@ public interface PolymorphismModel {
         record RecordTwo(int i) implements JsonTypeInfoUseClass {}
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME)
+    @JsonTypeInfo(use = Id.SIMPLE_NAME)
     @JsonSubTypes({
         // SIMPLE_NAME actually prefers the specified name in @Type over the simple name
         @Type(value = JsonTypeInfoUseSimpleName.RecordOne.class, name = "1"),
@@ -39,7 +40,7 @@ public interface PolymorphismModel {
         record RecordTwo(int i) implements JsonTypeInfoUseSimpleName {}
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+    @JsonTypeInfo(use = Id.MINIMAL_CLASS)
     sealed interface SealedInterface {}
 
     record RecordOne(String s) implements SealedInterface {}

@@ -51,7 +51,7 @@ class PolymorphismTest extends ReferenceTest {
     }
 
     @Nested
-    class JsonTypeInfoAndJsonSubTypesTest extends ReferenceTest {
+    class JsonTypeInfoAndJsonSubTypesTest {
         PolymorphismSerde.JsonTypeInfoAndJsonSubTypesSerde serde =
                 SerdeUtil.impl(PolymorphismSerde.JsonTypeInfoAndJsonSubTypesSerde.class);
 

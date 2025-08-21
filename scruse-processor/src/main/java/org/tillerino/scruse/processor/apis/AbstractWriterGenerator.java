@@ -260,11 +260,12 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                                         prototype.blueprint(), delegate.blueprint());
                                 VariableElement calleeContext = delegate.prototype()
                                         .contextParameter()
-                                        .orElseThrow(() -> new IllegalArgumentException(
-                                                "Delegate method must have a context parameter"));
+                                        .orElseThrow(() -> new ContextedRuntimeException(
+                                                        "Delegate method must have a context parameter")
+                                                .addContextValue("delegate", delegate.method()));
                                 VariableElement callerContext = prototype
                                         .contextParameter()
-                                        .orElseThrow(() -> new IllegalArgumentException(
+                                        .orElseThrow(() -> new ContextedRuntimeException(
                                                 "Prototype method must have a context parameter"));
                                 if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
                                     throw new ContextedRuntimeException("Context types must be compatible");

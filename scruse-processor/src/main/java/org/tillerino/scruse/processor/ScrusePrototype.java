@@ -96,6 +96,10 @@ public record ScrusePrototype(
             if (!(callerType instanceof DeclaredType tt) || !t.asElement().equals(tt.asElement())) {
                 return false;
             }
+            if (t.getTypeArguments().isEmpty() || tt.getTypeArguments().isEmpty()) {
+                // if either is raw
+                return true;
+            }
             for (int i = 0; i < t.getTypeArguments().size(); i++) {
                 TypeMirror type = t.getTypeArguments().get(i);
                 TypeMirror targetTypeArg = tt.getTypeArguments().get(i);
@@ -110,6 +114,9 @@ public record ScrusePrototype(
         }
         if (calleeType instanceof ArrayType a && callerType instanceof ArrayType at) {
             return isSameTypeWithBindings(a.getComponentType(), at.getComponentType(), calleeTypeVars, calleeBindings);
+        }
+        if (calleeType.getKind() == TypeKind.WILDCARD && callerType.getKind() == TypeKind.WILDCARD) {
+            return true;
         }
         return false;
     }

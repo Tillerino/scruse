@@ -16,10 +16,10 @@ import org.tillerino.scruse.tests.base.features.DelegationSerde.*;
 import org.tillerino.scruse.tests.model.features.DelegationModel;
 import org.tillerino.scruse.tests.model.features.DelegationModel.SelfReferencingRecord;
 
-public class DelegationTest {
+public class DelegationTest extends ReferenceTest {
 
     @Nested
-    class SelfReferencingSerdeTest extends ReferenceTest {
+    class SelfReferencingSerdeTest {
         SelfReferencingSerde serde = SerdeUtil.impl(SelfReferencingSerde.class);
 
         @Test
@@ -31,7 +31,7 @@ public class DelegationTest {
     }
 
     @Nested
-    class AdditionalArgumentsTest extends ReferenceTest {
+    class AdditionalArgumentsTest {
         AdditionalArgumentsSerde serde = SerdeUtil.impl(AdditionalArgumentsSerde.class);
 
         @Test
@@ -52,7 +52,7 @@ public class DelegationTest {
     }
 
     @Nested
-    class BoxedScalarsSerdeTest extends ReferenceTest {
+    class BoxedScalarsSerdeTest {
         BoxedScalarsSerde boxed = SerdeUtil.impl(BoxedScalarsSerde.class);
 
         @Test
@@ -124,7 +124,7 @@ public class DelegationTest {
     }
 
     @Nested
-    class PrimitiveArrayFieldsRecordTest extends ReferenceTest {
+    class PrimitiveArrayFieldsRecordTest {
 
         @Test
         void delegationWorks() throws Exception {
@@ -142,7 +142,7 @@ public class DelegationTest {
     }
 
     @Nested
-    class ScalarArraysSerdeTest extends ReferenceTest {
+    class ScalarArraysSerdeTest {
         ScalarArraysSerde impl = SerdeUtil.impl(ScalarArraysSerde.class);
 
         @Test
@@ -314,6 +314,53 @@ public class DelegationTest {
             } else {
                 method.doesNotCall(callee);
             }
+        }
+    }
+
+    @Nested
+    class DelegationWithGenericsTest {
+        @Test
+        void wildcardCallsWildcard() throws Exception {
+            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+                    .method("writeOuterWildcard")
+                    .calls("writeGenericInterfaceWildcard");
+
+            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+                    .method("readOuterWildcard")
+                    .calls("readGenericInterfaceWildcard");
+        }
+
+        @Test
+        void rawCallsWildcard() throws Exception {
+            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+                    .method("writeOuterRaw")
+                    .calls("writeGenericInterfaceWildcard");
+
+            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+                    .method("readOuterRaw")
+                    .calls("readGenericInterfaceWildcard");
+        }
+
+        @Test
+        void wildcardCallsRaw() throws Exception {
+            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
+                    .method("writeOuterWildcard")
+                    .calls("writeGenericInterfaceRaw");
+
+            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
+                    .method("readOuterWildcard")
+                    .calls("readGenericInterfaceRaw");
+        }
+
+        @Test
+        void rawCallsRaw() throws Exception {
+            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
+                    .method("writeOuterRaw")
+                    .calls("writeGenericInterfaceRaw");
+
+            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
+                    .method("readOuterRaw")
+                    .calls("readGenericInterfaceRaw");
         }
     }
 }
