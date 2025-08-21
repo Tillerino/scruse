@@ -15,6 +15,7 @@ import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
 import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.Polymorphism;
@@ -74,7 +75,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
                 .map(d -> new Delegatee(
                         generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
-                .or(this::findDelegateeInMethodParameters);
+                .or(() -> utils.delegation.findDelegateeInMethodParameters(prototype, type));
         if (delegate.isPresent()) {
             invokeDelegate(delegate.get().fieldOrParameter(), delegate.get().method());
             return code;

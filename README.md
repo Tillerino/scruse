@@ -570,10 +570,11 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 ## Roadmap
 
 ### Short-term:
-- Sort out missing properties.
+- Sort out required properties.
 - Allow polymorphism for sealed interfaces without further annotations.
 
 ### Long-term:
 
 - Slowly add support for more Jackson annotations, but on a need-to-have basis.
   There are so many annotations that we cannot support them all.
+- Get rid of Mapstruct dependency

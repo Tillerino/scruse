@@ -22,6 +22,7 @@ import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.features.*;
+import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
@@ -70,7 +71,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
                 .map(d -> new Delegatee(
                         generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
-                .or(this::findDelegateeInMethodParameters);
+                .or(() -> utils.delegation.findDelegateeInMethodParameters(prototype, type));
         if (delegate.isPresent()) {
             if (branch != Branch.IF) {
                 code.nextControlFlow("else");

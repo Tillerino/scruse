@@ -156,14 +156,14 @@ public record Generics(AnnotationProcessorUtils utils) {
     private Optional<Snippet> createMethodReference(GeneratedClass callingClass, InstantiatedMethod targetMethod) {
         ScruseBlueprint blueprint = callingClass.blueprint;
         for (ScrusePrototype method : blueprint.prototypes) {
-            if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
+            if (method.asInstantiatedMethod().hasSameSignature(targetMethod, utils)) {
                 return Optional.of(Snippet.of(
                         "$L::$L", callingClass.getOrCreateDelegateeField(blueprint, blueprint), method.name()));
             }
         }
         for (ScruseBlueprint use : blueprint.config.reversedUses()) {
             for (ScrusePrototype method : use.prototypes) {
-                if (method.asInstantiatedMethod().sameTypes(targetMethod, utils)) {
+                if (method.asInstantiatedMethod().hasSameSignature(targetMethod, utils)) {
                     return Optional.of(Snippet.of(
                             "$L::$L", callingClass.getOrCreateDelegateeField(blueprint, use), method.name()));
                 }

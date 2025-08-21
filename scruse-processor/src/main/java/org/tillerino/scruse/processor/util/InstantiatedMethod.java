@@ -23,7 +23,7 @@ public record InstantiatedMethod(
                 : Snippet.of("$T.$L", raw, name);
     }
 
-    public boolean sameTypes(InstantiatedMethod other, AnnotationProcessorUtils utils) {
+    public boolean hasSameSignature(InstantiatedMethod other, AnnotationProcessorUtils utils) {
         if (!utils.types.isSameType(returnType, other.returnType)) {
             return false;
         }
