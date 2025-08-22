@@ -106,4 +106,24 @@ public interface IgnorePropertyModel {
             return childField;
         }
     }
+
+    interface GrandparentWithIgnoredProperty {
+        @JsonIgnore
+        String getGrandparentField();
+    }
+
+    abstract class ParentInheritsGrandparentIgnore implements GrandparentWithIgnoredProperty {}
+
+    class ChildInheritsGrandparentIgnore extends ParentInheritsGrandparentIgnore {
+        String field;
+
+        public ChildInheritsGrandparentIgnore(String field) {
+            this.field = field;
+        }
+
+        @Override
+        public String getGrandparentField() {
+            return field;
+        }
+    }
 }

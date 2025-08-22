@@ -47,4 +47,10 @@ class IgnorePropertyTest extends ReferenceTest {
                 new ChildImplementsParentInterface("parentValue", "childValue"),
                 serde::writeChildImplementsParentInterface);
     }
+
+    @Test
+    void childInheritsGrandparentIgnore() throws Exception {
+        outputUtils.assertIsEqualToDatabind(
+                new ChildInheritsGrandparentIgnore("foo"), serde::writeChildInheritsGrandparentIgnore);
+    }
 }

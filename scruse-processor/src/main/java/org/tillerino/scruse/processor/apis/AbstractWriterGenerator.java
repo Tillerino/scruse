@@ -332,8 +332,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 config.resolveProperty(IgnoreProperties.IGNORED_PROPERTIES).value();
 
         type.getPropertyReadAccessors().forEach((canonicalPropertyName, accessor) -> {
-            AnyConfig propertyConfig =
-                    AnyConfig.fromAccessorConsideringField(accessor, type, canonicalPropertyName, utils);
+            AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
+                    accessor, accessor.getSimpleName(), type, canonicalPropertyName, utils);
             if (propertyConfig.resolveProperty(IgnoreProperty.IGNORE_PROPERTY).value()) {
                 return;
             }

@@ -542,7 +542,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         type.getPropertyWriteAccessors(CollectionMappingStrategyGem.SETTER_PREFERRED)
                 .forEach((canonicalPropertyName, accessor) -> {
                     AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
-                                    accessor, type, canonicalPropertyName, utils)
+                                    accessor, accessor.getSimpleName(), type, canonicalPropertyName, utils)
                             .merge(config);
                     if (propertyConfig
                             .resolveProperty(IgnoreProperty.IGNORE_PROPERTY)

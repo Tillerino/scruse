@@ -63,40 +63,66 @@ public final class AnyConfig {
         return new AnyConfig(list);
     }
 
+    /**
+     * @param property the accessor. in recursive calls the element might be missing
+     * @param accessorName to reconstruct the element in recursive calls
+     * @param dto the dto containing the property
+     * @param canonicalPropertyName to find the field
+     * @return can return null in a recursive call
+     */
     public static AnyConfig fromAccessorConsideringField(
+            Accessor property,
+            String accessorName,
+            Type dto,
+            String canonicalPropertyName,
+            AnnotationProcessorUtils utils) {
+
+        // nullable during recursion. if element is null, this means the accessor does not exist in this type, but maybe
+        // parent types.
+        AnyConfig accessorConfig = fromAccessorAndField(property, dto, canonicalPropertyName, utils);
+
+        if (property.getAccessorType() != AccessorType.GETTER && property.getAccessorType() != AccessorType.SETTER) {
+            return accessorConfig;
+        }
+
+        for (Type directSuperType : dto.getDirectSuperTypes()) {
+            if (directSuperType.toString().equals(Object.class.getName())) {
+                continue;
+            }
+            TypeElement superTypeElement = directSuperType.getTypeElement();
+            Optional<ExecutableElement> superMethod =
+                    ElementFilter.methodsIn(superTypeElement.getEnclosedElements()).stream()
+                            .filter(m -> m.getSimpleName().contentEquals(accessorName))
+                            .findFirst();
+            ExecutableElementAccessor parentAccessor = new ExecutableElementAccessor(
+                    superMethod.orElse(null), property.getAccessedType(), property.getAccessorType());
+            AnyConfig superConfig = fromAccessorConsideringField(
+                    parentAccessor, accessorName, directSuperType, canonicalPropertyName, utils);
+            if (superConfig != null) {
+                accessorConfig = accessorConfig != null ? accessorConfig.merge(superConfig) : superConfig;
+            }
+        }
+
+        return accessorConfig;
+    }
+
+    private static AnyConfig fromAccessorAndField(
             Accessor property, Type dto, String canonicalPropertyName, AnnotationProcessorUtils utils) {
-        AnyConfig accessorConfig = create(property.getElement(), LocationKind.PROPERTY, utils);
+        AnyConfig accessorConfig =
+                property.getElement() != null ? create(property.getElement(), LocationKind.PROPERTY, utils) : null;
         if (property.getAccessorType() == AccessorType.FIELD) {
             return accessorConfig;
         }
 
-        AnyConfig config = ElementFilter.fieldsIn(dto.getTypeElement().getEnclosedElements()).stream()
-                .filter(f -> f.getSimpleName().contentEquals(canonicalPropertyName))
-                .findFirst()
-                .map(f -> create(f, LocationKind.PROPERTY, utils))
-                .map(fieldConfig -> fieldConfig.merge(accessorConfig))
+        Optional<AnyConfig> maybeFieldConfig =
+                ElementFilter.fieldsIn(dto.getTypeElement().getEnclosedElements()).stream()
+                        .filter(f -> f.getSimpleName().contentEquals(canonicalPropertyName))
+                        .findFirst()
+                        .map(f -> create(f, LocationKind.PROPERTY, utils));
+
+        return maybeFieldConfig
+                .map(anyConfig -> accessorConfig != null ? anyConfig.merge(accessorConfig) : anyConfig)
                 .orElse(accessorConfig);
-
-        if (property.getAccessorType() == AccessorType.GETTER || property.getAccessorType() == AccessorType.SETTER) {
-            for (Type directSuperType : dto.getDirectSuperTypes()) {
-                TypeElement superTypeElement = directSuperType.getTypeElement();
-                Optional<ExecutableElement> superMethod =
-                        ElementFilter.methodsIn(superTypeElement.getEnclosedElements()).stream()
-                                .filter(m -> m.getSimpleName().contentEquals(property.getSimpleName()))
-                                .findFirst();
-                if (superMethod.isPresent()) {
-                    AnyConfig superConfig = fromAccessorConsideringField(
-                            new ExecutableElementAccessor(
-                                    superMethod.get(), property.getAccessedType(), property.getAccessorType()),
-                            directSuperType,
-                            canonicalPropertyName,
-                            utils);
-                    config = config.merge(superConfig);
-                }
-            }
-        }
-
-        return config;
     }
 
     /**

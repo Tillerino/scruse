@@ -25,4 +25,7 @@ public interface IgnorePropertySerde {
 
     @JsonOutput
     void writeChildImplementsParentInterface(ChildImplementsParentInterface obj, JsonGenerator out) throws Exception;
+
+    @JsonOutput
+    void writeChildInheritsGrandparentIgnore(ChildInheritsGrandparentIgnore obj, JsonGenerator out) throws Exception;
 }
