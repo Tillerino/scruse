@@ -5,7 +5,7 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.grack.nanojson.JsonAppendableWriter;
 import com.grack.nanojson.JsonWriter;
-import com.grack.nanojson.TokenerWrapper;
+import com.grack.nanojson.NanojsonReaderAdapter;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.function.FailableBiConsumer;
@@ -58,7 +58,7 @@ public record OutputUtils(InputUtils inputUtils) {
     public <T> T roundTrip(
             T obj,
             FailableBiConsumer<T, JsonAppendableWriter, Exception> output,
-            FailableFunction<TokenerWrapper, T, Exception> input,
+            FailableFunction<NanojsonReaderAdapter, T, Exception> input,
             TypeReference<T> typeRef)
             throws Exception {
         String json = assertIsEqualToDatabind(obj, output);
@@ -69,7 +69,7 @@ public record OutputUtils(InputUtils inputUtils) {
             T obj,
             U obj2,
             FailableTriConsumer<T, JsonAppendableWriter, U, Exception> output,
-            FailableBiFunction<TokenerWrapper, U, T, Exception> input,
+            FailableBiFunction<NanojsonReaderAdapter, U, T, Exception> input,
             TypeReference<T> typeRef)
             throws Exception {
         String json = assertIsEqualToDatabind2(obj, obj2, output);
@@ -79,7 +79,7 @@ public record OutputUtils(InputUtils inputUtils) {
     public <T> T roundTripRecursive(
             T obj,
             FailableBiConsumer<T, JsonAppendableWriter, Exception> output,
-            FailableFunction<TokenerWrapper, T, Exception> input,
+            FailableFunction<NanojsonReaderAdapter, T, Exception> input,
             TypeReference<T> typeRef)
             throws Exception {
         String json = assertIsEqualToDatabind(obj, output);

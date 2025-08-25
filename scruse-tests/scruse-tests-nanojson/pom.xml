@@ -13,7 +13,7 @@
         <copy.skip>false</copy.skip>
         <copy.package>org.tillerino.scruse.tests.alt.nanojson</copy.package>
         <copy.writer>com.grack.nanojson.JsonAppendableWriter</copy.writer>
-        <copy.reader>com.grack.nanojson.TokenerWrapper</copy.reader>
+        <copy.reader>com.grack.nanojson.NanojsonReaderAdapter</copy.reader>
         <copy.writerMode>ARGUMENT</copy.writerMode>
     </properties>
 

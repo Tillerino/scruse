@@ -21,7 +21,6 @@ public sealed interface PrototypeKind {
     String JAKARTA_JSON_PARSER = "org.tillerino.scruse.helpers.JakartaJsonParserHelper.JsonParserWrapper";
     String JAKARTA_JSON_GENERATOR = "jakarta.json.stream.JsonGenerator";
 
-    String NANOJSON_JSON_READER = "com.grack.nanojson.TokenerWrapper";
     String NANOJSON_JSON_WRITER = "com.grack.nanojson.JsonAppendableWriter";
 
     String SCRUSE_READER = "org.tillerino.scruse.api.ScruseReader";
@@ -37,12 +36,7 @@ public sealed interface PrototypeKind {
         if (m.element().getAnnotation(JsonInput.class) != null
                 && m.returnType().getKind() != TypeKind.VOID
                 && !m.parameters().isEmpty()) {
-            if (List.of(
-                            JACKSON_JSON_PARSER,
-                            GSON_JSON_READER,
-                            FASTJSON_2_JSONREADER,
-                            JAKARTA_JSON_PARSER,
-                            NANOJSON_JSON_READER)
+            if (List.of(JACKSON_JSON_PARSER, GSON_JSON_READER, FASTJSON_2_JSONREADER, JAKARTA_JSON_PARSER)
                     .contains(m.parameters().get(0).type().toString())) {
                 return Optional.of(new Input(
                         m.parameters().get(0).type(),

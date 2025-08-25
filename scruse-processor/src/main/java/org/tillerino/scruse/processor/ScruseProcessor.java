@@ -241,8 +241,6 @@ public class ScruseProcessor extends AbstractProcessor {
                     ::build;
             case PrototypeKind.JAKARTA_JSON_PARSER -> new JakartaJsonParserGenerator(utils, method, generatedClass)
                     ::build;
-            case PrototypeKind.NANOJSON_JSON_READER -> new NanojsonReaderGenerator(utils, method, generatedClass)
-                    ::build;
             case PrototypeKind.SCRUSE_READER -> new ScruseReaderGenerator(utils, method, generatedClass)::build;
             default -> throw new ContextedRuntimeException(
                     "Unknown input type: " + method.kind().jsonType());

@@ -474,7 +474,7 @@ The Glassfish implementation has an overhead of 137kiB.
 ### Nanojson
 
 `nanojson` is a small JSON parser and writer.
-Its `JsonParser` class just misses what we need. To read JSON, you need to create a `TokenerWrapper` instance
+Its `JsonParser` class just misses what we need. To read JSON, you need to create a `NanojsonReaderAdapter` instance
 from an `InputStream` or `Reader`.
 We use `JsonAppendableWriter` for writing JSON, which can be obtained from the `JsonWriter` factory.
 

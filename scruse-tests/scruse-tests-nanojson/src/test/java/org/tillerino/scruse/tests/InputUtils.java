@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.grack.nanojson.TokenerWrapper;
+import com.grack.nanojson.NanojsonReaderAdapter;
 import java.io.StringReader;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -21,12 +21,13 @@ public class InputUtils {
             .registerModule(new Jdk8Module())
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-    public <T> T withJsonParser(String json, FailableFunction<TokenerWrapper, T, Exception> consumer) throws Exception {
-        return consumer.apply(new TokenerWrapper(new StringReader(json)));
+    public <T> T withJsonParser(String json, FailableFunction<NanojsonReaderAdapter, T, Exception> consumer)
+            throws Exception {
+        return consumer.apply(new NanojsonReaderAdapter(new StringReader(json)));
     }
 
     public <T> T assertIsEqualToDatabind(
-            String json, FailableFunction<TokenerWrapper, T, Exception> consumer, TypeReference<T> typeRef)
+            String json, FailableFunction<NanojsonReaderAdapter, T, Exception> consumer, TypeReference<T> typeRef)
             throws Exception {
         T ours = deserialize(json, consumer);
         T databind = objectMapper.readValue(json, typeRef);
@@ -36,7 +37,7 @@ public class InputUtils {
 
     public <T> void assertException(
             String json,
-            FailableFunction<TokenerWrapper, T, Exception> consumer,
+            FailableFunction<NanojsonReaderAdapter, T, Exception> consumer,
             TypeReference<T> typeRef,
             String ourMessage,
             String theirMessage) {
@@ -44,18 +45,19 @@ public class InputUtils {
         assertThatThrownBy(() -> objectMapper.readValue(json, typeRef)).hasMessageContaining(theirMessage);
     }
 
-    public <T> T deserialize(String json, FailableFunction<TokenerWrapper, T, Exception> consumer) throws Exception {
+    public <T> T deserialize(String json, FailableFunction<NanojsonReaderAdapter, T, Exception> consumer)
+            throws Exception {
         return withJsonParser(json, consumer);
     }
 
-    public <T, U> T deserialize2(String json, U obj2, FailableBiFunction<TokenerWrapper, U, T, Exception> consumer)
-            throws Exception {
+    public <T, U> T deserialize2(
+            String json, U obj2, FailableBiFunction<NanojsonReaderAdapter, U, T, Exception> consumer) throws Exception {
         return withJsonParser(json, parser -> consumer.apply(parser, obj2));
     }
 
     public <T> T assertIsEqualToDatabind(
             String json,
-            FailableBiFunction<TokenerWrapper, DeserializationContext, T, Exception> consumer,
+            FailableBiFunction<NanojsonReaderAdapter, DeserializationContext, T, Exception> consumer,
             TypeReference<T> typeRef)
             throws Exception {
         return withJsonParser(json, parser -> {
@@ -67,7 +69,10 @@ public class InputUtils {
     }
 
     public <T, U> T assertIsEqualToDatabind2(
-            String json, U arg2, FailableBiFunction<TokenerWrapper, U, T, Exception> consumer, TypeReference<T> typeRef)
+            String json,
+            U arg2,
+            FailableBiFunction<NanojsonReaderAdapter, U, T, Exception> consumer,
+            TypeReference<T> typeRef)
             throws Exception {
         T ours = deserialize2(json, arg2, consumer);
         T databind = objectMapper.readValue(json, typeRef);
@@ -76,7 +81,7 @@ public class InputUtils {
     }
 
     public <T> T assertIsEqualToDatabindComparingRecursively(
-            String json, FailableFunction<TokenerWrapper, T, Exception> consumer, TypeReference<T> typeRef)
+            String json, FailableFunction<NanojsonReaderAdapter, T, Exception> consumer, TypeReference<T> typeRef)
             throws Exception {
         return withJsonParser(json, parser -> {
             T ours = consumer.apply(parser);

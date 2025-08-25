@@ -24,43 +24,31 @@ public class JacksonJsonParserAdapter implements ScruseReader<IOException> {
 
     @Override
     public boolean isObjectStart(Advance advance) throws IOException {
-        if (parser.currentToken() == JsonToken.START_OBJECT) {
-            advance(advance);
-            return true;
-        }
-        return false;
+        return advanceIfTokenIs(JsonToken.START_OBJECT, advance);
     }
 
     @Override
     public boolean isObjectEnd(Advance advance) throws IOException {
-        if (parser.currentToken() == JsonToken.END_OBJECT) {
-            advance(advance);
-            return true;
-        }
-        return false;
+        return advanceIfTokenIs(JsonToken.END_OBJECT, advance);
     }
 
     @Override
     public boolean isArrayStart(Advance advance) throws IOException {
-        if (parser.currentToken() == JsonToken.START_ARRAY) {
-            advance(advance);
-            return true;
-        }
-        return false;
+        return advanceIfTokenIs(JsonToken.START_ARRAY, advance);
     }
 
     @Override
     public boolean isArrayEnd(Advance advance) throws IOException {
-        if (parser.currentToken() == JsonToken.END_ARRAY) {
-            advance(advance);
-            return true;
-        }
-        return false;
+        return advanceIfTokenIs(JsonToken.END_ARRAY, advance);
     }
 
     @Override
     public boolean isNull(Advance advance) throws IOException {
-        if (parser.currentToken() == JsonToken.VALUE_NULL) {
+        return advanceIfTokenIs(JsonToken.VALUE_NULL, advance);
+    }
+
+    private boolean advanceIfTokenIs(JsonToken expectedToken, Advance advance) throws IOException {
+        if (parser.currentToken() == expectedToken) {
             advance(advance);
             return true;
         }
