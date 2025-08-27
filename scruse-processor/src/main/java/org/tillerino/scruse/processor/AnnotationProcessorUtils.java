@@ -1,6 +1,5 @@
 package org.tillerino.scruse.processor;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +22,7 @@ import org.mapstruct.ap.internal.util.AnnotationProcessorContext;
 import org.mapstruct.ap.internal.util.RoundContext;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
-import org.tillerino.scruse.processor.features.Converters;
-import org.tillerino.scruse.processor.features.DefaultValues;
-import org.tillerino.scruse.processor.features.Delegation;
-import org.tillerino.scruse.processor.features.Generics;
+import org.tillerino.scruse.processor.features.*;
 import org.tillerino.scruse.processor.util.Annotations;
 
 public class AnnotationProcessorUtils {
@@ -38,6 +34,7 @@ public class AnnotationProcessorUtils {
     public final Generics generics;
     public final Converters converters;
     public final DefaultValues defaultValues;
+    public final Templates templates;
     public final Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
     public final Annotations annotations;
     public final Messager messager;
@@ -51,6 +48,7 @@ public class AnnotationProcessorUtils {
         annotations = new Annotations(this);
         converters = new Converters(this);
         defaultValues = new DefaultValues(this);
+        templates = new Templates(this);
         messager = processingEnv.getMessager();
 
         AnnotationProcessorContext apc = new AnnotationProcessorContext(
@@ -106,8 +104,6 @@ public class AnnotationProcessorUtils {
     public class CommonTypes {
         public final TypeMirror string =
                 elements.getTypeElement(String.class.getName()).asType();
-        public final TypeMirror jsonIgnore =
-                elements.getTypeElement(JsonIgnore.class.getName()).asType();
 
         public final TypeMirror boxedBoolean =
                 elements.getTypeElement(Boolean.class.getName()).asType();

@@ -7,6 +7,7 @@ import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.PrototypeKind;
@@ -42,7 +43,8 @@ public record Delegation(AnnotationProcessorUtils utils) {
 
     public Optional<Delegatee> findDelegateeInMethodParameters(ScrusePrototype prototype, Type type) {
         for (InstantiatedVariable parameter : prototype.kind().otherParameters()) {
-            for (InstantiatedMethod method : utils.generics.instantiateMethods(parameter.type())) {
+            for (InstantiatedMethod method :
+                    utils.generics.instantiateMethods(parameter.type(), LocationKind.PROTOTYPE)) {
                 Optional<PrototypeKind> prototypeKind = PrototypeKind.of(method, utils)
                         .filter(kind -> kind.matchesWithJavaType(prototype.kind(), type.getTypeMirror(), utils));
                 if (prototypeKind.isPresent()) {

@@ -20,7 +20,7 @@ import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
-import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.*;
 import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
@@ -70,7 +70,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         Optional<Delegatee> delegate = utils.delegation
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
                 .map(d -> new Delegatee(
-                        generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
+                        generatedClass.getOrCreateDelegateeField(
+                                prototype.blueprint(),
+                                d.blueprint(),
+                                !d.prototype().overrides()),
+                        d.method()))
                 .or(() -> utils.delegation.findDelegateeInMethodParameters(prototype, type));
         if (delegate.isPresent()) {
             if (branch != Branch.IF) {
@@ -457,7 +461,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     .ifPresentOrElse(
                             delegate -> {
                                 String delegateField = generatedClass.getOrCreateDelegateeField(
-                                        prototype.blueprint(), delegate.blueprint());
+                                        prototype.blueprint(),
+                                        delegate.blueprint(),
+                                        !delegate.prototype().overrides());
                                 if (delegate.prototype().contextParameter().isEmpty()) {
                                     throw new ContextedRuntimeException(
                                             "Delegate method must have a context parameter");
@@ -495,7 +501,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             InstantiatedMethod instantiatedConstructor = utils.generics.instantiateMethod(
                     ElementFilter.constructorsIn(type.getTypeElement().getEnclosedElements())
                             .get(0),
-                    typeBindings);
+                    typeBindings,
+                    LocationKind.CREATOR);
             readCreator(instantiatedConstructor);
         } else if (type.getTypeElement() != null) {
             readObjectFromAccessors();
@@ -506,12 +513,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
     private void readCreator(InstantiatedMethod method) {
         List<SELF> nested = new ArrayList<>();
-        AnyConfig creatorConfig = AnyConfig.create(method.element(), ConfigProperty.LocationKind.CREATOR, utils)
-                .merge(config);
+        AnyConfig creatorConfig = method.config().merge(config);
+
         for (InstantiatedVariable parameter : method.parameters()) {
-            AnyConfig propertyConfig = AnyConfig.create(
-                            parameter.element(), ConfigProperty.LocationKind.PROPERTY, utils)
-                    .merge(creatorConfig);
+            AnyConfig propertyConfig = parameter.config().merge(creatorConfig);
 
             // use parameter name as variable name because we know it is valid - unlike the configured property name
             String varName = parameter.name() + "$" + (stackDepth() + 1);

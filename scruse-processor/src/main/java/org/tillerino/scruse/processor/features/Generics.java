@@ -11,6 +11,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.tillerino.scruse.processor.*;
+import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.RebuildingTypeVisitor;
@@ -40,7 +42,7 @@ public record Generics(AnnotationProcessorUtils utils) {
     }
 
     public InstantiatedVariable applyTypeBindings(InstantiatedVariable v, Map<TypeVar, TypeMirror> bindings) {
-        return new InstantiatedVariable(applyTypeBindings(v.type(), bindings), v.element());
+        return new InstantiatedVariable(applyTypeBindings(v.type(), bindings), v.name(), v.config());
     }
 
     public List<InstantiatedVariable> applyTypeBindingsToAll(
@@ -54,10 +56,14 @@ public record Generics(AnnotationProcessorUtils utils) {
                 applyTypeBindingsToAll(instantiatedMethod.parameters(), typeBindings);
         TypeMirror newReturnType = applyTypeBindings(instantiatedMethod.returnType(), typeBindings);
         return new InstantiatedMethod(
-                instantiatedMethod.name(), newReturnType, newParameters, instantiatedMethod.element());
+                instantiatedMethod.name(),
+                newReturnType,
+                newParameters,
+                instantiatedMethod.element(),
+                instantiatedMethod.config());
     }
 
-    public List<InstantiatedMethod> instantiateMethods(TypeMirror tm) {
+    public List<InstantiatedMethod> instantiateMethods(TypeMirror tm, LocationKind locationKind) {
         if (!(tm instanceof DeclaredType d)) {
             return List.of();
         }
@@ -65,21 +71,25 @@ public record Generics(AnnotationProcessorUtils utils) {
         List<InstantiatedMethod> methods = new ArrayList<>();
         Map<TypeVar, TypeMirror> typeVariableMapping = recordTypeBindings(d);
         for (ExecutableElement method : ElementFilter.methodsIn(d.asElement().getEnclosedElements())) {
-            methods.add(instantiateMethod(method, typeVariableMapping));
+            methods.add(instantiateMethod(method, typeVariableMapping, locationKind));
         }
         return methods;
     }
 
     public InstantiatedMethod instantiateMethod(
-            ExecutableElement methodElement, Map<TypeVar, TypeMirror> typeBindings) {
+            ExecutableElement methodElement, Map<TypeVar, TypeMirror> typeBindings, LocationKind locationKind) {
         List<InstantiatedVariable> parameters = methodElement.getParameters().stream()
-                .map(p -> new InstantiatedVariable(applyTypeBindings(p.asType(), typeBindings), p))
+                .map(p -> new InstantiatedVariable(
+                        applyTypeBindings(p.asType(), typeBindings),
+                        p.getSimpleName().toString(),
+                        AnyConfig.create(p, LocationKind.PROPERTY, utils)))
                 .toList();
         return new InstantiatedMethod(
                 methodElement.getSimpleName().toString(),
                 applyTypeBindings(methodElement.getReturnType(), typeBindings),
                 parameters,
-                methodElement);
+                methodElement,
+                AnyConfig.create(methodElement, locationKind, utils));
     }
 
     /**
@@ -136,7 +146,7 @@ public record Generics(AnnotationProcessorUtils utils) {
                 .flatMap(functionalInterface -> createMethodReference(callingClass, functionalInterface));
     }
 
-    private Optional<InstantiatedMethod> instantiateFunctionalInterface(TypeMirror functionalInterface) {
+    Optional<InstantiatedMethod> instantiateFunctionalInterface(TypeMirror functionalInterface) {
         if (!(functionalInterface instanceof DeclaredType d)) {
             return Optional.empty();
         }
@@ -150,7 +160,8 @@ public record Generics(AnnotationProcessorUtils utils) {
         if (methods.size() != 1) {
             return Optional.empty();
         }
-        return Optional.of(utils.generics.instantiateMethods(d).get(0));
+        return Optional.of(
+                utils.generics.instantiateMethods(d, LocationKind.PROTOTYPE).get(0));
     }
 
     private Optional<Snippet> createMethodReference(GeneratedClass callingClass, InstantiatedMethod targetMethod) {
@@ -158,14 +169,18 @@ public record Generics(AnnotationProcessorUtils utils) {
         for (ScrusePrototype method : blueprint.prototypes) {
             if (method.asInstantiatedMethod().hasSameSignature(targetMethod, utils)) {
                 return Optional.of(Snippet.of(
-                        "$L::$L", callingClass.getOrCreateDelegateeField(blueprint, blueprint), method.name()));
+                        "$L::$L",
+                        callingClass.getOrCreateDelegateeField(blueprint, blueprint, !method.overrides()),
+                        method.name()));
             }
         }
         for (ScruseBlueprint use : blueprint.config.reversedUses()) {
             for (ScrusePrototype method : use.prototypes) {
                 if (method.asInstantiatedMethod().hasSameSignature(targetMethod, utils)) {
                     return Optional.of(Snippet.of(
-                            "$L::$L", callingClass.getOrCreateDelegateeField(blueprint, use), method.name()));
+                            "$L::$L",
+                            callingClass.getOrCreateDelegateeField(blueprint, use, !method.overrides()),
+                            method.name()));
                 }
             }
         }

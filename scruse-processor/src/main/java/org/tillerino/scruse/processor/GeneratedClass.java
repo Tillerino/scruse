@@ -36,17 +36,19 @@ public class GeneratedClass {
      * @param callee the blueprint which is being called from caller
      * @return the field name
      */
-    public String getOrCreateDelegateeField(ScruseBlueprint caller, ScruseBlueprint callee) {
+    public String getOrCreateDelegateeField(ScruseBlueprint caller, ScruseBlueprint callee, boolean implAsType) {
         if (caller == callee) {
             return "this";
         }
         return delegateeFields
-                .computeIfAbsent(
+                .merge(
                         callee.className.importName(),
-                        __ -> new DelegateeField(
+                        new DelegateeField(
                                 StringUtils.uncapitalize(callee.className.className()) + "$" + delegateeFields.size()
                                         + "$delegate",
-                                callee))
+                                callee,
+                                implAsType),
+                        (x, y) -> x.implAsType ? x : new DelegateeField(x.name, x.blueprint, y.implAsType))
                 .name();
     }
 
@@ -57,7 +59,7 @@ public class GeneratedClass {
     private String getOrCreateUsedBlueprintWithTypeField(
             TypeMirror targetType, ScruseBlueprint calleeBlueprint, @Nullable AnyConfig config) {
         if (utils.types.isAssignable(calleeBlueprint.typeElement.asType(), targetType)) {
-            return getOrCreateDelegateeField(this.blueprint, calleeBlueprint);
+            return getOrCreateDelegateeField(this.blueprint, calleeBlueprint, false); // TODO probably wrong
         }
         if (config == null) {
             return null;
@@ -91,12 +93,14 @@ public class GeneratedClass {
         enumFields.values().forEach(value -> value.writeField(classBuilder));
     }
 
-    record DelegateeField(String name, ScruseBlueprint blueprint) {
+    record DelegateeField(String name, ScruseBlueprint blueprint, boolean implAsType) {
         private void writeField(TypeSpec.Builder classBuilder) {
             TopLevelClassName impl = this.blueprint().className.impl();
-            FieldSpec.Builder field = FieldSpec.builder(
-                            TypeName.get(this.blueprint().typeElement.asType()), this.name())
-                    .initializer("new $T()", ClassName.get(impl.packageName(), impl.className()));
+            ClassName implName = ClassName.get(impl.packageName(), impl.className());
+            TypeName fieldType = implAsType
+                    ? implName
+                    : TypeName.get(this.blueprint().typeElement.asType());
+            FieldSpec.Builder field = FieldSpec.builder(fieldType, this.name()).initializer("new $T()", implName);
             classBuilder.addField(field.build());
         }
     }

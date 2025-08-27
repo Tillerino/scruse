@@ -9,6 +9,7 @@ import javax.lang.model.util.ElementFilter;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
@@ -45,7 +46,7 @@ public final class ScruseBlueprint {
         }
 
         List<InstantiatedMethod> declaredMethods = ElementFilter.methodsIn(element.getEnclosedElements()).stream()
-                .map(method -> utils.generics.instantiateMethod(method, typeBindings))
+                .map(method -> utils.generics.instantiateMethod(method, typeBindings, LocationKind.PROTOTYPE))
                 .toList();
 
         return new ScruseBlueprint(

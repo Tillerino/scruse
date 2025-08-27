@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 
 public record Annotations(AnnotationProcessorUtils utils) {
@@ -26,7 +27,7 @@ public record Annotations(AnnotationProcessorUtils utils) {
                     || method.getReturnType().getKind() == TypeKind.VOID) {
                 continue;
             }
-            return Optional.of(utils.generics.instantiateMethod(method, typeBindings));
+            return Optional.of(utils.generics.instantiateMethod(method, typeBindings, LocationKind.BLUEPRINT));
         }
         return Optional.empty();
     }
@@ -42,7 +43,7 @@ public record Annotations(AnnotationProcessorUtils utils) {
                     .isEmpty()) {
                 continue;
             }
-            return Optional.of(utils.generics.instantiateMethod(constructor, typeBindings));
+            return Optional.of(utils.generics.instantiateMethod(constructor, typeBindings, LocationKind.CREATOR));
         }
         for (ExecutableElement method : ElementFilter.methodsIn(dt.asElement().getEnclosedElements())) {
             if (findAnnotation(method, "com.fasterxml.jackson.annotation.JsonCreator")
@@ -55,7 +56,8 @@ public record Annotations(AnnotationProcessorUtils utils) {
             }
             // Cannot instantiate with type bindings from class.
             // Need to infer from return type.
-            InstantiatedMethod methodWithTypeTypeVars = utils.generics.instantiateMethod(method, typeBindings);
+            InstantiatedMethod methodWithTypeTypeVars =
+                    utils.generics.instantiateMethod(method, typeBindings, LocationKind.CREATOR);
             Map<TypeVar, TypeMirror> methodTypeVars = new LinkedHashMap<>();
             if (!utils.generics.tybeBindingsSatisfyingEquality(
                     tm, methodWithTypeTypeVars.returnType(), methodTypeVars)) {

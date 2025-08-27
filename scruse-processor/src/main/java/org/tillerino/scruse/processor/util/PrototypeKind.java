@@ -2,8 +2,12 @@ package org.tillerino.scruse.processor.util;
 
 import java.util.List;
 import java.util.Optional;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -26,11 +30,28 @@ public sealed interface PrototypeKind {
     String SCRUSE_READER = "org.tillerino.scruse.api.ScruseReader";
     String SCRUSE_WRITER = "org.tillerino.scruse.api.ScruseWriter";
 
-    record Input(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
-            implements PrototypeKind {}
+    default Direction direction() {
+        return this instanceof Input ? Direction.INPUT : Direction.OUTPUT;
+    }
 
-    record Output(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
-            implements PrototypeKind {}
+    TypeMirror jsonType();
+
+    TypeMirror javaType();
+
+    List<InstantiatedVariable> otherParameters();
+
+    default String defaultMethodName() {
+        String prefix = this instanceof Input ? "read" : "write";
+        return prefix + simpleTypeName(javaType());
+    }
+
+    PrototypeKind withJavaType(TypeMirror newType);
+
+    default boolean matchesWithJavaType(PrototypeKind other, TypeMirror javaType, AnnotationProcessorUtils utils) {
+        return direction() == other.direction()
+                && utils.types.isSameType(jsonType(), other.jsonType())
+                && utils.types.isSameType(javaType(), javaType);
+    }
 
     static Optional<PrototypeKind> of(InstantiatedMethod m, AnnotationProcessorUtils utils) {
         if (m.element().getAnnotation(JsonInput.class) != null
@@ -79,20 +100,36 @@ public sealed interface PrototypeKind {
         return Optional.empty();
     }
 
-    default Direction direction() {
-        return this instanceof Input ? Direction.INPUT : Direction.OUTPUT;
+    static String simpleTypeName(TypeMirror t) {
+        if (t.getKind().isPrimitive()) {
+            return "Primitive" + StringUtils.capitalize(t.toString());
+        }
+
+        if (t instanceof ArrayType a) {
+            return "ArrayOf" + simpleTypeName(a.getComponentType());
+        }
+
+        if (!(t instanceof DeclaredType d)) {
+            throw new ContextedRuntimeException("Only primitives or declared types expected").addContextValue("t", t);
+        }
+
+        return d.asElement().getSimpleName().toString();
     }
 
-    TypeMirror jsonType();
+    record Input(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
+            implements PrototypeKind {
+        @Override
+        public PrototypeKind withJavaType(TypeMirror newType) {
+            return new Input(jsonType, newType, otherParameters);
+        }
+    }
 
-    TypeMirror javaType();
-
-    List<InstantiatedVariable> otherParameters();
-
-    default boolean matchesWithJavaType(PrototypeKind other, TypeMirror javaType, AnnotationProcessorUtils utils) {
-        return direction() == other.direction()
-                && utils.types.isSameType(jsonType(), other.jsonType())
-                && utils.types.isSameType(javaType(), javaType);
+    record Output(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
+            implements PrototypeKind {
+        @Override
+        public PrototypeKind withJavaType(TypeMirror newType) {
+            return new Output(jsonType, newType, otherParameters);
+        }
     }
 
     enum Direction {

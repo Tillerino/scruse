@@ -74,7 +74,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 // delegate to any of the used blueprints
                 .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
                 .map(d -> new Delegatee(
-                        generatedClass.getOrCreateDelegateeField(prototype.blueprint(), d.blueprint()), d.method()))
+                        generatedClass.getOrCreateDelegateeField(
+                                prototype.blueprint(),
+                                d.blueprint(),
+                                !d.prototype().overrides()),
+                        d.method()))
                 .or(() -> utils.delegation.findDelegateeInMethodParameters(prototype, type));
         if (delegate.isPresent()) {
             invokeDelegate(delegate.get().fieldOrParameter(), delegate.get().method());
@@ -257,7 +261,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                     .ifPresentOrElse(
                             delegate -> {
                                 String delegateField = generatedClass.getOrCreateDelegateeField(
-                                        prototype.blueprint(), delegate.blueprint());
+                                        prototype.blueprint(),
+                                        delegate.blueprint(),
+                                        !delegate.prototype().overrides());
                                 VariableElement calleeContext = delegate.prototype()
                                         .contextParameter()
                                         .orElseThrow(() -> new ContextedRuntimeException(

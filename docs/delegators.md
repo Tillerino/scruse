@@ -16,7 +16,7 @@ This is very important for keeping the generated code small.
 Take the following example:
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L18-L22
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L23-L27
 
 @JsonInput
 ScalarFieldsRecord deserializeSingle(JsonParser parser) throws Exception;
@@ -61,7 +61,7 @@ public interface PrimitiveScalarsSerde {
 ```
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L56-L59
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L61-L64
 
 @JsonConfig(uses = PrimitiveScalarsSerde.class)
 interface BoxedScalarsSerde {
@@ -164,7 +164,7 @@ public interface PrimitiveScalarsSerde {
 
 Then define boxed serializers that reuse the primitive serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L56-L68
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L61-L73
 
 @JsonConfig(uses = PrimitiveScalarsSerde.class)
 interface BoxedScalarsSerde {
@@ -184,7 +184,7 @@ interface BoxedScalarsSerde {
 
 Finally, define array serializers that reuse both primitive and boxed serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L120-L132
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L125-L137
 
 @JsonConfig(uses = BoxedScalarsSerde.class)
 interface ScalarArraysSerde {
@@ -216,7 +216,7 @@ record SelfReferencingRecord(String prop, SelfReferencingRecord self) {}
 
 This type cannot be used in any other serialization without adding a dedicated serializer:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L228-L232
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L233-L237
 
 @JsonInput
 SelfReferencingRecord deserializeRecord(JsonParser input) throws Exception;

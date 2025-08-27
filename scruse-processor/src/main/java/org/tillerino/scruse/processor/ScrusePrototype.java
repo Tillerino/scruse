@@ -29,13 +29,15 @@ public record ScrusePrototype(
         AnnotationProcessorUtils utils,
         TypeMirror instantiatedReturnType,
         List<InstantiatedVariable> instantiatedParameters,
-        AnyConfig config) {
+        AnyConfig config,
+        boolean overrides) {
 
-    static ScrusePrototype of(
+    public static ScrusePrototype of(
             ScruseBlueprint blueprint,
             InstantiatedMethod instantiated,
             PrototypeKind kind,
-            AnnotationProcessorUtils utils) {
+            AnnotationProcessorUtils utils,
+            boolean overrides) {
         AnyConfig config = AnyConfig.create(instantiated.element(), ConfigProperty.LocationKind.PROTOTYPE, utils)
                 .merge(blueprint.config);
 
@@ -47,7 +49,8 @@ public record ScrusePrototype(
                 utils,
                 instantiated.returnType(),
                 instantiated.parameters(),
-                config);
+                config,
+                overrides);
     }
 
     /** Checks if reads/writes the given type and matches the signature of a reference method. */
@@ -173,7 +176,7 @@ public record ScrusePrototype(
     }
 
     public InstantiatedMethod asInstantiatedMethod() {
-        return new InstantiatedMethod(name, instantiatedReturnType, instantiatedParameters, methodElement);
+        return new InstantiatedMethod(name, instantiatedReturnType, instantiatedParameters, methodElement, config);
     }
 
     @Override

@@ -8,10 +8,15 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.config.AnyConfig;
 
 /** Need this to instantiate generics. */
 public record InstantiatedMethod(
-        String name, TypeMirror returnType, List<InstantiatedVariable> parameters, ExecutableElement element)
+        String name,
+        TypeMirror returnType,
+        List<InstantiatedVariable> parameters,
+        ExecutableElement element,
+        AnyConfig config)
         implements Named {
     public Snippet callSymbol(AnnotationProcessorUtils utils) {
         TypeMirror tm = element.getEnclosingElement().asType();
@@ -47,5 +52,9 @@ public record InstantiatedMethod(
                 element.getEnclosingElement().getSimpleName(),
                 name,
                 parameters.stream().map(InstantiatedVariable::toString).collect(Collectors.joining(", ")));
+    }
+
+    public InstantiatedMethod withName(String name) {
+        return new InstantiatedMethod(name, returnType, parameters, element, config);
     }
 }

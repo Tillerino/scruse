@@ -24,6 +24,7 @@ If you _just_ want to serialize and deserialize JSON and do not have any of the 
 
 - [Usage](#usage)
 - [Features](#features)
+  * [Templates](#templates)
   * [Delegators](#delegators)
   * [Converters](#converters)
   * [Generics](#generics)
@@ -105,6 +106,20 @@ The Scruse annotation processor will generate `MyJsonMapperImpl`, which implemen
 The context parameters can be omitted if they are not explicitly needed.
 
 ## Features
+
+### Templates
+
+The `@JsonTemplate` annotation allows you to specify prototypes from templates without specifying each as a separate method.
+
+```java
+// scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L12-L14
+
+@JsonTemplate(
+        templates = {GenericInputSerde.class, GenericOutputSerde.class},
+        types = {double.class, AnEnum.class, double[].class, AnEnum[].class})
+```
+
+[more](docs/templates.md)
 
 ### Delegators
 

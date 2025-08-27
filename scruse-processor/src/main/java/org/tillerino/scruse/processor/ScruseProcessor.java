@@ -21,8 +21,10 @@ import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.annotations.JsonTemplate;
 import org.tillerino.scruse.processor.apis.*;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.PrototypeKind;
@@ -71,10 +73,11 @@ public class ScruseProcessor extends AbstractProcessor {
                         for (ExecutableElement exec :
                                 ElementFilter.methodsIn(utils.elements.getAllMembers((TypeElement) element))) {
                             if (!exec.getEnclosingElement().equals(element)) {
-                                InstantiatedMethod instantiated =
-                                        utils.generics.instantiateMethod(exec, blueprint.typeBindings);
+                                InstantiatedMethod instantiated = utils.generics.instantiateMethod(
+                                        exec, blueprint.typeBindings, LocationKind.PROTOTYPE);
                                 PrototypeKind.of(instantiated, utils).ifPresent(kind -> {
-                                    ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
+                                    ScrusePrototype method =
+                                            ScrusePrototype.of(blueprint, instantiated, kind, utils, true);
                                     // should actually check if super method is not being generated and THIS is being
                                     // generated
                                     if (method.config()
@@ -90,16 +93,25 @@ public class ScruseProcessor extends AbstractProcessor {
                     "config",
                     element);
         });
+        roundEnv.getElementsAnnotatedWith(JsonTemplate.class).forEach(element -> {
+            if (!(element instanceof TypeElement type)) {
+                return;
+            }
+            mapStructSetup(processingEnv, type);
+            ScruseBlueprint blueprint = utils.blueprint(type);
+            blueprint.prototypes.addAll(utils.templates.instantiateTemplatedPrototypes(blueprint));
+        });
         roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
             ExecutableElement exec = (ExecutableElement) element;
             TypeElement type = (TypeElement) exec.getEnclosingElement();
             mapStructSetup(processingEnv, type);
             ScruseBlueprint blueprint = utils.blueprint(type);
-            InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
+            InstantiatedMethod instantiated =
+                    utils.generics.instantiateMethod(exec, blueprint.typeBindings, LocationKind.PROTOTYPE);
             PrototypeKind.of(instantiated, utils)
                     .ifPresentOrElse(
                             kind -> {
-                                ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
+                                ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils, true);
                                 blueprint.prototypes.add(method);
                             },
                             () -> {
@@ -111,11 +123,12 @@ public class ScruseProcessor extends AbstractProcessor {
             TypeElement type = (TypeElement) exec.getEnclosingElement();
             mapStructSetup(processingEnv, type);
             ScruseBlueprint blueprint = utils.blueprint(type);
-            InstantiatedMethod instantiated = utils.generics.instantiateMethod(exec, blueprint.typeBindings);
+            InstantiatedMethod instantiated =
+                    utils.generics.instantiateMethod(exec, blueprint.typeBindings, LocationKind.PROTOTYPE);
             PrototypeKind.of(instantiated, utils)
                     .ifPresentOrElse(
                             kind -> {
-                                ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils);
+                                ScrusePrototype method = ScrusePrototype.of(blueprint, instantiated, kind, utils, true);
                                 blueprint.prototypes.add(method);
                             },
                             () -> {
@@ -186,9 +199,11 @@ public class ScruseProcessor extends AbstractProcessor {
     }
 
     private @Nullable MethodSpec generateMethod(ScrusePrototype method, GeneratedClass generatedClass) {
-        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(
-                        method.methodElement().getSimpleName().toString())
-                .addAnnotation(Override.class)
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(method.name());
+        if (method.overrides()) {
+            methodBuilder.addAnnotation(Override.class);
+        }
+        methodBuilder
                 .addModifiers(Modifier.PUBLIC)
                 .addTypeVariables(method.methodElement().getTypeParameters().stream()
                         .map(TypeParameterElement::getSimpleName)

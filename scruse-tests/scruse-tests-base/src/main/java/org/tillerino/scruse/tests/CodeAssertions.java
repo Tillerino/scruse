@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.lang3.function.Failable;
 import org.assertj.core.api.AbstractListAssert;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.ListAssert;
 import org.assertj.core.api.ObjectAssert;
 
 public class CodeAssertions {
@@ -61,6 +62,10 @@ public class CodeAssertions {
                     .as("Methods named %s in %s", methodName, storage.getFileName())
                     .hasSize(1);
             return new MethodAssert(this, methods.get(0));
+        }
+
+        public ListAssert<MethodDeclaration> methods() {
+            return assertThat(primaryType.getMethods());
         }
     }
 
