@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.annotations.JsonTemplate;
+import org.tillerino.scruse.annotations.JsonTemplate.JsonTemplates;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.ScrusePrototype;
@@ -18,14 +19,31 @@ import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.PrototypeKind;
 
 public record Templates(AnnotationProcessorUtils utils) {
-    public List<ScrusePrototype> instantiateTemplatedPrototypes(ScruseBlueprint blueprint) {
-        List<ScrusePrototype> instantiatedPrototypes = new ArrayList<>();
-        // TODO multiple
+    public List<ScrusePrototype> instantiateTemplatedPrototypesFromSingleAnnotation(ScruseBlueprint blueprint) {
         AnnotationMirrorWrapper templateAnnotation = utils.annotations
                 .findAnnotation(blueprint.typeElement, JsonTemplate.class.getCanonicalName())
                 .orElseThrow(() -> new ContextedRuntimeException("?"));
+        return createTemplatesFromAnnotation(blueprint, templateAnnotation);
+    }
+
+    public List<ScrusePrototype> instantiateTemplatedPrototypesFromMultipleAnnotations(ScruseBlueprint blueprint) {
+        List<ScrusePrototype> instantiatedPrototypes = new ArrayList<>();
+        utils.annotations
+                .findAnnotation(blueprint.typeElement, JsonTemplates.class.getCanonicalName())
+                .orElseThrow(() -> new ContextedRuntimeException("?"))
+                .method("value", false)
+                .orElseThrow(() -> new ContextedRuntimeException("?"))
+                .asArray()
+                .forEach(templateAnnotation -> instantiatedPrototypes.addAll(
+                        createTemplatesFromAnnotation(blueprint, templateAnnotation.asAnnotation())));
+        return instantiatedPrototypes;
+    }
+
+    private List<ScrusePrototype> createTemplatesFromAnnotation(
+            ScruseBlueprint blueprint, AnnotationMirrorWrapper templateAnnotation) {
         List<Template> templates = findTemplates(templateAnnotation);
         List<TypeMirror> types = findTypes(templateAnnotation);
+        List<ScrusePrototype> instantiatedPrototypes = new ArrayList<>();
         for (TypeMirror type : types) {
             for (Template template : templates) {
                 PrototypeKind prototypeKind = template.kind.withJavaType(type);

@@ -22,6 +22,7 @@ import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.annotations.JsonTemplate;
+import org.tillerino.scruse.annotations.JsonTemplate.JsonTemplates;
 import org.tillerino.scruse.processor.apis.*;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
@@ -62,6 +63,13 @@ public class ScruseProcessor extends AbstractProcessor {
     }
 
     private void collectElements(RoundEnvironment roundEnv) {
+        collectJsonConfig(roundEnv);
+        collectJsonOutput(roundEnv);
+        collectJsonInput(roundEnv);
+        collectJsonTemplates(roundEnv); // collect last so that custom methods are appear first in implementations
+    }
+
+    private void collectJsonConfig(RoundEnvironment roundEnv) {
         roundEnv.getElementsAnnotatedWith(JsonConfig.class).forEach(element -> {
             if (!(element instanceof TypeElement type)) {
                 return;
@@ -93,14 +101,9 @@ public class ScruseProcessor extends AbstractProcessor {
                     "config",
                     element);
         });
-        roundEnv.getElementsAnnotatedWith(JsonTemplate.class).forEach(element -> {
-            if (!(element instanceof TypeElement type)) {
-                return;
-            }
-            mapStructSetup(processingEnv, type);
-            ScruseBlueprint blueprint = utils.blueprint(type);
-            blueprint.prototypes.addAll(utils.templates.instantiateTemplatedPrototypes(blueprint));
-        });
+    }
+
+    private void collectJsonOutput(RoundEnvironment roundEnv) {
         roundEnv.getElementsAnnotatedWith(JsonOutput.class).forEach(element -> {
             ExecutableElement exec = (ExecutableElement) element;
             TypeElement type = (TypeElement) exec.getEnclosingElement();
@@ -118,6 +121,9 @@ public class ScruseProcessor extends AbstractProcessor {
                                 logError("Signature unknown. Please see @JsonOutput for hints.", exec);
                             });
         });
+    }
+
+    private void collectJsonInput(RoundEnvironment roundEnv) {
         roundEnv.getElementsAnnotatedWith(JsonInput.class).forEach(element -> {
             ExecutableElement exec = (ExecutableElement) element;
             TypeElement type = (TypeElement) exec.getEnclosingElement();
@@ -134,6 +140,26 @@ public class ScruseProcessor extends AbstractProcessor {
                             () -> {
                                 logError("Signature unknown. Please see @JsonInput for hints.", exec);
                             });
+        });
+    }
+
+    private void collectJsonTemplates(RoundEnvironment roundEnv) {
+        roundEnv.getElementsAnnotatedWith(JsonTemplate.class).forEach(element -> {
+            if (!(element instanceof TypeElement type)) {
+                return;
+            }
+            mapStructSetup(processingEnv, type);
+            ScruseBlueprint blueprint = utils.blueprint(type);
+            blueprint.prototypes.addAll(utils.templates.instantiateTemplatedPrototypesFromSingleAnnotation(blueprint));
+        });
+        roundEnv.getElementsAnnotatedWith(JsonTemplates.class).forEach(element -> {
+            if (!(element instanceof TypeElement type)) {
+                return;
+            }
+            mapStructSetup(processingEnv, type);
+            ScruseBlueprint blueprint = utils.blueprint(type);
+            blueprint.prototypes.addAll(
+                    utils.templates.instantiateTemplatedPrototypesFromMultipleAnnotations(blueprint));
         });
     }
 

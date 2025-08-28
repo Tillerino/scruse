@@ -1,6 +1,7 @@
 package org.tillerino.scruse.tests.base.features;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import java.util.List;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.annotations.JsonTemplate;
@@ -23,4 +24,16 @@ public interface TemplatesSerde {
             templates = {GenericInputSerde.class, GenericOutputSerde.class},
             types = {HasAnEnumArrayProperty.class})
     interface CallsTemplatePrototypes {}
+
+    @JsonConfig(uses = TemplatedSerde.class)
+    @JsonTemplate(
+            templates = {GenericOutputSerde.class},
+            types = {AnEnum.class})
+    @JsonTemplate(
+            templates = {GenericInputSerde.class},
+            types = {AnEnum.class})
+    interface MultipleTemplateAnnotationsAndOneCustom {
+        @JsonOutput
+        void writeAnEnumList(List<AnEnum> anEnums, JsonGenerator gen) throws Exception;
+    }
 }

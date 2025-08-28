@@ -2,6 +2,7 @@ package org.tillerino.scruse.tests.base.features;
 
 import static org.tillerino.scruse.tests.CodeAssertions.assertThatImpl;
 
+import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.CodeAssertions.CompileUnitAssert;
 import org.tillerino.scruse.tests.ReferenceTest;
@@ -32,10 +33,21 @@ class TemplatesTest extends ReferenceTest {
                 .method("readHasAnEnumArrayProperty")
                 .calls("readArrayOfAnEnum")
                 .calls("readArrayOfPrimitiveDouble");
+        // AnEnum[] is written with the generic method instead of the template because the generic method is first.
+        // Maybe pick the most specific option at some point?
         assertThat
                 .method("writeHasAnEnumArrayProperty")
-                .calls("writeArrayOfAnEnum")
                 .calls("writeGenericArray")
-                .references("writeArrayOfPrimitiveDouble");
+                .references("writeArrayOfPrimitiveDouble")
+                .references("writeAnEnum");
+    }
+
+    @Test
+    void multipleTemplateAnnotationsArePickedUp() throws Exception {
+        CompileUnitAssert assertThat = assertThatImpl(MultipleTemplateAnnotationsAndOneCustom.class);
+        assertThat
+                .methods()
+                .extracting(NodeWithSimpleName::getNameAsString)
+                .containsExactly("writeAnEnumList", "writeAnEnum", "readAnEnum");
     }
 }
