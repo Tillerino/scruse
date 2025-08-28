@@ -107,6 +107,12 @@ public class NestingSerde {
 
         @JsonInput
         List<NestingModel.InnerAccessors> readInnerAccessorsList(JsonParser parser) throws Exception;
+
+        @JsonOutput
+        void writeListFieldWithAdder(ListFieldWithAdder listFieldWithAdder, JsonGenerator gen) throws Exception;
+
+        @JsonInput
+        ListFieldWithAdder readListFieldWithAdder(JsonParser parser) throws Exception;
     }
 
     interface MapSerde {

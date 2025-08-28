@@ -280,4 +280,21 @@ class NestingTest extends ReferenceTest {
             outputUtils.assertIsEqualToDatabind(stringDoubleListMap, mapImpl::writeStringDoubleListMap);
         }
     }
+
+    /** Adders are hard to support. For now, we check that if there is an adder and a setter, deserialization works. */
+    @Test
+    void adderIsIgnoredIfSetterIsPresent() throws Exception {
+        ListSerde listSerde = SerdeUtil.impl(ListSerde.class);
+
+        String[] jsons = {
+            "null",
+            "{}",
+            "{ \"things\": [] }",
+            "{ \"things\": [ \"thing\" ] }",
+            "{ \"things\": [ \"thing\", \"another\" ] }",
+        };
+        for (String json : jsons) {
+            inputUtils.assertIsEqualToDatabind(json, listSerde::readListFieldWithAdder, new TypeReference<>() {});
+        }
+    }
 }

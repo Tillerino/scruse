@@ -680,6 +680,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                         objectVar, a.getElement().getSimpleName().toString());
                 case SETTER -> new Setter(
                         objectVar, a.getElement().getSimpleName().toString());
+                case ADDER -> throw new ContextedRuntimeException(
+                                "Adders are not supported. Define a setter as an alternative to the adder.")
+                        .addContextValue("adder", a.getElement());
                 default -> throw new ContextedRuntimeException(
                         a.getAccessorType().toString());
             };
