@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.tillerino.scruse.helpers.EnumHelper;
 import org.tillerino.scruse.processor.FullyQualifiedName.FullyQualifiedClassName.TopLevelClassName;
 import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.features.Verification.ForBlueprint;
 
 /** Keeps track of the delegate readers/writers that are collected while processing a blueprint. */
 public class GeneratedClass {
@@ -22,11 +23,13 @@ public class GeneratedClass {
     public final List<Consumer<JavaFile.Builder>> fileBuilderMods = new ArrayList<>();
     private final AnnotationProcessorUtils utils;
     public final ScruseBlueprint blueprint;
+    public final ForBlueprint verificationForBlueprint;
 
     public GeneratedClass(TypeSpec.Builder typeBuilder, AnnotationProcessorUtils utils, ScruseBlueprint blueprint) {
         this.typeBuilder = typeBuilder;
         this.utils = utils;
         this.blueprint = blueprint;
+        this.verificationForBlueprint = utils.verification.startBlueprint(blueprint);
     }
 
     /**

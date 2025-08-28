@@ -29,7 +29,7 @@ interface GenericOutputSerde<U> {
 
 Annotating your blueprint with
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L12-L14
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L14-L16
 
 @JsonTemplate(
         templates = {GenericInputSerde.class, GenericOutputSerde.class},
@@ -41,7 +41,7 @@ The name of the generated methods is derived from the type.
 
 For example:
 ```java
-//../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/TemplatesSerde$TemplatedSerdeImpl.java#L73-L80
+//../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/TemplatesSerde$TemplatedSerdeImpl.java#L87-L94
 
 public void writeAnEnum(AnEnum obj, JsonGenerator gen) throws Exception {
   if (obj != null) {
@@ -57,7 +57,7 @@ public void writeAnEnum(AnEnum obj, JsonGenerator gen) throws Exception {
 
 The generated methods behave exactly as if they were fully specified. In this blueprint:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L11-L17
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L13-L19
 
 public interface TemplatesSerde {
     @JsonTemplate(
@@ -70,7 +70,7 @@ public interface TemplatesSerde {
 
 `writeAnEnum` works with generics and delegates serialization of the enum itself to the specialized method:
 ```java
-//../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/TemplatesSerde$TemplatedSerdeImpl.java#L142-L144
+//../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/TemplatesSerde$TemplatedSerdeImpl.java#L156-L158
 
 public void writeArrayOfAnEnum(AnEnum[] obj, JsonGenerator gen) throws Exception {
   this.writeGenericArray(obj, gen, this::writeAnEnum);

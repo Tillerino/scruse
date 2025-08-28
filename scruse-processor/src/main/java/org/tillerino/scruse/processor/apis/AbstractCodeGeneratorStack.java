@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.CodeBlock.Builder;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
     protected final boolean stackRelevantType;
 
     @Nullable
-    protected final String property;
+    protected final Property property;
 
     protected final boolean canBePolyChild;
 
@@ -38,11 +39,11 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
             ScrusePrototype prototype,
-            CodeBlock.Builder code,
+            Builder code,
             SELF parent,
             Type type,
             boolean stackRelevantType,
-            @Nullable String property,
+            @Nullable Property property,
             AnyConfig config) {
         this.prototype = prototype;
         this.utils = utils;
@@ -89,16 +90,20 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
             if (property == null) {
                 return parent.stack();
             }
-            return parent.stack().append(" -> ").append(property).append(": ").append(type.getName());
+            return parent.stack()
+                    .append(" -> ")
+                    .append(property.serializedName)
+                    .append(": ")
+                    .append(type.getName());
         }
         if (property == null) {
             return new StringBuilder(type.getName());
         }
-        return new StringBuilder(property + ": " + type.getName());
+        return new StringBuilder(property.serializedName + ": " + type.getName());
     }
 
     protected String propertyName() {
-        return property != null ? property : parent != null ? parent.propertyName() : "root";
+        return property != null ? property.serializedName : parent != null ? parent.propertyName() : "root";
     }
 
     protected static Object[] flatten(Object... all) {
@@ -114,5 +119,12 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 
     enum BinaryKind {
         BYTE_ARRAY
+    }
+
+    protected record Property(String canonicalName, String serializedName) {
+        static Property ITEM = new Property("item", "item");
+        static Property VALUE = new Property("value", "value");
+        static Property DISCRIMINATOR = new Property("discriminator", "discriminator");
+        static Property INSTANCE = new Property("instance", "instance");
     }
 }

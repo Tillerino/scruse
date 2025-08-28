@@ -37,6 +37,7 @@ public class AnnotationProcessorUtils {
     public final Templates templates;
     public final Map<String, ScruseBlueprint> blueprints = new LinkedHashMap<>();
     public final Annotations annotations;
+    public final Verification verification;
     public final Messager messager;
 
     public AnnotationProcessorUtils(ProcessingEnvironment processingEnv, TypeElement typeElement) {
@@ -49,6 +50,7 @@ public class AnnotationProcessorUtils {
         converters = new Converters(this);
         defaultValues = new DefaultValues(this);
         templates = new Templates(this);
+        verification = new Verification(this);
         messager = processingEnv.getMessager();
 
         AnnotationProcessorContext apc = new AnnotationProcessorContext(

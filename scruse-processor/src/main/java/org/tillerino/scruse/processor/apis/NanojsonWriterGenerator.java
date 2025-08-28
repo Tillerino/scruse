@@ -30,7 +30,7 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
             NanojsonWriterGenerator parent,
             LHS lhs,
             RHS rhs,
-            String propertyName,
+            Property property,
             boolean stackRelevantType,
             AnyConfig config) {
         super(
@@ -40,7 +40,7 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
                 code,
                 parent,
                 type,
-                propertyName,
+                property,
                 rhs,
                 lhs,
                 stackRelevantType,
@@ -146,7 +146,7 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
 
     @Override
     protected NanojsonWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new NanojsonWriterGenerator(
                 prototype,
                 utils,
@@ -156,7 +156,7 @@ public class NanojsonWriterGenerator extends AbstractWriterGenerator<NanojsonWri
                 this,
                 lhs,
                 rhs,
-                propertyName,
+                property,
                 stackRelevantType,
                 config);
     }

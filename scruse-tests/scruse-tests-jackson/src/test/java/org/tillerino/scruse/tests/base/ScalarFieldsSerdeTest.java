@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
 import org.tillerino.scruse.tests.model.AnEnum;
+import org.tillerino.scruse.tests.model.ScalarAccessorsClass;
+import org.tillerino.scruse.tests.model.ScalarFieldsClass;
+import org.tillerino.scruse.tests.model.ScalarFieldsRecord;
 
 class ScalarFieldsSerdeTest extends ReferenceTest {
 
@@ -35,7 +38,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
                         false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null,
                         null, null, null, null, null));
 
-        ScalarFieldsRecord.Serde impl = SerdeUtil.impl(ScalarFieldsRecord.Serde.class);
+        ScalarFieldsRecordSerde impl = SerdeUtil.impl(ScalarFieldsRecordSerde.class);
 
         for (ScalarFieldsRecord object : values) {
             outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
@@ -68,7 +71,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
                         false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null,
                         null, null, null, null, null));
 
-        ScalarFieldsClass.Serde impl = SerdeUtil.impl(ScalarFieldsClass.Serde.class);
+        ScalarFieldsClassSerde impl = SerdeUtil.impl(ScalarFieldsClassSerde.class);
 
         for (ScalarFieldsClass object : values) {
             outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
@@ -101,7 +104,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
                         false, (byte) 1, (short) 2, 3, 4L, 'c', Float.NaN, Float.NaN, null, null, null, null, null,
                         null, null, null, null, null));
 
-        ScalarAccessorsClass.Serde impl = SerdeUtil.impl(ScalarAccessorsClass.Serde.class);
+        ScalarAccessorsClassSerde impl = SerdeUtil.impl(ScalarAccessorsClassSerde.class);
 
         for (ScalarAccessorsClass object : values) {
             outputUtils.roundTrip(object, impl::write, impl::read, new TypeReference<>() {});
@@ -110,7 +113,7 @@ class ScalarFieldsSerdeTest extends ReferenceTest {
 
     @Test
     void testUnknownPropertiesDefault() throws Exception {
-        ScalarFieldsRecord.Serde impl = SerdeUtil.impl(ScalarFieldsRecord.Serde.class);
+        ScalarFieldsRecordSerde impl = SerdeUtil.impl(ScalarFieldsRecordSerde.class);
 
         inputUtils.assertException(
                 "{ \"whatIsThis\": 1 }",

@@ -30,7 +30,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
             GsonJsonWriterWriterGenerator parent,
             LHS lhs,
             RHS rhs,
-            String propertyName,
+            Property property,
             boolean stackRelevantType,
             AnyConfig config) {
         super(
@@ -40,7 +40,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
                 code,
                 parent,
                 type,
-                propertyName,
+                property,
                 rhs,
                 lhs,
                 stackRelevantType,
@@ -133,7 +133,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
 
     @Override
     protected GsonJsonWriterWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new GsonJsonWriterWriterGenerator(
                 prototype,
                 utils,
@@ -143,7 +143,7 @@ public class GsonJsonWriterWriterGenerator extends AbstractWriterGenerator<GsonJ
                 this,
                 lhs,
                 rhs,
-                propertyName,
+                property,
                 stackRelevantType,
                 config);
     }

@@ -16,10 +16,7 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
-import org.tillerino.scruse.processor.features.IgnoreProperties;
-import org.tillerino.scruse.processor.features.IgnoreProperty;
-import org.tillerino.scruse.processor.features.PropertyName;
-import org.tillerino.scruse.processor.features.UnknownProperties;
+import org.tillerino.scruse.processor.features.*;
 
 public final class AnyConfig {
     static final ConfigProperty[] available = {
@@ -30,6 +27,7 @@ public final class AnyConfig {
         PropertyName.PROPERTY_NAME,
         IgnoreProperty.IGNORE_PROPERTY,
         IgnoreProperties.IGNORED_PROPERTIES,
+        Verification.VERIFY_SYMMETRY,
         // leave a trailing comma for cleaner diffs :)
     };
 

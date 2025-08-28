@@ -1,4 +1,4 @@
-package org.tillerino.scruse.tests.base;
+package org.tillerino.scruse.tests.model;
 
 import java.util.List;
 import lombok.EqualsAndHashCode;

@@ -1,14 +1,9 @@
-package org.tillerino.scruse.tests.base;
+package org.tillerino.scruse.tests.model;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import lombok.EqualsAndHashCode;
-import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.model.AnEnum;
 
 @EqualsAndHashCode
-class ScalarFieldsClass {
+public class ScalarFieldsClass {
     public boolean bo;
     public byte by;
     public short s;
@@ -67,13 +62,5 @@ class ScalarFieldsClass {
         this.dd = dd;
         this.str = str;
         this.en = en;
-    }
-
-    interface Serde {
-        @JsonOutput
-        void write(ScalarFieldsClass record, JsonGenerator generator) throws Exception;
-
-        @JsonInput
-        ScalarFieldsClass read(JsonParser parser) throws Exception;
     }
 }

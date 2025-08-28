@@ -1,14 +1,9 @@
-package org.tillerino.scruse.tests.base;
+package org.tillerino.scruse.tests.model;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import lombok.EqualsAndHashCode;
-import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.annotations.JsonOutput;
-import org.tillerino.scruse.tests.model.AnEnum;
 
 @EqualsAndHashCode
-class ScalarAccessorsClass {
+public class ScalarAccessorsClass {
     private boolean bo;
     private byte by;
     private short s;
@@ -211,13 +206,5 @@ class ScalarAccessorsClass {
 
     public void setEn(AnEnum en) {
         this.en = en;
-    }
-
-    interface Serde {
-        @JsonOutput
-        void write(ScalarAccessorsClass record, JsonGenerator generator) throws Exception;
-
-        @JsonInput
-        ScalarAccessorsClass read(JsonParser parser) throws Exception;
     }
 }

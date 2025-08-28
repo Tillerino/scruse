@@ -31,7 +31,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
             Fastjson2WriterGenerator parent,
             LHS lhs,
             RHS rhs,
-            String propertyName,
+            Property property,
             boolean stackRelevantType,
             AnyConfig config) {
         super(
@@ -41,7 +41,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                 code,
                 parent,
                 type,
-                propertyName,
+                property,
                 rhs,
                 lhs,
                 stackRelevantType,
@@ -167,7 +167,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 
     @Override
     protected Fastjson2WriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new Fastjson2WriterGenerator(
                 prototype,
                 utils,
@@ -177,7 +177,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                 this,
                 lhs,
                 rhs,
-                propertyName,
+                property,
                 stackRelevantType,
                 config);
     }

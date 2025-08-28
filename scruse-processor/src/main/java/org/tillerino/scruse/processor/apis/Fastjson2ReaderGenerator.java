@@ -30,24 +30,14 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
             ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
-            String propertyName,
+            Property property,
             CodeBlock.Builder code,
             VariableElement parserVariable,
             LHS lhs,
             Fastjson2ReaderGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(
-                utils,
-                parent.generatedClass,
-                prototype,
-                code,
-                parent,
-                type,
-                stackRelevantType,
-                propertyName,
-                lhs,
-                config);
+        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
         this.parserVariable = parserVariable;
     }
 
@@ -197,12 +187,12 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected Fastjson2ReaderGenerator nest(
-            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, @Nullable Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new Fastjson2ReaderGenerator(
                 prototype,
                 utils,
                 utils.tf.getType(type),
-                propertyName,
+                property,
                 code,
                 parserVariable,
                 lhs,

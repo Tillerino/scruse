@@ -30,7 +30,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
             JacksonJsonGeneratorWriterGenerator parent,
             LHS lhs,
             RHS rhs,
-            String propertyName,
+            Property property,
             boolean stackRelevantType,
             AnyConfig config) {
         super(
@@ -40,7 +40,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
                 code,
                 parent,
                 type,
-                propertyName,
+                property,
                 rhs,
                 lhs,
                 stackRelevantType,
@@ -166,7 +166,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
 
     @Override
     protected JacksonJsonGeneratorWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new JacksonJsonGeneratorWriterGenerator(
                 prototype,
                 utils,
@@ -176,7 +176,7 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
                 this,
                 lhs,
                 rhs,
-                propertyName,
+                property,
                 stackRelevantType,
                 config);
     }

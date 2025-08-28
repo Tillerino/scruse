@@ -30,7 +30,7 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
             ScruseWriterGenerator parent,
             LHS lhs,
             RHS rhs,
-            String propertyName,
+            Property property,
             boolean stackRelevantType,
             AnyConfig config) {
         super(
@@ -40,7 +40,7 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
                 code,
                 parent,
                 type,
-                propertyName,
+                property,
                 rhs,
                 lhs,
                 stackRelevantType,
@@ -150,7 +150,7 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
 
     @Override
     protected ScruseWriterGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new ScruseWriterGenerator(
                 prototype,
                 utils,
@@ -160,7 +160,7 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
                 this,
                 lhs,
                 rhs,
-                propertyName,
+                property,
                 stackRelevantType,
                 config);
     }

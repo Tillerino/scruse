@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import org.tillerino.scruse.annotations.JsonInput;
 import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.tests.model.ListFieldWithAdder;
 import org.tillerino.scruse.tests.model.NestingModel;
 
 public class NestingSerde {

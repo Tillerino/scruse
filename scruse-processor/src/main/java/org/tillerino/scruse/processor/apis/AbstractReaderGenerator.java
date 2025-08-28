@@ -1,6 +1,7 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.CodeBlock.Builder;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
@@ -24,6 +25,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.*;
 import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
+import org.tillerino.scruse.processor.features.Verification.ProtoAndProps;
 import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedVariable;
@@ -50,14 +52,14 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
             ScrusePrototype prototype,
-            CodeBlock.Builder code,
+            Builder code,
             SELF parent,
             Type type,
             boolean stackRelevantType,
-            String propertyName,
+            Property property,
             LHS lhs,
             AnyConfig config) {
-        super(utils, generatedClass, prototype, code, parent, type, stackRelevantType, propertyName, config);
+        super(utils, generatedClass, prototype, code, parent, type, stackRelevantType, property, config);
         this.lhs = lhs;
     }
 
@@ -309,7 +311,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 code.endControlFlow();
 
                 Exceptions.runWithContext(
-                        () -> nest(componentType.getTypeMirror(), "item", new LHS.Array(varName, len), true, config)
+                        () -> nest(
+                                        componentType.getTypeMirror(),
+                                        Property.ITEM,
+                                        new LHS.Array(varName, len),
+                                        true,
+                                        config)
                                 .build(Branch.IF, true),
                         "component",
                         componentType);
@@ -345,7 +352,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             iterateOverElements();
             {
                 Exceptions.runWithContext(
-                        () -> nest(componentType.getTypeMirror(), "item", new LHS.Collection(varName), true, config)
+                        () -> nest(
+                                        componentType.getTypeMirror(),
+                                        Property.ITEM,
+                                        new LHS.Collection(varName),
+                                        true,
+                                        config)
                                 .build(Branch.IF, true),
                         "component",
                         componentType);
@@ -400,7 +412,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 String keyVar = "key$" + stackDepth();
                 readFieldNameInIteration(keyVar);
                 Exceptions.runWithContext(
-                        () -> nest(valueType.getTypeMirror(), "value", new LHS.Map(varName, keyVar), true, config)
+                        () -> nest(
+                                        valueType.getTypeMirror(),
+                                        Property.VALUE,
+                                        new LHS.Map(varName, keyVar),
+                                        true,
+                                        config)
                                 .build(Branch.IF, true),
                         "value",
                         valueType);
@@ -451,7 +468,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     private void readPolymorphicObject(Polymorphism polymorphism) {
         LHS.Variable discriminator = new LHS.Variable("discriminator$" + stackDepth());
         code.addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
-        nest(utils.commonTypes.string, polymorphism.discriminator(), discriminator, false, config)
+        nest(
+                        utils.commonTypes.string,
+                        new Property("discriminator", polymorphism.discriminator()),
+                        discriminator,
+                        false,
+                        config)
                 .readDiscriminator(polymorphism.discriminator());
         Branch branch = Branch.IF;
         for (Polymorphism.Child child : polymorphism.children()) {
@@ -474,10 +496,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                             throw new ContextedRuntimeException(
                                                     "Prototype method must have a context parameter");
                                         });
-                                nest(child.type(), "instance", lhs, true, config)
+                                nest(child.type(), Property.INSTANCE, lhs, true, config)
                                         .invokeDelegate(delegateField, delegate.method());
                             },
-                            () -> nest(child.type(), "instance", lhs, true, config)
+                            () -> nest(child.type(), Property.INSTANCE, lhs, true, config)
                                     .readObjectFields());
             branch = Branch.ELSE_IF;
         }
@@ -512,6 +534,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readCreator(InstantiatedMethod method) {
+        ProtoAndProps verificationForDto =
+                generatedClass.verificationForBlueprint.addReader(prototype, type.getTypeMirror());
+
         List<SELF> nested = new ArrayList<>();
         AnyConfig creatorConfig = method.config().merge(config);
 
@@ -522,7 +547,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             String varName = parameter.name() + "$" + (stackDepth() + 1);
             String propertyName = PropertyName.resolvePropertyName(propertyConfig, parameter.name());
 
-            SELF nest = nest(parameter.type(), propertyName, new LHS.Variable(varName), true, propertyConfig);
+            SELF nest = nest(
+                    parameter.type(),
+                    new Property(parameter.name(), propertyName),
+                    new LHS.Variable(varName),
+                    true,
+                    propertyConfig);
             Snippet defaultValue = utils.defaultValues
                     .findInputDefaultValue(prototype.blueprint(), nest.type.getTypeMirror(), propertyConfig)
                     .map(m -> Snippet.of("$C()", m.callSymbol(utils)))
@@ -533,6 +563,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 // we do need the default value to call the creator, so we only skip reading the value
                 continue;
             }
+            verificationForDto.addProperty(propertyName, parameter.type(), propertyConfig);
             nested.add(nest);
         }
         readProperties(nested);
@@ -541,6 +572,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readObjectFromAccessors() {
+        ProtoAndProps verificationForDto =
+                generatedClass.verificationForBlueprint.addReader(prototype, type.getTypeMirror());
+
         List<SELF> nested = new ArrayList<>();
         String objectVar = "object$" + stackDepth();
         code.addStatement("$T $L = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
@@ -557,7 +591,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
                     LHS lhs = LHS.from(accessor, objectVar);
                     String propertyName = PropertyName.resolvePropertyName(propertyConfig, canonicalPropertyName);
-                    SELF nest = nest(accessor.getAccessedType(), propertyName, lhs, true, propertyConfig);
+                    verificationForDto.addProperty(propertyName, accessor.getAccessedType(), propertyConfig);
+                    SELF nest = nest(
+                            accessor.getAccessedType(),
+                            new Property(canonicalPropertyName, propertyName),
+                            lhs,
+                            true,
+                            propertyConfig);
                     nested.add(nest);
                 });
         readProperties(nested);
@@ -575,10 +615,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
         code.beginControlFlow("switch($L)", fieldVar);
         for (SELF nest : properties) {
-            if (ignoredProperties.contains(nest.property)) {
+            if (ignoredProperties.contains(nest.property.serializedName())) {
                 continue;
             }
-            code.beginControlFlow("case $S:", nest.property);
+            code.beginControlFlow("case $S:", nest.property.serializedName());
             nest.build(Branch.IF, true);
             code.addStatement("break");
             code.endControlFlow();
@@ -647,7 +687,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     protected abstract void invokeDelegate(String instance, InstantiatedMethod callee);
 
     protected abstract SELF nest(
-            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config);
+            TypeMirror type, @Nullable Property property, LHS lhs, boolean stackRelevantType, AnyConfig config);
 
     protected sealed interface LHS {
         default void assign(CodeBlock.Builder code, Snippet s) {
@@ -683,6 +723,9 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 case ADDER -> throw new ContextedRuntimeException(
                                 "Adders are not supported. Define a setter as an alternative to the adder.")
                         .addContextValue("adder", a.getElement());
+                case GETTER -> throw new ContextedRuntimeException(
+                                "Getters are not supported. Define a setter as an alternative to the getter.")
+                        .addContextValue("setter", a.getElement());
                 default -> throw new ContextedRuntimeException(
                         a.getAccessorType().toString());
             };

@@ -3,8 +3,9 @@
 Scruse is an annotation-processor that generates databind classes to map JSON (and similar formats) to Java classes and vice versa.
 It is intended for two contexts:
 
-1) Reflection is not possible or is discouraged, e.g. when working with GraalVM native images or when static code analysis is important.
+1) Reflection is not possible or is discouraged, e.g. when working with GraalVM native images.
 2) A tiny footprint is required, i.e. jars like jackson-databind are too big.
+3) Guarantees about serialization are required at compile time, e.g. [symmetry](#verification).
 
 Scruse does not include any parsers or formatters and requires external ones.
 Various JSON libraries are supported out-of-the-box, including:
@@ -30,6 +31,7 @@ If you _just_ want to serialize and deserialize JSON and do not have any of the 
   * [Generics](#generics)
   * [Polymorphism](#polymorphism)
   * [Default Values](#default-values)
+  * [Verification](#verification)
 - [Configuration](#configuration)
   * [@JsonConfig Annotation](#jsonconfig-annotation)
   * [Jackson Annotation Compatibility](#jackson-annotation-compatibility)
@@ -112,7 +114,7 @@ The context parameters can be omitted if they are not explicitly needed.
 The `@JsonTemplate` annotation allows you to specify prototypes from templates without specifying each as a separate method.
 
 ```java
-// scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L12-L14
+// scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L14-L16
 
 @JsonTemplate(
         templates = {GenericInputSerde.class, GenericOutputSerde.class},
@@ -301,6 +303,39 @@ interface MySerde {
 ```
 
 Default value methods can be defined as siblingsor in separate classes referenced with `@JsonConfig(uses = {...})`.
+
+### Verification
+
+The symmetry of serialization and deserialization can be checked at runtime.
+The main consideration is: For each serialized type, is the set of written properties equal to the set of read properties?
+
+Consider the following class:
+```java
+//scruse-tests/scruse-tests-base/src/main/java/org/tillerino/scruse/tests/model/features/VerificationModel.java#L18-L25
+
+class MoreSettersThanGetters {
+    @Getter
+    @Setter
+    String s;
+
+    @Setter
+    String t;
+}
+```
+
+Assuming that both `s` and `t` are properties that are required to reconstruct the object correctly, then this
+class is missing a `@Getter` on `t`.
+Inversely, having more getters than setters means possibly serializing redundant information.
+Once we move away from POJOs and involve creators or inheritance, this symmetry becomes quite hard judge.
+
+Setting `@JsonConfig(verifySymmetry=FAIL)` will verify symmetry of serialization and deserialization at compile time.
+In addition to this symmetry of individual properties, it will verify:
+- That each object's fields are serialized and deserialized in exactly one place. Not only does this prevent duplicating
+  methods for the same type, but prevents code bloat from nested serde.
+- That for each reader/writer, the corresponding writer/reader exists in the first place.
+- That properties are not duplicated (with `@JsonProperty("name")`, one could define the same property twice).
+
+It is recommended to generate all code with this configuration.
 
 ## Configuration
 

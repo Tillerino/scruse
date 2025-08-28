@@ -30,7 +30,7 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
             JakartaJsonGeneratorGenerator parent,
             LHS lhs,
             RHS rhs,
-            String propertyName,
+            Property property,
             boolean stackRelevantType,
             AnyConfig config) {
         super(
@@ -40,7 +40,7 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
                 code,
                 parent,
                 type,
-                propertyName,
+                property,
                 rhs,
                 lhs,
                 stackRelevantType,
@@ -135,7 +135,7 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
 
     @Override
     protected JakartaJsonGeneratorGenerator nest(
-            TypeMirror type, LHS lhs, String propertyName, RHS rhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new JakartaJsonGeneratorGenerator(
                 prototype,
                 utils,
@@ -145,7 +145,7 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
                 this,
                 lhs,
                 rhs,
-                propertyName,
+                property,
                 stackRelevantType,
                 config);
     }

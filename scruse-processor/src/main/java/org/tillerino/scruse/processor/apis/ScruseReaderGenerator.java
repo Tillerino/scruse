@@ -29,24 +29,14 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
             ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
-            String propertyName,
+            Property property,
             CodeBlock.Builder code,
             VariableElement parserVariable,
             LHS lhs,
             ScruseReaderGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(
-                utils,
-                parent.generatedClass,
-                prototype,
-                code,
-                parent,
-                type,
-                stackRelevantType,
-                propertyName,
-                lhs,
-                config);
+        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
         this.parserVariable = parserVariable;
     }
 
@@ -175,12 +165,12 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected ScruseReaderGenerator nest(
-            TypeMirror type, String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new ScruseReaderGenerator(
                 prototype,
                 utils,
                 utils.tf.getType(type),
-                propertyName,
+                property,
                 code,
                 parserVariable,
                 lhs,

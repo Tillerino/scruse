@@ -11,16 +11,18 @@ import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.api.ReflectionBridge.DeserializerDescription;
 import org.tillerino.scruse.api.ReflectionBridge.SerializerDescription;
 import org.tillerino.scruse.tests.ReferenceTest;
-import org.tillerino.scruse.tests.base.ScalarFieldsRecord;
-import org.tillerino.scruse.tests.base.ScalarFieldsRecord$SerdeImpl;
+import org.tillerino.scruse.tests.SerdeUtil;
+import org.tillerino.scruse.tests.base.ScalarFieldsRecordSerde;
 import org.tillerino.scruse.tests.model.AnEnum;
+import org.tillerino.scruse.tests.model.ScalarFieldsRecord;
 
 class ReflectionBridgeTest extends ReferenceTest {
     Type type = JaxRsInterfaceOrSomething.class.getMethods()[0].getGenericReturnType();
 
     @Test
     void testFindDeserializer() throws Exception {
-        ReflectionBridge reflectionBridge = new ReflectionBridge(List.of(new ScalarFieldsRecord$SerdeImpl()));
+        ReflectionBridge reflectionBridge =
+                new ReflectionBridge(List.of(SerdeUtil.impl(ScalarFieldsRecordSerde.class)));
 
         Optional<DeserializerDescription<JsonParser>> deserializerMaybe =
                 reflectionBridge.findDeserializer(type, JsonParser.class);
@@ -34,7 +36,8 @@ class ReflectionBridgeTest extends ReferenceTest {
 
     @Test
     void testFindSerializer() throws Exception {
-        ReflectionBridge reflectionBridge = new ReflectionBridge(List.of(new ScalarFieldsRecord$SerdeImpl()));
+        ReflectionBridge reflectionBridge =
+                new ReflectionBridge(List.of(SerdeUtil.impl(ScalarFieldsRecordSerde.class)));
 
         Optional<SerializerDescription<JsonGenerator>> serializerMaybe =
                 reflectionBridge.findSerializer(type, JsonGenerator.class);

@@ -4,7 +4,6 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.*;
-import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -222,9 +221,10 @@ public class ScruseProcessor extends AbstractProcessor {
             JavaFile file = builder.build();
             file.writeTo(writer);
         }
+        generatedClass.verificationForBlueprint.finish();
     }
 
-    private @Nullable MethodSpec generateMethod(ScrusePrototype method, GeneratedClass generatedClass) {
+    private MethodSpec generateMethod(ScrusePrototype method, GeneratedClass generatedClass) {
         MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(method.name());
         if (method.overrides()) {
             methodBuilder.addAnnotation(Override.class);
@@ -244,10 +244,6 @@ public class ScruseProcessor extends AbstractProcessor {
                     case INPUT -> determineInputCodeGenerator(method, generatedClass);
                     case OUTPUT -> determineOutputCodeGenerator(method, generatedClass);
                 };
-        if (codeGenerator == null) {
-            logError("Signature unknown. Please see @JsonOutput/@JsonInput for hints.", method.methodElement());
-            return null;
-        }
         methodBuilder.addCode(codeGenerator.get().build());
         return methodBuilder.build();
     }

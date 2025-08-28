@@ -46,6 +46,8 @@ public @interface JsonConfig {
      */
     UnknownPropertiesMode unknownProperties() default UnknownPropertiesMode.DEFAULT;
 
+    VerificationMode verifySymmetry() default VerificationMode.NO_VERIFICATION;
+
     enum DelegateeMode {
         /** The annotated element can be called from other serializers. */
         DELEGATE_TO,
@@ -78,5 +80,15 @@ public @interface JsonConfig {
         /** Defaults to {@link #THROW} */
         DEFAULT,
         ;
+    }
+
+    enum VerificationMode {
+        NO_VERIFICATION,
+
+        /** Log warnings, but do not fail compilation. */
+        WARN,
+
+        /** Fail compilation if an verification fails. */
+        FAIL;
     }
 }

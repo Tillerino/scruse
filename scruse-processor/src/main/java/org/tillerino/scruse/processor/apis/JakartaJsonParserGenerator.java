@@ -1,7 +1,7 @@
 package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.CodeBlock.Builder;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import javax.lang.model.element.VariableElement;
@@ -29,24 +29,14 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
             ScrusePrototype prototype,
             AnnotationProcessorUtils utils,
             Type type,
-            String propertyName,
-            CodeBlock.Builder code,
+            Property property,
+            Builder code,
             VariableElement parserVariable,
             LHS lhs,
             JakartaJsonParserGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(
-                utils,
-                parent.generatedClass,
-                prototype,
-                code,
-                parent,
-                type,
-                stackRelevantType,
-                propertyName,
-                lhs,
-                config);
+        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
         this.parserVariable = parserVariable;
     }
 
@@ -215,12 +205,12 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected JakartaJsonParserGenerator nest(
-            TypeMirror type, @Nullable String propertyName, LHS lhs, boolean stackRelevantType, AnyConfig config) {
+            TypeMirror type, @Nullable Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new JakartaJsonParserGenerator(
                 prototype,
                 utils,
                 utils.tf.getType(type),
-                propertyName,
+                property,
                 code,
                 parserVariable,
                 lhs,
