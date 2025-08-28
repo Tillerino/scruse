@@ -22,7 +22,7 @@ updates:
 
 # regenerate the TOC in README.md
 readme-update-toc:
-  docker run --rm -v .:/work --entrypoint=/bin/sh mkenney/npm -c 'npm install -g markdown-toc; cd /work; for f in README.md docs/*; do markdown-toc -i $f; done'
+  docker run --rm -v .:/work --entrypoint=/bin/sh mkenney/npm -c 'npm install -g markdown-toc && cd /work && for f in README.md docs/*; do markdown-toc -i $f; done'
 
 readme-build-embedme:
   echo "FROM mkenney/npm" > /tmp/embedme.dockerfile

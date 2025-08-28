@@ -10,6 +10,7 @@
     <artifactId>scruse-tests</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>scratch</module>
         <module>scruse-tests-base</module>
         <module>scruse-tests-jackson</module>
         <module>scruse-tests-gson</module>
