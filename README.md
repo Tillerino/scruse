@@ -588,7 +588,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonAutoDetect
 - [ ] JsonBackReference
 - [ ] JsonClassDescription
-- [X] JsonCreator - with default `mode`
+- [X] JsonCreator
 - [ ] JsonEnumDefaultValue
 - [ ] JsonFilter
 - [ ] JsonFormat

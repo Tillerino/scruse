@@ -1,6 +1,5 @@
 package org.tillerino.scruse.processor.util;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,42 +27,6 @@ public record Annotations(AnnotationProcessorUtils utils) {
                 continue;
             }
             return Optional.of(utils.generics.instantiateMethod(method, typeBindings, LocationKind.BLUEPRINT));
-        }
-        return Optional.empty();
-    }
-
-    public Optional<InstantiatedMethod> findJsonCreatorMethod(TypeMirror tm) {
-        if (!(tm instanceof DeclaredType dt)) {
-            return Optional.empty();
-        }
-        Map<TypeVar, TypeMirror> typeBindings = utils.generics.recordTypeBindings(dt);
-        for (ExecutableElement constructor :
-                ElementFilter.constructorsIn(dt.asElement().getEnclosedElements())) {
-            if (findAnnotation(constructor, "com.fasterxml.jackson.annotation.JsonCreator")
-                    .isEmpty()) {
-                continue;
-            }
-            return Optional.of(utils.generics.instantiateMethod(constructor, typeBindings, LocationKind.CREATOR));
-        }
-        for (ExecutableElement method : ElementFilter.methodsIn(dt.asElement().getEnclosedElements())) {
-            if (findAnnotation(method, "com.fasterxml.jackson.annotation.JsonCreator")
-                            .isEmpty()
-                    || method.getReturnType().getKind() == TypeKind.VOID) {
-                continue;
-            }
-            if (!method.getModifiers().contains(javax.lang.model.element.Modifier.STATIC)) {
-                continue;
-            }
-            // Cannot instantiate with type bindings from class.
-            // Need to infer from return type.
-            InstantiatedMethod methodWithTypeTypeVars =
-                    utils.generics.instantiateMethod(method, typeBindings, LocationKind.CREATOR);
-            Map<TypeVar, TypeMirror> methodTypeVars = new LinkedHashMap<>();
-            if (!utils.generics.tybeBindingsSatisfyingEquality(
-                    tm, methodWithTypeTypeVars.returnType(), methodTypeVars)) {
-                continue;
-            }
-            return Optional.of(utils.generics.applyTypeBindings(methodWithTypeTypeVars, methodTypeVars));
         }
         return Optional.empty();
     }

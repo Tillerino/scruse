@@ -23,6 +23,7 @@ import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.*;
+import org.tillerino.scruse.processor.features.Creators.Creator;
 import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.features.Verification.ProtoAndProps;
@@ -210,11 +211,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readNullCheckedObject(Branch branch) {
-        Optional<InstantiatedMethod> jsonCreatorMethod = utils.annotations
+        Optional<Creator.Converter> jsonCreatorMethod = utils.creators
                 .findJsonCreatorMethod(type.getTypeMirror())
-                .filter(m -> m.parameters().size() == 1);
+                .filter(Creator.Converter.class::isInstance)
+                .map(Creator.Converter.class::cast);
         if (jsonCreatorMethod.isPresent()) {
-            readFactory(branch, jsonCreatorMethod.get());
+            readFactory(branch, jsonCreatorMethod.get().method());
         } else if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false, config)
                     .build(branch, true);
@@ -244,7 +246,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                         .build(Branch.IF, false),
                 "creator",
                 method);
-        lhs.assign(code, Snippet.of("$C($L)", method.callSymbol(utils), creatorArg.name));
+        lhs.assign(
+                code,
+                Snippet.of(
+                        "$C($L$C)",
+                        method.callSymbol(utils),
+                        creatorArg.name,
+                        Snippet.joinPrependingCommaToEach(prototype.findArguments(method, 1, generatedClass))));
         if (branch == Branch.ELSE_IF) {
             code.endControlFlow();
         }
@@ -512,11 +520,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     void readObjectFields() {
-        Optional<InstantiatedMethod> creatorMethod = utils.annotations
+        Optional<Creator.Properties> creatorMethod = utils.creators
                 .findJsonCreatorMethod(type.getTypeMirror())
-                .filter(m -> m.parameters().size() != 1);
+                .filter(Creator.Properties.class::isInstance)
+                .map(Creator.Properties.class::cast);
         if (creatorMethod.isPresent()) {
-            readCreator(creatorMethod.get());
+            readCreator(creatorMethod.get().method());
         } else if (type.getTypeElement() != null && type.isRecord()) {
             Map<TypeVar, TypeMirror> typeBindings =
                     utils.generics.recordTypeBindings((DeclaredType) type.getTypeMirror());
