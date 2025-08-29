@@ -634,7 +634,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 continue;
             }
             code.beginControlFlow("case $S:", nest.property.serializedName());
-            nest.build(Branch.IF, true);
+            Exceptions.runWithContext(() -> nest.build(Branch.IF, true), "property", nest.property.serializedName());
             code.addStatement("break");
             code.endControlFlow();
         }
