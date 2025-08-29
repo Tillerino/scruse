@@ -504,11 +504,17 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                             throw new ContextedRuntimeException(
                                                     "Prototype method must have a context parameter");
                                         });
-                                nest(child.type(), Property.INSTANCE, lhs, true, config)
-                                        .invokeDelegate(delegateField, delegate.method());
+                                Exceptions.runWithContext(
+                                        () -> nest(child.type(), Property.INSTANCE, lhs, true, config)
+                                                .invokeDelegate(delegateField, delegate.method()),
+                                        "instance",
+                                        child.type());
                             },
-                            () -> nest(child.type(), Property.INSTANCE, lhs, true, config)
-                                    .readObjectFields());
+                            () -> Exceptions.runWithContext(
+                                    () -> nest(child.type(), Property.INSTANCE, lhs, true, config)
+                                            .readObjectFields(),
+                                    "instance",
+                                    child.type()));
             branch = Branch.ELSE_IF;
         }
         if (branch == Branch.IF) {
