@@ -15,6 +15,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationMirrorWrapper;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
+import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.PrototypeKind;
 
@@ -22,7 +23,7 @@ public record Templates(AnnotationProcessorUtils utils) {
     public List<ScrusePrototype> instantiateTemplatedPrototypesFromSingleAnnotation(ScruseBlueprint blueprint) {
         AnnotationMirrorWrapper templateAnnotation = utils.annotations
                 .findAnnotation(blueprint.typeElement, JsonTemplate.class.getCanonicalName())
-                .orElseThrow(() -> new ContextedRuntimeException("?"));
+                .orElseThrow(Exceptions::unexpected);
         return createTemplatesFromAnnotation(blueprint, templateAnnotation);
     }
 
@@ -30,9 +31,9 @@ public record Templates(AnnotationProcessorUtils utils) {
         List<ScrusePrototype> instantiatedPrototypes = new ArrayList<>();
         utils.annotations
                 .findAnnotation(blueprint.typeElement, JsonTemplates.class.getCanonicalName())
-                .orElseThrow(() -> new ContextedRuntimeException("?"))
+                .orElseThrow(Exceptions::unexpected)
                 .method("value", false)
-                .orElseThrow(() -> new ContextedRuntimeException("?"))
+                .orElseThrow(Exceptions::unexpected)
                 .asArray()
                 .forEach(templateAnnotation -> instantiatedPrototypes.addAll(
                         createTemplatesFromAnnotation(blueprint, templateAnnotation.asAnnotation())));
@@ -59,11 +60,7 @@ public record Templates(AnnotationProcessorUtils utils) {
     }
 
     private List<Template> findTemplates(AnnotationMirrorWrapper templateAnnotation) {
-        return templateAnnotation
-                .method("templates", false)
-                .orElseThrow(() -> new ContextedRuntimeException("?"))
-                .asArray()
-                .stream()
+        return templateAnnotation.method("templates", false).orElseThrow(Exceptions::unexpected).asArray().stream()
                 .map(templateWrapper -> {
                     TypeMirror templateType = templateWrapper.asTypeMirror();
                     List<InstantiatedMethod> templateMethods =
@@ -87,11 +84,7 @@ public record Templates(AnnotationProcessorUtils utils) {
     }
 
     private List<TypeMirror> findTypes(AnnotationMirrorWrapper templateAnnotation) {
-        return templateAnnotation
-                .method("types", false)
-                .orElseThrow(() -> new ContextedRuntimeException("?"))
-                .asArray()
-                .stream()
+        return templateAnnotation.method("types", false).orElseThrow(Exceptions::unexpected).asArray().stream()
                 .map(AnnotationValueWrapper::asTypeMirror)
                 .toList();
     }

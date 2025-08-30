@@ -14,6 +14,7 @@ import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
+import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 public record Creators(AnnotationProcessorUtils utils) {
@@ -59,9 +60,27 @@ public record Creators(AnnotationProcessorUtils utils) {
         return utils.annotations
                 .findAnnotation(element, "com.fasterxml.jackson.annotation.JsonCreator")
                 .map(wrapper -> wrapper.method("mode", true)
-                        .orElseThrow(() -> new ContextedRuntimeException("?"))
+                        .orElseThrow(Exceptions::unexpected)
                         .asEnum(JsonCreator.Mode.class))
                 .filter(mode -> mode != Mode.DISABLED);
+    }
+
+    public Optional<InstantiatedMethod> findJsonValueMethod(TypeMirror tm) {
+        if (!(tm instanceof DeclaredType dt)) {
+            return Optional.empty();
+        }
+        Map<TypeVar, TypeMirror> typeBindings = utils.generics.recordTypeBindings(dt);
+        for (ExecutableElement method : ElementFilter.methodsIn(dt.asElement().getEnclosedElements())) {
+            if (utils.annotations
+                            .findAnnotation(method, "com.fasterxml.jackson.annotation.JsonValue")
+                            .isEmpty()
+                    || !method.getParameters().isEmpty()
+                    || method.getReturnType().getKind() == TypeKind.VOID) {
+                continue;
+            }
+            return Optional.of(utils.generics.instantiateMethod(method, typeBindings, LocationKind.BLUEPRINT));
+        }
+        return Optional.empty();
     }
 
     public sealed interface Creator {

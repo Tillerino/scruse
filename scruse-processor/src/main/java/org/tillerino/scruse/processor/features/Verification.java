@@ -1,10 +1,11 @@
 package org.tillerino.scruse.processor.features;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
-import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.tillerino.scruse.annotations.JsonConfig.VerificationMode;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
@@ -14,6 +15,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.ConfigPropertyRetriever;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.config.ConfigProperty.MergeFunction;
+import org.tillerino.scruse.processor.util.Exceptions;
 
 public class Verification {
     public static ConfigProperty<VerificationMode> VERIFY_SYMMETRY = ConfigProperty.createConfigProperty(
@@ -31,7 +33,7 @@ public class Verification {
 
     public ForBlueprint startBlueprint(ScruseBlueprint blueprint) {
         return st.merge(blueprint, new ForBlueprint(blueprint), (x, y) -> {
-            throw new ContextedRuntimeException("?");
+            throw Exceptions.unexpected();
         });
     }
 

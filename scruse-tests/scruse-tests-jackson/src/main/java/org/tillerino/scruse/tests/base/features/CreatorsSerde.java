@@ -1,38 +1,72 @@
 package org.tillerino.scruse.tests.base.features;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import org.tillerino.scruse.annotations.JsonInput;
-import org.tillerino.scruse.tests.model.features.CreatorsModel;
+import org.tillerino.scruse.annotations.JsonOutput;
+import org.tillerino.scruse.tests.model.features.CreatorsModel.*;
+import org.tillerino.scruse.tests.model.features.CreatorsModel.Priority.*;
 
 public interface CreatorsSerde {
 
     @JsonInput
-    CreatorsModel.JsonCreatorConstructorFactoryClass<Integer> readConstructorFactory(JsonParser parser)
-            throws Exception;
+    JsonCreatorConstructorFactoryClass<Integer> readConstructorFactory(JsonParser parser) throws Exception;
 
     @JsonInput
-    CreatorsModel.JsonCreatorConstructorFactoryMultiplePropertiesClass<Integer>
-            readConstructorFactoryMultipleProperties(JsonParser parser, Thread t) throws Exception;
-
-    @JsonInput
-    CreatorsModel.JsonCreatorMethodFactoryRecord<Integer> readMethodFactory(JsonParser parser) throws Exception;
-
-    @JsonInput
-    CreatorsModel.JsonCreatorMethodFactoryMultiplePropertiesRecord<Integer> readMethodFactoryMultipleProperties(
+    JsonCreatorConstructorFactoryMultiplePropertiesClass<Integer> readConstructorFactoryMultipleProperties(
             JsonParser parser, Thread t) throws Exception;
 
     @JsonInput
-    CreatorsModel.JsonCreatorConstructorCreatorClass<Integer> readConstructorCreator(JsonParser parser)
+    JsonCreatorMethodFactoryRecord<Integer> readMethodFactory(JsonParser parser) throws Exception;
+
+    @JsonInput
+    JsonCreatorMethodFactoryMultiplePropertiesRecord<Integer> readMethodFactoryMultipleProperties(
+            JsonParser parser, Thread t) throws Exception;
+
+    @JsonInput
+    JsonCreatorConstructorCreatorClass<Integer> readConstructorCreator(JsonParser parser) throws Exception;
+
+    @JsonInput
+    JsonCreatorMethodCreatorRecord<Integer> readMethodCreator(JsonParser parser) throws Exception;
+
+    @JsonInput
+    JsonCreatorMethodCreatorSinglePropertyRecord<Integer> readMethodCreatorSingleProperty(JsonParser parser)
             throws Exception;
 
     @JsonInput
-    CreatorsModel.JsonCreatorMethodCreatorRecord<Integer> readMethodCreator(JsonParser parser) throws Exception;
+    JsonCreatorConstructorCreatorSinglePropertyClass<Integer> readConstructorCreatorSingleProperty(JsonParser parser)
+            throws Exception;
 
-    @JsonInput
-    CreatorsModel.JsonCreatorMethodCreatorSinglePropertyRecord<Integer> readMethodCreatorSingleProperty(
-            JsonParser parser) throws Exception;
+    @JsonOutput
+    void write(JsonValueRecord<Integer> obj, JsonGenerator generator) throws Exception;
 
-    @JsonInput
-    CreatorsModel.JsonCreatorConstructorCreatorSinglePropertyClass<Integer> readConstructorCreatorSingleProperty(
-            JsonParser parser) throws Exception;
+    interface Priority {
+        @JsonOutput
+        void writeJsonValueEnum(JsonValueEnum enumValue, JsonGenerator generator) throws Exception;
+
+        @JsonOutput
+        void writeJsonValueIterable(JsonValueIterable iterable, JsonGenerator generator) throws Exception;
+
+        @JsonOutput
+        void writeJsonValueMap(JsonValueMap map, JsonGenerator generator) throws Exception;
+
+        @JsonInput
+        JsonCreatorMethodEnum readJsonCreatorMethodEnum(JsonParser parser) throws Exception;
+
+        @JsonInput
+        JsonCreatorMethodCollection readJsonCreatorMethodCollection(JsonParser parser) throws Exception;
+
+        @JsonInput
+        JsonCreatorMethodMap readJsonCreatorMethodMap(JsonParser parser) throws Exception;
+
+        @JsonInput
+        JsonCreatorMethodMultipleParamsEnum readJsonCreatorMethodMultipleParamsEnum(JsonParser parser) throws Exception;
+
+        @JsonInput
+        JsonCreatorMethodMultipleParamsCollection readJsonCreatorMethodMultipleParamsCollection(JsonParser parser)
+                throws Exception;
+
+        @JsonInput
+        JsonCreatorMethodMultipleParamsMap readJsonCreatorMethodMultipleParamsMap(JsonParser parser) throws Exception;
+    }
 }

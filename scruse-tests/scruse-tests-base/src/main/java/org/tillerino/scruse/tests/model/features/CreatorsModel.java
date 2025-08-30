@@ -2,8 +2,8 @@ package org.tillerino.scruse.tests.model.features;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonCreator.Mode;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -81,6 +81,119 @@ public interface CreatorsModel {
         @JsonCreator(mode = Mode.DELEGATING)
         public static <U> JsonCreatorMethodFactoryMultiplePropertiesRecord<U> of(U notprop, Thread t) {
             return new JsonCreatorMethodFactoryMultiplePropertiesRecord<>(notprop, t);
+        }
+    }
+
+    record JsonValueRecord<T>(T prop) {
+        @JsonValue
+        public Map<String, T> toMap() {
+            LinkedHashMap<String, T> map = new LinkedHashMap<>();
+            map.put("notprop", prop);
+            return map;
+        }
+    }
+
+    /**
+     * A bunch of classes which are special (enum/iterable/...) which is supposed to distract from {@link JsonValue} and
+     * {@link JsonCreator}.
+     */
+    interface Priority {
+        enum JsonValueEnum {
+            VALUE1;
+
+            @JsonValue
+            public List<Integer> toList() {
+                return List.of(1);
+            }
+        }
+
+        class JsonValueIterable implements Iterable<Integer> {
+            @JsonValue
+            public String asString() {
+                return "value";
+            }
+
+            @Override
+            public Iterator<Integer> iterator() {
+                return null;
+            }
+        }
+
+        class JsonValueMap extends HashMap<String, Integer> {
+            @JsonValue
+            public String asString() {
+                return "value";
+            }
+        }
+
+        enum JsonCreatorMethodEnum {
+            VALUE1;
+
+            @JsonCreator
+            public static JsonCreatorMethodEnum from(List<Integer> i) {
+                return VALUE1;
+            }
+        }
+
+        @EqualsAndHashCode(callSuper = false)
+        class JsonCreatorMethodCollection extends ArrayList<String> {
+            public int s;
+
+            @JsonCreator
+            public static JsonCreatorMethodCollection from(List<Integer> i) {
+                JsonCreatorMethodCollection strings = new JsonCreatorMethodCollection();
+                strings.s = i.size();
+                return strings;
+            }
+        }
+
+        @EqualsAndHashCode(callSuper = false)
+        class JsonCreatorMethodMap extends HashMap<String, Integer> {
+            public int s;
+
+            @JsonCreator
+            public static JsonCreatorMethodMap from(List<Integer> i) {
+                JsonCreatorMethodMap strings = new JsonCreatorMethodMap();
+                strings.s = i.size();
+                return strings;
+            }
+        }
+
+        enum JsonCreatorMethodMultipleParamsEnum {
+            VALUE1;
+
+            @JsonCreator
+            public static JsonCreatorMethodMultipleParamsEnum from(List<Integer> i, String name, boolean flag) {
+                return VALUE1;
+            }
+        }
+
+        @EqualsAndHashCode(callSuper = false)
+        class JsonCreatorMethodMultipleParamsCollection extends ArrayList<String> {
+            public String name;
+            public int count;
+
+            @JsonCreator
+            public static JsonCreatorMethodMultipleParamsCollection from(List<Integer> i, String name, boolean flag) {
+                JsonCreatorMethodMultipleParamsCollection collection = new JsonCreatorMethodMultipleParamsCollection();
+                collection.name = name;
+                collection.count = i.size();
+                return collection;
+            }
+        }
+
+        @EqualsAndHashCode(callSuper = false)
+        class JsonCreatorMethodMultipleParamsMap extends HashMap<String, Integer> {
+            public String name;
+            public int count;
+
+            @JsonCreator
+            public static JsonCreatorMethodMultipleParamsMap from(List<Integer> i, String name, boolean flag) {
+                JsonCreatorMethodMultipleParamsMap map = new JsonCreatorMethodMultipleParamsMap();
+                map.name = name;
+                map.count = i.size();
+                return map;
+            }
         }
     }
 }

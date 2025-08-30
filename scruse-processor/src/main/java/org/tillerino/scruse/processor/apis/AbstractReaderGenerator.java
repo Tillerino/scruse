@@ -211,12 +211,15 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readNullCheckedObject(Branch branch) {
-        Optional<Creator.Converter> jsonCreatorMethod = utils.creators
-                .findJsonCreatorMethod(type.getTypeMirror())
-                .filter(Creator.Converter.class::isInstance)
-                .map(Creator.Converter.class::cast);
+        Optional<Creator> jsonCreatorMethod = utils.creators.findJsonCreatorMethod(type.getTypeMirror());
         if (jsonCreatorMethod.isPresent()) {
-            readFactory(branch, jsonCreatorMethod.get().method());
+            if (jsonCreatorMethod.get() instanceof Creator.Converter c) {
+                readFactory(branch, c.method());
+            } else if (jsonCreatorMethod.get() instanceof Creator.Properties p) {
+                readObject(branch, p);
+            } else {
+                throw Exceptions.unexpected();
+            }
         } else if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false, config)
                     .build(branch, true);
@@ -231,7 +234,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         } else if (type.isMapType()) {
             readMap(branch);
         } else {
-            readObject(branch);
+            readObject(branch, null);
         }
     }
 
@@ -453,7 +456,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
     }
 
-    private void readObject(Branch branch) {
+    private void readObject(Branch branch, @Nullable Creator.Properties properties) {
         Snippet cond = objectCaseCondition();
         if (canBePolyChild) {
             branch.controlFlow(
@@ -464,9 +467,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             branch.controlFlow(code, cond.format(), cond.args());
         }
 
-        Optional.ofNullable(type.getTypeElement())
-                .flatMap(t -> Polymorphism.of(t, utils))
-                .ifPresentOrElse(this::readPolymorphicObject, this::readObjectFields);
+        if (properties != null) {
+            readCreator(properties.method());
+        } else {
+            Optional.ofNullable(type.getTypeElement())
+                    .flatMap(t -> Polymorphism.of(t, utils))
+                    .ifPresentOrElse(this::readPolymorphicObject, this::readObjectFields);
+        }
 
         code.nextControlFlow("else");
         throwUnexpected("object");
@@ -526,13 +533,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     void readObjectFields() {
-        Optional<Creator.Properties> creatorMethod = utils.creators
-                .findJsonCreatorMethod(type.getTypeMirror())
-                .filter(Creator.Properties.class::isInstance)
-                .map(Creator.Properties.class::cast);
-        if (creatorMethod.isPresent()) {
-            readCreator(creatorMethod.get().method());
-        } else if (type.getTypeElement() != null && type.isRecord()) {
+        if (type.getTypeElement() != null && type.isRecord()) {
             Map<TypeVar, TypeMirror> typeBindings =
                     utils.generics.recordTypeBindings((DeclaredType) type.getTypeMirror());
             InstantiatedMethod instantiatedConstructor = utils.generics.instantiateMethod(

@@ -42,4 +42,9 @@ public class Exceptions {
         }
         return t;
     }
+
+    public static ContextedRuntimeException unexpected() {
+        return new ContextedRuntimeException("This is so unexpected that nobody bothered to write an error message. "
+                + "Or maybe this feature is incomplete. Either way, kindly report this. Thank you.");
+    }
 }

@@ -138,7 +138,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
      * specializations for some types that require a dedicated null check.
      */
     protected void writeNullCheckedObject() {
-        Optional<InstantiatedMethod> jsonValueMethod = utils.annotations.findJsonValueMethod(type.getTypeMirror());
+        Optional<InstantiatedMethod> jsonValueMethod = utils.creators.findJsonValueMethod(type.getTypeMirror());
         if (jsonValueMethod.isPresent()) {
             InstantiatedMethod method = jsonValueMethod.get();
             RHS.Variable newValue = new RHS.Variable("$" + stackDepth() + "$value", true);

@@ -4,33 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils.GetAnnotationValues;
-import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
-import org.tillerino.scruse.processor.features.Generics.TypeVar;
 
 public record Annotations(AnnotationProcessorUtils utils) {
-    public Optional<InstantiatedMethod> findJsonValueMethod(TypeMirror tm) {
-        if (!(tm instanceof DeclaredType dt)) {
-            return Optional.empty();
-        }
-        Map<TypeVar, TypeMirror> typeBindings = utils.generics.recordTypeBindings(dt);
-        for (ExecutableElement method : ElementFilter.methodsIn(dt.asElement().getEnclosedElements())) {
-            if (findAnnotation(method, "com.fasterxml.jackson.annotation.JsonValue")
-                            .isEmpty()
-                    || !method.getParameters().isEmpty()
-                    || method.getReturnType().getKind() == TypeKind.VOID) {
-                continue;
-            }
-            return Optional.of(utils.generics.instantiateMethod(method, typeBindings, LocationKind.BLUEPRINT));
-        }
-        return Optional.empty();
-    }
-
     public Optional<AnnotationMirrorWrapper> findAnnotation(Element element, String annotationType) {
         for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
             if (annotationMirror.getAnnotationType().toString().equals(annotationType)) {
