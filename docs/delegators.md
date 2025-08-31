@@ -38,11 +38,11 @@ public List<ScalarFieldsRecord> deserializeList(JsonParser parser) throws Except
     return null;
   } else if (parser.currentToken() == START_ARRAY) {
     parser.nextToken();
-    List<ScalarFieldsRecord> container$1 = new ArrayList<>();
+    List<ScalarFieldsRecord> container = new ArrayList<>();
     while (!nextIfCurrentTokenIs(parser, END_ARRAY)) {
-      container$1.add(this.deserializeSingle(parser));
+      container.add(this.deserializeSingle(parser));
     }
-    return container$1;
+    return container;
   } else {
     throw new IOException("Expected array, got " + parser.currentToken() + " at " + parser.getCurrentLocation());
   }
@@ -104,36 +104,36 @@ public Float[] readBoxedFloatArray(JsonParser parser) throws Exception {
   } else if (parser.currentToken() == START_ARRAY) {
     parser.nextToken();
     // Like ArrayList
-    Object[] array$1 = EmptyArrays.EMPTY_OBJECT_ARRAY;
-    int len$1 = 0;
+    Object[] array = EmptyArrays.EMPTY_OBJECT_ARRAY;
+    int len = 0;
     while (!nextIfCurrentTokenIs(parser, END_ARRAY)) {
-      if (len$1 == array$1.length) {
+      if (len == array.length) {
         // simplified version of ArrayList growth
-        array$1 = Arrays.copyOf(array$1, Math.max(10, array$1.length + (array$1.length >> 1)));
+        array = Arrays.copyOf(array, Math.max(10, array.length + (array.length >> 1)));
       }
       if (nextIfCurrentTokenIs(parser, VALUE_NULL)) {
-        array$1[len$1++] = null;
+        array[len++] = null;
       } else if (parser.currentToken() == VALUE_STRING) {
-        String string$4;
-        string$4 = parser.getText();
+        String string;
+        string = parser.getText();
         parser.nextToken();
-        if (string$4.equals("NaN")) {
-          array$1[len$1++] = Float.NaN;
-        } else if (string$4.equals("Infinity")) {
-          array$1[len$1++] = Float.POSITIVE_INFINITY;
-        } else if (string$4.equals("-Infinity")) {
-          array$1[len$1++] = Float.NEGATIVE_INFINITY;
+        if (string.equals("NaN")) {
+          array[len++] = Float.NaN;
+        } else if (string.equals("Infinity")) {
+          array[len++] = Float.POSITIVE_INFINITY;
+        } else if (string.equals("-Infinity")) {
+          array[len++] = Float.NEGATIVE_INFINITY;
         } else {
           throw new IOException();
         }
       } else if (parser.currentToken().isNumeric()) {
-        array$1[len$1++] = parser.getFloatValue();
+        array[len++] = parser.getFloatValue();
         parser.nextToken();
       } else {
         throw new IOException("Expected number, got " + parser.currentToken() + " at " + parser.getCurrentLocation());
       }
     }
-    return Arrays.copyOf(array$1, len$1, Float[].class);
+    return Arrays.copyOf(array, len, Float[].class);
   } else {
     throw new IOException("Expected array, got " + parser.currentToken() + " at " + parser.getCurrentLocation());
   }
@@ -231,7 +231,7 @@ This is because when serializing `SelfReferencingRecord`, a recursive call must 
 // ../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/DelegationSerde$SelfReferencingSerdeImpl.java#L66-L69
 
 case "self": {
-  self$2 = this.deserializeRecord(input);
+  self = this.deserializeRecord(input);
   break;
 }
 ```

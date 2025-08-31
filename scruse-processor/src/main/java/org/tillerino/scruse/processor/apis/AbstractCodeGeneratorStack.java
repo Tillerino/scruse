@@ -3,9 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.CodeBlock.Builder;
 import jakarta.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
@@ -35,6 +33,8 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
 
     protected final AnyConfig config;
 
+    protected final Stack<Set<String>> variables;
+
     protected AbstractCodeGeneratorStack(
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
@@ -61,6 +61,12 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         this.canBePolyChild = prototype.contextParameter().isPresent()
                 && stackDepth() == 1
                 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
+        if (parent != null) {
+            variables = parent.variables;
+        } else {
+            variables = new Stack<>();
+            variables.push(new LinkedHashSet<>());
+        }
     }
 
     protected void detectSelfReferencingType() {
@@ -85,31 +91,63 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         return parent != null ? 1 + parent.stackDepth() : 1;
     }
 
-    protected StringBuilder stack() {
-        if (parent != null) {
-            if (property == null) {
-                return parent.stack();
-            }
-            return parent.stack()
-                    .append(" -> ")
-                    .append(property.serializedName)
-                    .append(": ")
-                    .append(type.getName());
-        }
-        if (property == null) {
-            return new StringBuilder(type.getName());
-        }
-        return new StringBuilder(property.serializedName + ": " + type.getName());
-    }
-
     protected String propertyName() {
         return property != null ? property.serializedName : parent != null ? parent.propertyName() : "root";
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> addStatement(Snippet s) {
+        code.addStatement(s.format(), s.args());
+        return this;
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> addStatement(String format, Object... args) {
+        return addStatement(Snippet.of(format, args));
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> beginControlFlow(Snippet s) {
+        code.beginControlFlow(s.format(), s.args());
+        variables.push(new LinkedHashSet<>(variables.peek()));
+        return this;
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> beginControlFlow(String controlFlow, Object... args) {
+        return beginControlFlow(Snippet.of(controlFlow, args));
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> nextControlFlow(Snippet s) {
+        variables.pop();
+        assert !variables.isEmpty();
+        code.nextControlFlow(s.format(), s.args());
+        variables.push(new LinkedHashSet<>(variables.peek()));
+        return this;
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> nextControlFlow(String controlFlow, Object... args) {
+        return nextControlFlow(Snippet.of(controlFlow, args));
+    }
+
+    protected AbstractCodeGeneratorStack<SELF> endControlFlow() {
+        variables.pop();
+        assert !variables.isEmpty();
+        code.endControlFlow();
+        return this;
     }
 
     protected static Object[] flatten(Object... all) {
         List<Object> aggregator = new ArrayList<>();
         Snippet.collectInto(all, aggregator);
         return aggregator.toArray();
+    }
+
+    protected ScopedVar createVariable(String name) {
+        if (variables.peek().add(name)) {
+            return new ScopedVar(name);
+        }
+        int suf = 2;
+        while (!variables.peek().add(name + suf)) {
+            suf++;
+        }
+        return new ScopedVar(name + suf);
     }
 
     protected enum StringKind {
@@ -126,5 +164,17 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         static Property VALUE = new Property("value", "value");
         static Property DISCRIMINATOR = new Property("discriminator", "discriminator");
         static Property INSTANCE = new Property("instance", "instance");
+    }
+
+    protected record ScopedVar(String name) implements Snippet {
+        @Override
+        public String format() {
+            return "$L";
+        }
+
+        @Override
+        public Object[] args() {
+            return new Object[] {name()};
+        }
     }
 }

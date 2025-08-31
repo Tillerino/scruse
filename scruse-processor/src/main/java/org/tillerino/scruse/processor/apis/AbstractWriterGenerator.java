@@ -92,13 +92,13 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             if (List.of(TypeKind.FLOAT, TypeKind.DOUBLE).contains(pt.getKind())
                     && features().onlySupportsFiniteNumbers()) {
                 TypeMirror boxedType = utils.types.boxedClass(pt).asType();
-                code.beginControlFlow("if ($T.isFinite(" + rhs.format() + "))", flatten(boxedType, rhs.args()));
+                beginControlFlow("if ($T.isFinite(" + rhs.format() + "))", flatten(boxedType, rhs.args()));
                 writePrimitive(type.getTypeMirror());
-                code.nextControlFlow("else");
+                nextControlFlow("else");
                 RHS asString = new RHS.AnySnippet(Snippet.of("$T.toString($C)", boxedType, rhs), false);
                 nest(utils.commonTypes.string, lhs, null, asString, false, config)
                         .build();
-                code.endControlFlow();
+                endControlFlow();
             } else {
                 writePrimitive(type.getTypeMirror());
             }
@@ -115,10 +115,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     protected void writeNullable() {
         if (rhs.nullable()) {
             if (rhs instanceof RHS.Variable v) {
-                code.beginControlFlow("if ($L != null)", v.name());
+                beginControlFlow("if ($L != null)", v.name());
             } else {
-                RHS.Variable nest = new RHS.Variable(property.canonicalName() + "$" + (stackDepth() + 1), true);
-                code.addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
+                RHS.Variable nest = new RHS.Variable(
+                        createVariable(property.canonicalName()).name(), true);
+                addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
                 nest(type.getTypeMirror(), lhs, null, nest, false, config).build();
                 return;
             }
@@ -127,9 +128,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         writeNullCheckedObject();
 
         if (rhs.nullable()) {
-            code.nextControlFlow("else");
+            nextControlFlow("else");
             writeNull();
-            code.endControlFlow();
+            endControlFlow();
         }
     }
 
@@ -141,10 +142,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         Optional<InstantiatedMethod> jsonValueMethod = utils.creators.findJsonValueMethod(type.getTypeMirror());
         if (jsonValueMethod.isPresent()) {
             InstantiatedMethod method = jsonValueMethod.get();
-            RHS.Variable newValue = new RHS.Variable("$" + stackDepth() + "$value", true);
+            RHS.Variable newValue = new RHS.Variable(createVariable("value").name(), true);
             RHS.Accessor valueMethodInvocation = new RHS.Accessor(rhs, method.name() + "()", true);
-            Snippet.of("$T $L = $C", method.returnType(), newValue.name, valueMethodInvocation)
-                    .addStatementTo(code);
+            addStatement(Snippet.of("$T $L = $C", method.returnType(), newValue.name, valueMethodInvocation));
             nest(method.returnType(), lhs, null, newValue, true, config).build();
             return;
         }
@@ -152,15 +152,14 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 utils.converters.findOutputConverter(prototype.blueprint(), type.getTypeMirror(), config);
         if (converter.isPresent()) {
             InstantiatedMethod method = converter.get();
-            RHS.Variable newValue = new RHS.Variable("$" + stackDepth() + "$converted", true);
-            Snippet.of(
-                            "$T $L = $C($C$C)",
-                            method.returnType(),
-                            newValue.name,
-                            method.callSymbol(utils),
-                            rhs,
-                            Snippet.joinPrependingCommaToEach(prototype.findArguments(method, 1, generatedClass)))
-                    .addStatementTo(code);
+            RHS.Variable newValue = new RHS.Variable(createVariable("converted").name(), true);
+            addStatement(Snippet.of(
+                    "$T $L = $C($C$C)",
+                    method.returnType(),
+                    newValue.name,
+                    method.callSymbol(utils),
+                    rhs,
+                    Snippet.joinPrependingCommaToEach(prototype.findArguments(method, 1, generatedClass))));
             nest(method.returnType(), lhs, null, newValue, true, config).build();
             return;
         }
@@ -189,30 +188,33 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 ? type.getComponentType()
                 : type.determineTypeArguments(Iterable.class).get(0);
 
-        RHS.Variable elemVar = new RHS.Variable("item$" + (stackDepth() + 1), true);
+        RHS.Variable elemVar = new RHS.Variable(createVariable("item").name(), true);
         SELF nested = nest(componentType.getTypeMirror(), new LHS.Array(), Property.ITEM, elemVar, true, config);
         startArray();
-        writeCommaMarkerIfNecessary();
-        code.beginControlFlow(
+        ScopedVar firstMarker = writeCommaMarkerIfNecessary();
+        beginControlFlow(
                 "for ($T $L : " + rhs.format() + ")", flatten(nested.type.getTypeMirror(), elemVar.name(), rhs.args()));
-        writeCommaIfNecessary();
+        writeCommaIfNecessary(firstMarker);
         Exceptions.runWithContext(nested::build, "component", componentType);
-        code.endControlFlow();
+        endControlFlow();
         endArray();
     }
 
-    private void writeCommaMarkerIfNecessary() {
+    private ScopedVar writeCommaMarkerIfNecessary() {
         if (needsToWriteComma()) {
-            code.addStatement("boolean $L = true", "$" + stackDepth() + "$first");
+            ScopedVar variable = createVariable("first");
+            addStatement("boolean $C = true", variable);
+            return variable;
         }
+        return null;
     }
 
-    private void writeCommaIfNecessary() {
-        if (needsToWriteComma()) {
-            code.beginControlFlow("if (!$L)", "$" + stackDepth() + "$first");
+    private void writeCommaIfNecessary(ScopedVar firstMarker) {
+        if (firstMarker != null) {
+            beginControlFlow("if (!$C)", firstMarker);
             writeComma();
-            code.endControlFlow();
-            code.addStatement("$L = false", "$" + stackDepth() + "$first");
+            endControlFlow();
+            addStatement("$C = false", firstMarker);
         }
     }
 
@@ -220,18 +222,18 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         Type keyType = type.determineTypeArguments(Map.class).get(0);
         Type valueType = type.determineTypeArguments(Map.class).get(1);
 
-        RHS.Variable entry = new RHS.Variable("$" + (stackDepth() + 1) + "$entry", false);
+        RHS.Variable entry = new RHS.Variable(createVariable("entry").name(), false);
 
         RHS.Accessor value = new RHS.Accessor(entry, "getValue()", true);
         LHS.Field key = new LHS.Field("$L.getKey()", new Object[] {entry.name()});
         SELF valueNested = nest(valueType.getTypeMirror(), key, Property.VALUE, value, true, config);
 
         startObject();
-        code.beginControlFlow(
+        beginControlFlow(
                 "for ($T<$T, $T> $L : " + rhs.format() + ".entrySet())",
                 flatten(Map.Entry.class, keyType.getTypeMirror(), valueType.getTypeMirror(), entry.name(), rhs.args()));
         Exceptions.runWithContext(valueNested::build, "value", valueType);
-        code.endControlFlow();
+        endControlFlow();
         endObject();
     }
 
@@ -251,11 +253,11 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     private void writePolymorphicObject(Polymorphism polymorphism) {
         Branch branch = Branch.IF;
         for (Polymorphism.Child child : polymorphism.children()) {
-            branch.controlFlow(code, rhs.format() + " instanceof $T", flatten(rhs.args(), child.type()));
+            branch.controlFlow(this, rhs.format() + " instanceof $T", flatten(rhs.args(), child.type()));
             branch = Branch.ELSE_IF;
-            RHS.Variable casted = new RHS.Variable(propertyName() + "$" + stackDepth() + "$cast", false);
-            code.addStatement(
-                    "$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
+            RHS.Variable casted =
+                    new RHS.Variable(createVariable(propertyName() + "Cast").name(), false);
+            addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
 
             utils.delegation
                     .findPrototype(utils.tf.getType(child.type()), prototype, false, true, config)
@@ -277,7 +279,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                                 if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
                                     throw new ContextedRuntimeException("Context types must be compatible");
                                 }
-                                code.addStatement(
+                                addStatement(
                                         "$L.setPendingDiscriminator($S, $S)",
                                         callerContext,
                                         polymorphism.discriminator(),
@@ -311,15 +313,15 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         if (branch == Branch.IF) {
             throw new ContextedRuntimeException("Polymorphism must have at least one child type");
         }
-        code.nextControlFlow("else");
-        code.addStatement("throw new $T($S)", IllegalArgumentException.class, "Unknown type");
-        code.endControlFlow();
+        nextControlFlow("else");
+        addStatement("throw new $T($S)", IllegalArgumentException.class, "Unknown type");
+        endControlFlow();
     }
 
     void writeObjectPropertiesAsFields() {
         if (canBePolyChild) {
             VariableElement context = prototype.contextParameter().orElseThrow();
-            code.beginControlFlow("if ($L.isDiscriminatorPending())", context);
+            beginControlFlow("if ($L.isDiscriminatorPending())", context);
             nest(
                             utils.commonTypes.string,
                             new LHS.Field("$L.pendingDiscriminatorProperty", new Object[] {context.getSimpleName()}),
@@ -331,8 +333,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                             false,
                             config)
                     .build();
-            code.addStatement("$L.pendingDiscriminatorProperty = null", context);
-            code.endControlFlow();
+            addStatement("$L.pendingDiscriminatorProperty = null", context);
+            endControlFlow();
         }
 
         ProtoAndProps verificationForDto =
@@ -369,8 +371,9 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     }
 
     private void writeEnum() {
-        RHS.Variable enumValue = new RHS.Variable(propertyName() + "$" + stackDepth() + "$string", false);
-        code.addStatement(
+        RHS.Variable enumValue =
+                new RHS.Variable(createVariable(propertyName() + "String").name(), false);
+        addStatement(
                 "$T $L = " + rhs.format() + ".name()", flatten(utils.commonTypes.string, enumValue.name(), rhs.args()));
         nest(utils.commonTypes.string, lhs, null, enumValue, false, config).build();
     }
@@ -415,7 +418,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         return Snippet.of("new $T($C)", String.class, snippet);
     }
 
-    sealed interface LHS {
+    protected sealed interface LHS {
 
         record Return() implements LHS {}
 

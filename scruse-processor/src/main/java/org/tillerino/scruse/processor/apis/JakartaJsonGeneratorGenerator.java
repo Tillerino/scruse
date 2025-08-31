@@ -56,9 +56,9 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
     @Override
     protected void writeNull() {
         if (lhs instanceof LHS.Field f) {
-            code.addStatement("$L.writeNull(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
+            addStatement("$L.writeNull(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
         } else {
-            code.addStatement("$L.writeNull()", generatorVariable.getSimpleName());
+            addStatement("$L.writeNull()", generatorVariable.getSimpleName());
         }
     }
 
@@ -66,9 +66,9 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
     protected void writeString(StringKind stringKind) {
         Snippet string = stringKind == StringKind.STRING ? rhs : charArrayToString(rhs);
         if (lhs instanceof LHS.Field f) {
-            Snippet.of("$L.write($C, $C)", generatorVariable, f, string).addStatementTo(code);
+            addStatement(Snippet.of("$L.write($C, $C)", generatorVariable, f, string));
         } else {
-            Snippet.of("$L.write($C)", generatorVariable, string).addStatementTo(code);
+            addStatement(Snippet.of("$L.write($C)", generatorVariable, string));
         }
     }
 
@@ -76,14 +76,13 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
     protected void writeBinary(BinaryKind binaryKind) {
         addFieldNameIfRequired();
         switch (binaryKind) {
-            case BYTE_ARRAY -> Snippet.of("$L.write($C)", generatorVariable, base64Encode(rhs))
-                    .addStatementTo(code);
+            case BYTE_ARRAY -> addStatement(Snippet.of("$L.write($C)", generatorVariable, base64Encode(rhs)));
         }
     }
 
     private boolean addFieldNameIfRequired() {
         if (lhs instanceof LHS.Field f) {
-            code.addStatement("$L.writeKey(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
+            addStatement("$L.writeKey(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
             return true;
         }
         return false;
@@ -93,44 +92,43 @@ public class JakartaJsonGeneratorGenerator extends AbstractWriterGenerator<Jakar
     public void writePrimitive(TypeMirror typeMirror) {
         Snippet value = typeMirror.getKind() == TypeKind.CHAR ? Snippet.of("String.valueOf($C)", rhs) : rhs;
         if (lhs instanceof LHS.Field f) {
-            Snippet.of("$L.write($C, $C)", generatorVariable, f, value).addStatementTo(code);
+            addStatement(Snippet.of("$L.write($C, $C)", generatorVariable, f, value));
         } else {
-            Snippet.of("$L.write($C)", generatorVariable, value).addStatementTo(code);
+            addStatement(Snippet.of("$L.write($C)", generatorVariable, value));
         }
     }
 
     @Override
     protected void startArray() {
         addFieldNameIfRequired();
-        code.addStatement("$L.writeStartArray()", generatorVariable.getSimpleName());
+        addStatement("$L.writeStartArray()", generatorVariable.getSimpleName());
     }
 
     @Override
     protected void endArray() {
-        code.addStatement("$L.writeEnd()", generatorVariable.getSimpleName());
+        addStatement("$L.writeEnd()", generatorVariable.getSimpleName());
     }
 
     @Override
     protected void startObject() {
         addFieldNameIfRequired();
-        code.addStatement("$L.writeStartObject()", generatorVariable.getSimpleName());
+        addStatement("$L.writeStartObject()", generatorVariable.getSimpleName());
     }
 
     @Override
     protected void endObject() {
-        code.addStatement("$L.writeEnd()", generatorVariable.getSimpleName());
+        addStatement("$L.writeEnd()", generatorVariable.getSimpleName());
     }
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
         addFieldNameIfRequired();
-        Snippet.of(
-                        "$L.$L($C$C)",
-                        instance,
-                        callee,
-                        rhs,
-                        Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass)))
-                .addStatementTo(code);
+        addStatement(Snippet.of(
+                "$L.$L($C$C)",
+                instance,
+                callee,
+                rhs,
+                Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass))));
     }
 
     @Override

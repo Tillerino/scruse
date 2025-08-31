@@ -45,8 +45,8 @@ For example:
 
 public void writeAnEnum(AnEnum obj, JsonGenerator gen) throws Exception {
   if (obj != null) {
-    String root$1$string = obj.name();
-    gen.writeString(root$1$string);
+    String rootString = obj.name();
+    gen.writeString(rootString);
   } else {
     gen.writeNull();
   }

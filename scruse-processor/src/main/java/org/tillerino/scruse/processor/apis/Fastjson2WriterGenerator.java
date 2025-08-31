@@ -60,16 +60,16 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
     @Override
     protected void writeNull() {
         addFieldNameIfNeeded();
-        code.addStatement("$L.writeNull()", writerVariable.getSimpleName());
+        addStatement("$L.writeNull()", writerVariable.getSimpleName());
     }
 
     @Override
     protected void writeString(StringKind stringKind) {
         addFieldNameIfNeeded();
         switch (stringKind) {
-            case STRING -> code.addStatement(
+            case STRING -> addStatement(
                     "$L.writeString(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
-            case CHAR_ARRAY -> code.addStatement(
+            case CHAR_ARRAY -> addStatement(
                     "$L.writeString(new String(" + rhs.format() + "))",
                     flatten(writerVariable.getSimpleName(), rhs.args()));
         }
@@ -79,7 +79,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
     protected void writeBinary(BinaryKind binaryKind) {
         addFieldNameIfNeeded();
         switch (binaryKind) {
-            case BYTE_ARRAY -> code.addStatement(
+            case BYTE_ARRAY -> addStatement(
                     "$L.writeBase64(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
         }
     }
@@ -89,23 +89,22 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
         addFieldNameIfNeeded();
         TypeKind kind = typeMirror.getKind();
         if (kind == TypeKind.CHAR) {
-            code.addStatement(
+            addStatement(
                     "$L.writeString(String.valueOf(" + rhs.format() + "))",
                     flatten(writerVariable.getSimpleName(), rhs.args()));
         } else if (kind == TypeKind.FLOAT || kind == TypeKind.DOUBLE) {
             String write = kind == TypeKind.FLOAT ? "writeFloat" : "writeDouble";
             String cast = kind == TypeKind.FLOAT ? "(float)" : "(double)";
-            code.beginControlFlow(
-                            "if ($T.isFinite(" + rhs.format() + "))",
-                            flatten(kind == TypeKind.FLOAT ? Float.class : Double.class, rhs.args()))
-                    .addStatement(
-                            "$L.$L($L " + rhs.format() + ")",
-                            flatten(writerVariable.getSimpleName(), write, cast, rhs.args()))
-                    .nextControlFlow("else")
-                    .addStatement(
-                            "$L.writeString(String.valueOf(" + rhs.format() + "))",
-                            flatten(writerVariable.getSimpleName(), rhs.args()))
-                    .endControlFlow();
+            beginControlFlow(
+                    "if ($T.isFinite(" + rhs.format() + "))",
+                    flatten(kind == TypeKind.FLOAT ? Float.class : Double.class, rhs.args()));
+            addStatement(
+                    "$L.$L($L " + rhs.format() + ")", flatten(writerVariable.getSimpleName(), write, cast, rhs.args()));
+            nextControlFlow("else");
+            addStatement(
+                    "$L.writeString(String.valueOf(" + rhs.format() + "))",
+                    flatten(writerVariable.getSimpleName(), rhs.args()));
+            endControlFlow();
         } else {
             String write =
                     switch (kind) {
@@ -116,26 +115,25 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                         case LONG -> "writeInt64";
                         default -> throw new ContextedRuntimeException("Unexpected type: " + kind);
                     };
-            code.addStatement(
-                    "$L.$L(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), write, rhs.args()));
+            addStatement("$L.$L(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), write, rhs.args()));
         }
     }
 
     @Override
     protected void startArray() {
         addFieldNameIfNeeded();
-        code.addStatement("$L.startArray()", writerVariable.getSimpleName());
+        addStatement("$L.startArray()", writerVariable.getSimpleName());
     }
 
     @Override
     protected void endArray() {
-        code.addStatement("$L.endArray()", writerVariable.getSimpleName());
+        addStatement("$L.endArray()", writerVariable.getSimpleName());
     }
 
     @Override
     protected void startObject() {
         addFieldNameIfNeeded();
-        code.addStatement("$L.startObject()", writerVariable.getSimpleName());
+        addStatement("$L.startObject()", writerVariable.getSimpleName());
     }
 
     @Override
@@ -145,24 +143,23 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 
     @Override
     protected void writeComma() {
-        code.addStatement("$L.writeComma()", writerVariable.getSimpleName());
+        addStatement("$L.writeComma()", writerVariable.getSimpleName());
     }
 
     @Override
     protected void endObject() {
-        code.addStatement("$L.endObject()", writerVariable.getSimpleName());
+        addStatement("$L.endObject()", writerVariable.getSimpleName());
     }
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
         addFieldNameIfNeeded();
-        Snippet.of(
-                        "$L.$L($C$C)",
-                        instance,
-                        callee,
-                        rhs,
-                        Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass)))
-                .addStatementTo(code);
+        addStatement(Snippet.of(
+                "$L.$L($C$C)",
+                instance,
+                callee,
+                rhs,
+                Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass))));
     }
 
     @Override
@@ -208,7 +205,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                 };
         if (t != null) {
             addFieldNameIfNeeded();
-            code.addStatement(
+            addStatement(
                     "$L.write" + t + "(" + rhs.format() + ")", flatten(writerVariable.getSimpleName(), rhs.args()));
             return true;
         }
@@ -217,8 +214,8 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
 
     private void addFieldNameIfNeeded() {
         if (lhs instanceof LHS.Field f) {
-            code.addStatement("$L.writeName(" + f.format() + ")", flatten(writerVariable.getSimpleName(), f.args()));
-            code.addStatement("$L.writeColon()", writerVariable.getSimpleName());
+            addStatement("$L.writeName(" + f.format() + ")", flatten(writerVariable.getSimpleName(), f.args()));
+            addStatement("$L.writeColon()", writerVariable.getSimpleName());
         }
     }
 }

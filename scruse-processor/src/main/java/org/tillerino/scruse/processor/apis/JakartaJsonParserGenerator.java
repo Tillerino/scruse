@@ -1,5 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
+import static org.tillerino.scruse.processor.Snippet.join;
+import static org.tillerino.scruse.processor.Snippet.of;
+
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock.Builder;
 import jakarta.annotation.Nullable;
@@ -42,12 +45,12 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected void startStringCase(Branch branch) {
-        branch.controlFlow(code, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
+        branch.controlFlow(this, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
     }
 
     @Override
     protected void startNumberCase(Branch branch) {
-        branch.controlFlow(code, "$L.currentEvent() == VALUE_NUMBER", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.currentEvent() == VALUE_NUMBER", parserVariable.getSimpleName());
     }
 
     @Override
@@ -58,14 +61,14 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected void startArrayCase(Branch branch) {
-        branch.controlFlow(code, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("START_ARRAY"));
+        branch.controlFlow(this, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("START_ARRAY"));
         advance();
     }
 
     @Override
     protected void startBooleanCase(Branch branch) {
         branch.controlFlow(
-                code,
+                this,
                 "$L.currentEvent() == VALUE_TRUE || $L.currentEvent() == VALUE_FALSE",
                 parserVariable.getSimpleName(),
                 parserVariable.getSimpleName());
@@ -73,14 +76,14 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected void startFieldCase(Branch branch) {
-        branch.controlFlow(code, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("KEY_NAME"));
+        branch.controlFlow(this, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("KEY_NAME"));
     }
 
     @Override
     protected void initializeParser() {
-        code.beginControlFlow("if ($L.currentEvent() == null)", parserVariable.getSimpleName());
+        beginControlFlow("if ($L.currentEvent() == null)", parserVariable.getSimpleName());
         advance();
-        code.endControlFlow();
+        endControlFlow();
     }
 
     @Override
@@ -105,12 +108,12 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
                             type.getKind().toString());
                 };
         if (lhs instanceof LHS.Return) {
-            String tmp = "tmp$" + stackDepth();
-            Snippet.of("$T $L = $C", type, tmp, method).addStatementTo(code);
+            String tmp = createVariable("tmp").name();
+            addStatement(Snippet.of("$T $L = $C", type, tmp, method));
             advance();
-            code.addStatement("return $L", tmp);
+            addStatement("return $L", tmp);
         } else {
-            lhs.assign(code, method);
+            addStatement(lhs.assign(method));
             advance();
         }
     }
@@ -123,17 +126,17 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
                     case CHAR_ARRAY -> ".toCharArray()";
                 };
         if (lhs instanceof LHS.Return) {
-            String tmp = "tmp$" + stackDepth();
-            code.addStatement(
+            String tmp = createVariable("tmp").name();
+            addStatement(
                     "$T $L = $L.getString()$L",
                     stringKind == StringKind.STRING ? String.class : char[].class,
                     tmp,
                     parserVariable.getSimpleName(),
                     conversion);
             advance();
-            code.addStatement("return $L", tmp);
+            addStatement("return $L", tmp);
         } else {
-            lhs.assign(code, "$L.getString()$L", parserVariable.getSimpleName(), conversion);
+            addStatement(lhs.assign("$L.getString()$L", parserVariable.getSimpleName(), conversion));
             advance();
         }
     }
@@ -142,14 +145,13 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     protected void iterateOverFields() {
         importHelper();
         // we immediately skip the END_OBJECT token once we encounter it
-        code.beginControlFlow(
-                "while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token("END_OBJECT"));
+        beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token("END_OBJECT"));
     }
 
     @Override
     protected void skipValue() {
         importHelper();
-        code.addStatement("skip($L)", parserVariable.getSimpleName());
+        addStatement("skip($L)", parserVariable.getSimpleName());
         advance();
     }
 
@@ -158,22 +160,21 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected void readFieldNameInIteration(String propertyName) {
-        code.addStatement("String $L = $L.getString()", propertyName, parserVariable.getSimpleName());
+        addStatement("String $L = $L.getString()", propertyName, parserVariable.getSimpleName());
         advance();
     }
 
     @Override
     protected void readDiscriminator(String propertyName) {
         importHelper();
-        lhs.assign(code, "readDiscriminator($S, $L)", propertyName, parserVariable.getSimpleName());
+        addStatement(lhs.assign("readDiscriminator($S, $L)", propertyName, parserVariable.getSimpleName()));
     }
 
     @Override
     protected void iterateOverElements() {
         importHelper();
         // we immediately skip the END_ARRAY token once we encounter it
-        code.beginControlFlow(
-                "while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token("END_ARRAY"));
+        beginControlFlow("while (!nextIfCurrentTokenIs($L, $L))", parserVariable.getSimpleName(), token("END_ARRAY"));
     }
 
     @Override
@@ -183,7 +184,7 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected void throwUnexpected(String expected) {
-        code.addStatement(
+        addStatement(
                 "throw new $T($S + $L.currentEvent() + $S + $L.getLocation())",
                 IOException.class,
                 "Expected " + expected + ", got ",
@@ -194,13 +195,8 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
-        lhs.assign(
-                code,
-                Snippet.of(
-                        "$L.$L($C)",
-                        instance,
-                        callee,
-                        Snippet.join(prototype.findArguments(callee, 0, generatedClass), ", ")));
+        addStatement(lhs.assign(
+                of("$L.$L($C)", instance, callee, join(prototype.findArguments(callee, 0, generatedClass), ", "))));
     }
 
     @Override
@@ -235,6 +231,6 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     }
 
     private void advance() {
-        code.addStatement("$L.next()", parserVariable.getSimpleName());
+        addStatement("$L.next()", parserVariable.getSimpleName());
     }
 }

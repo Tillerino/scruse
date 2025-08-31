@@ -1,5 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
+import static org.tillerino.scruse.processor.Snippet.join;
+import static org.tillerino.scruse.processor.Snippet.of;
+
 import com.squareup.javapoet.CodeBlock;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
@@ -42,12 +45,12 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
     @Override
     protected void startStringCase(Branch branch) {
-        branch.controlFlow(code, "$L.peek() == $T.STRING", parserVariable.getSimpleName(), jsonToken());
+        branch.controlFlow(this, "$L.peek() == $T.STRING", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
     protected void startNumberCase(Branch branch) {
-        branch.controlFlow(code, "$L.peek() == $T.NUMBER", parserVariable.getSimpleName(), jsonToken());
+        branch.controlFlow(this, "$L.peek() == $T.NUMBER", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
@@ -57,18 +60,18 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
     @Override
     protected void startArrayCase(Branch branch) {
-        branch.controlFlow(code, "$L.peek() == $T.BEGIN_ARRAY", parserVariable.getSimpleName(), jsonToken());
-        code.addStatement("$L.beginArray()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.peek() == $T.BEGIN_ARRAY", parserVariable.getSimpleName(), jsonToken());
+        addStatement("$L.beginArray()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void startBooleanCase(Branch branch) {
-        branch.controlFlow(code, "$L.peek() == $T.BOOLEAN", parserVariable.getSimpleName(), jsonToken());
+        branch.controlFlow(this, "$L.peek() == $T.BOOLEAN", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
     protected void startFieldCase(Branch branch) {
-        branch.controlFlow(code, "$L.peek() == $T.NAME", parserVariable.getSimpleName(), jsonToken());
+        branch.controlFlow(this, "$L.peek() == $T.NAME", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
@@ -98,7 +101,7 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
                     default -> throw new ContextedRuntimeException(
                             type.getKind().toString());
                 };
-        lhs.assign(code, "$L$L.$L()", readMethod.cast, parserVariable.getSimpleName(), readMethod.method);
+        addStatement(lhs.assign("$L$L.$L()", readMethod.cast, parserVariable.getSimpleName(), readMethod.method));
     }
 
     @Override
@@ -108,52 +111,51 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
                     case STRING -> "";
                     case CHAR_ARRAY -> ".toCharArray()";
                 };
-        lhs.assign(code, "$L.nextString()$L", parserVariable.getSimpleName(), conversion);
+        addStatement(lhs.assign("$L.nextString()$L", parserVariable.getSimpleName(), conversion));
     }
 
     @Override
     protected void iterateOverFields() {
-        code.beginControlFlow("while ($L.peek() != $T.END_OBJECT)", parserVariable.getSimpleName(), jsonToken());
+        beginControlFlow("while ($L.peek() != $T.END_OBJECT)", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
     protected void skipValue() {
-        code.addStatement("$L.skipValue()", parserVariable.getSimpleName());
+        addStatement("$L.skipValue()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void afterObject() {
-        code.addStatement("$L.endObject()", parserVariable.getSimpleName());
+        addStatement("$L.endObject()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void readFieldNameInIteration(String propertyName) {
-        code.addStatement("String $L = $L.nextName()", propertyName, parserVariable.getSimpleName());
+        addStatement("String $L = $L.nextName()", propertyName, parserVariable.getSimpleName());
     }
 
     @Override
     protected void readDiscriminator(String propertyName) {
-        lhs.assign(
-                code,
+        addStatement(lhs.assign(
                 "$T.readDiscriminator($S, $L)",
                 GsonJsonReaderHelper.class,
                 propertyName,
-                parserVariable.getSimpleName());
+                parserVariable.getSimpleName()));
     }
 
     @Override
     protected void iterateOverElements() {
-        code.beginControlFlow("while ($L.peek() != $T.END_ARRAY)", parserVariable.getSimpleName(), jsonToken());
+        beginControlFlow("while ($L.peek() != $T.END_ARRAY)", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
     protected void afterArray() {
-        code.addStatement("$L.endArray()", parserVariable.getSimpleName());
+        addStatement("$L.endArray()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void throwUnexpected(String expected) {
-        code.addStatement(
+        addStatement(
                 "throw new $T($S + $L.peek() + $S + $L.getPath())",
                 IOException.class,
                 "Expected " + expected + ", got ",
@@ -164,13 +166,8 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
-        lhs.assign(
-                code,
-                Snippet.of(
-                        "$L.$L($C)",
-                        instance,
-                        callee,
-                        Snippet.join(prototype.findArguments(callee, 0, generatedClass), ", ")));
+        addStatement(lhs.assign(
+                of("$L.$L($C)", instance, callee, join(prototype.findArguments(callee, 0, generatedClass), ", "))));
     }
 
     @Override

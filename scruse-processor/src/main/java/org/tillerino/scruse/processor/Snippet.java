@@ -91,14 +91,8 @@ public interface Snippet {
         b.addStatement(format(), args());
     }
 
-    default void beginControlFlowIn(CodeBlock.Builder b) {
-        b.beginControlFlow(format(), args());
-    }
-
     static void collectInto(Object o, List<Object> aggregator) {
-        if (o instanceof Element e) {
-            aggregator.add(e.getSimpleName());
-        } else if (o instanceof Named e) {
+        if (o instanceof Named e) {
             aggregator.add(e.name());
         } else if (o instanceof Object[] oa) {
             for (Object o2 : oa) {

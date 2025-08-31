@@ -1,5 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
+import static org.tillerino.scruse.processor.Snippet.join;
+import static org.tillerino.scruse.processor.Snippet.of;
+
 import com.squareup.javapoet.CodeBlock;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
@@ -45,15 +48,15 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     protected void readNullable(Branch branch, boolean nullable) {
         if (type.isArrayType()) {
             if (type.getComponentType().isString()) {
-                lhs.assign(code, "$L.readStringArray()", parserVariable.getSimpleName());
+                addStatement(lhs.assign("$L.readStringArray()", parserVariable.getSimpleName()));
                 return;
             }
             if (type.getComponentType().getTypeMirror().getKind() == TypeKind.INT) {
-                lhs.assign(code, "$L.readInt32ValueArray()", parserVariable.getSimpleName());
+                addStatement(lhs.assign("$L.readInt32ValueArray()", parserVariable.getSimpleName()));
                 return;
             }
             if (type.getComponentType().getTypeMirror().getKind() == TypeKind.LONG) {
-                lhs.assign(code, "$L.readInt64ValueArray()", parserVariable.getSimpleName());
+                addStatement(lhs.assign("$L.readInt64ValueArray()", parserVariable.getSimpleName()));
                 return;
             }
         }
@@ -62,12 +65,12 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected void startStringCase(Branch branch) {
-        branch.controlFlow(code, "$L.isString()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isString()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void startNumberCase(Branch branch) {
-        branch.controlFlow(code, "$L.isNumber()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isNumber()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -77,13 +80,13 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected void startArrayCase(Branch branch) {
-        branch.controlFlow(code, "$L.nextIfArrayStart()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.nextIfArrayStart()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void startBooleanCase(Branch branch) {
         branch.controlFlow(
-                code,
+                this,
                 "$L.current() == 'f' || $L.current() == 't'",
                 parserVariable.getSimpleName(),
                 parserVariable.getSimpleName());
@@ -91,7 +94,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected void startFieldCase(Branch branch) {
-        branch.controlFlow(code, "$L.isString()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isString()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -116,7 +119,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
                     default -> throw new ContextedRuntimeException(
                             type.getKind().toString());
                 };
-        lhs.assign(code, "$L.$L()", parserVariable.getSimpleName(), readMethod);
+        addStatement(lhs.assign("$L.$L()", parserVariable.getSimpleName(), readMethod));
     }
 
     @Override
@@ -126,17 +129,17 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
                     case STRING -> "";
                     case CHAR_ARRAY -> ".toCharArray()";
                 };
-        lhs.assign(code, "$L.readString()$L", parserVariable.getSimpleName(), conversion);
+        addStatement(lhs.assign("$L.readString()$L", parserVariable.getSimpleName(), conversion));
     }
 
     @Override
     protected void iterateOverFields() {
-        code.beginControlFlow("while (!$L.nextIfObjectEnd())", parserVariable.getSimpleName());
+        beginControlFlow("while (!$L.nextIfObjectEnd())", parserVariable.getSimpleName());
     }
 
     @Override
     protected void skipValue() {
-        code.addStatement("$L.skipValue()", parserVariable.getSimpleName());
+        addStatement("$L.skipValue()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -144,22 +147,21 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected void readFieldNameInIteration(String propertyName) {
-        code.addStatement("String $L = $L.readFieldName()", propertyName, parserVariable.getSimpleName());
+        addStatement("String $L = $L.readFieldName()", propertyName, parserVariable.getSimpleName());
     }
 
     @Override
     protected void readDiscriminator(String propertyName) {
-        lhs.assign(
-                code,
+        addStatement(lhs.assign(
                 "$T.readDiscriminator($S, $L)",
                 Fastjson2ReaderHelper.class,
                 propertyName,
-                parserVariable.getSimpleName());
+                parserVariable.getSimpleName()));
     }
 
     @Override
     protected void iterateOverElements() {
-        code.beginControlFlow("while (!$L.nextIfArrayEnd())", parserVariable.getSimpleName());
+        beginControlFlow("while (!$L.nextIfArrayEnd())", parserVariable.getSimpleName());
     }
 
     @Override
@@ -167,7 +169,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected void throwUnexpected(String expected) {
-        code.addStatement(
+        addStatement(
                 "throw new $T($S + $L.current())",
                 IOException.class,
                 "Expected " + expected + ", got ",
@@ -176,13 +178,8 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
-        lhs.assign(
-                code,
-                Snippet.of(
-                        "$L.$L($C)",
-                        instance,
-                        callee,
-                        Snippet.join(prototype.findArguments(callee, 0, generatedClass), ", ")));
+        addStatement(lhs.assign(
+                of("$L.$L($C)", instance, callee, join(prototype.findArguments(callee, 0, generatedClass), ", "))));
     }
 
     @Override

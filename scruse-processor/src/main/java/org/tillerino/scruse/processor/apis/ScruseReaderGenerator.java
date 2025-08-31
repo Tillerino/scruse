@@ -1,6 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
 import static org.tillerino.scruse.api.ScruseReader.Advance.CONSUME;
+import static org.tillerino.scruse.processor.Snippet.join;
+import static org.tillerino.scruse.processor.Snippet.of;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -42,12 +44,12 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected void startStringCase(Branch branch) {
-        branch.controlFlow(code, "$L.isText()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isText()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void startNumberCase(Branch branch) {
-        branch.controlFlow(code, "$L.isNumber()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isNumber()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -57,17 +59,17 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected void startArrayCase(Branch branch) {
-        branch.controlFlow(code, "$L.isArrayStart($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
+        branch.controlFlow(this, "$L.isArrayStart($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
     }
 
     @Override
     protected void startBooleanCase(Branch branch) {
-        branch.controlFlow(code, "$L.isBoolean()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isBoolean()", parserVariable.getSimpleName());
     }
 
     @Override
     protected void startFieldCase(Branch branch) {
-        branch.controlFlow(code, "$L.isFieldName()", parserVariable.getSimpleName());
+        branch.controlFlow(this, "$L.isFieldName()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -94,8 +96,8 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
                     default -> throw new ContextedRuntimeException(
                             type.getKind().toString());
                 };
-        Snippet snippet = Snippet.of("$L.$L($L)", parserVariable.getSimpleName(), method, importAdvance(CONSUME));
-        lhs.assign(code, snippet);
+        Snippet snippet = of("$L.$L($L)", parserVariable.getSimpleName(), method, importAdvance(CONSUME));
+        addStatement(lhs.assign(snippet));
     }
 
     @Override
@@ -105,19 +107,18 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
                     case STRING -> "";
                     case CHAR_ARRAY -> ".toCharArray()";
                 };
-        Snippet snippet =
-                Snippet.of("$L.getText($L)$L", parserVariable.getSimpleName(), importAdvance(CONSUME), conversion);
-        lhs.assign(code, snippet);
+        Snippet snippet = of("$L.getText($L)$L", parserVariable.getSimpleName(), importAdvance(CONSUME), conversion);
+        addStatement(lhs.assign(snippet));
     }
 
     @Override
     protected void iterateOverFields() {
-        code.beginControlFlow("while (!$L.isObjectEnd($L))", parserVariable.getSimpleName(), importAdvance(CONSUME));
+        beginControlFlow("while (!$L.isObjectEnd($L))", parserVariable.getSimpleName(), importAdvance(CONSUME));
     }
 
     @Override
     protected void skipValue() {
-        code.addStatement("$L.skipChildren($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
+        addStatement("$L.skipChildren($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
     }
 
     @Override
@@ -125,7 +126,7 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected void readFieldNameInIteration(String propertyName) {
-        code.addStatement(
+        addStatement(
                 "String $L = $L.getFieldName($L)",
                 propertyName,
                 parserVariable.getSimpleName(),
@@ -134,12 +135,12 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected void readDiscriminator(String propertyName) {
-        lhs.assign(code, "$L.getDiscriminator($S, false)", parserVariable.getSimpleName(), propertyName);
+        addStatement(lhs.assign("$L.getDiscriminator($S, false)", parserVariable.getSimpleName(), propertyName));
     }
 
     @Override
     protected void iterateOverElements() {
-        code.beginControlFlow("while (!$L.isArrayEnd($L))", parserVariable.getSimpleName(), importAdvance(CONSUME));
+        beginControlFlow("while (!$L.isArrayEnd($L))", parserVariable.getSimpleName(), importAdvance(CONSUME));
     }
 
     @Override
@@ -149,18 +150,13 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected void throwUnexpected(String expectedToken) {
-        code.addStatement("throw $L.unexpectedToken($S)", parserVariable.getSimpleName(), expectedToken);
+        addStatement("throw $L.unexpectedToken($S)", parserVariable.getSimpleName(), expectedToken);
     }
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
-        lhs.assign(
-                code,
-                Snippet.of(
-                        "$L.$L($C)",
-                        instance,
-                        callee,
-                        Snippet.join(prototype.findArguments(callee, 0, generatedClass), ", ")));
+        addStatement(lhs.assign(
+                of("$L.$L($C)", instance, callee, join(prototype.findArguments(callee, 0, generatedClass), ", "))));
     }
 
     @Override

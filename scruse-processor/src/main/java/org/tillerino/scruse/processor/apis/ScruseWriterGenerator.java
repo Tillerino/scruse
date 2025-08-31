@@ -1,5 +1,8 @@
 package org.tillerino.scruse.processor.apis;
 
+import static org.tillerino.scruse.processor.Snippet.joinPrependingCommaToEach;
+import static org.tillerino.scruse.processor.Snippet.of;
+
 import com.squareup.javapoet.CodeBlock;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -56,10 +59,9 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
     @Override
     protected void writeNull() {
         if (lhs instanceof LHS.Field f) {
-            code.addStatement(
-                    "$L.writeNullField(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
+            addStatement("$L.writeNullField(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
         } else {
-            code.addStatement("$L.writeNull()", generatorVariable.getSimpleName());
+            addStatement("$L.writeNull()", generatorVariable.getSimpleName());
         }
     }
 
@@ -67,10 +69,9 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
     protected void writeString(StringKind stringKind) {
         Snippet string = stringKind == StringKind.STRING ? rhs : charArrayToString(rhs);
         if (lhs instanceof LHS.Field f) {
-            Snippet.of("$L.writeField($C, $C)", generatorVariable.getSimpleName(), f, string)
-                    .addStatementTo(code);
+            addStatement(of("$L.writeField($C, $C)", generatorVariable.getSimpleName(), f, string));
         } else {
-            Snippet.of("$L.write($C)", generatorVariable, string).addStatementTo(code);
+            addStatement(of("$L.write($C)", generatorVariable, string));
         }
     }
 
@@ -79,15 +80,13 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
         Snippet asString = base64Encode(rhs);
         if (lhs instanceof LHS.Field f) {
             if (binaryKind == BinaryKind.BYTE_ARRAY) {
-                Snippet.of("$L.writeField($C, $C)", generatorVariable, f, asString)
-                        .addStatementTo(code);
+                addStatement(of("$L.writeField($C, $C)", generatorVariable, f, asString));
                 return;
             } else {
             }
         }
         switch (binaryKind) {
-            case BYTE_ARRAY -> Snippet.of("$L.write($C)", generatorVariable, asString)
-                    .addStatementTo(code);
+            case BYTE_ARRAY -> addStatement(of("$L.write($C)", generatorVariable, asString));
         }
     }
 
@@ -98,54 +97,53 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
             rhs_ = Snippet.of("String.valueOf($C)", rhs);
         }
         if (lhs instanceof LHS.Field f) {
-            Snippet.of("$L.writeField($C, $C)", generatorVariable, f, rhs_).addStatementTo(code);
+            addStatement(of("$L.writeField($C, $C)", generatorVariable, f, rhs_));
         } else {
-            Snippet.of("$L.write($C)", generatorVariable, rhs_).addStatementTo(code);
+            addStatement(of("$L.write($C)", generatorVariable, rhs_));
         }
     }
 
     @Override
     protected void startArray() {
         if (lhs instanceof LHS.Field f) {
-            code.addStatement(
+            addStatement(
                     "$L.startArrayField(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
         } else {
-            code.addStatement("$L.startArray()", generatorVariable.getSimpleName());
+            addStatement("$L.startArray()", generatorVariable.getSimpleName());
         }
     }
 
     @Override
     protected void endArray() {
-        code.addStatement("$L.endArray()", generatorVariable.getSimpleName());
+        addStatement("$L.endArray()", generatorVariable.getSimpleName());
     }
 
     @Override
     protected void startObject() {
         if (lhs instanceof LHS.Field f) {
-            code.addStatement(
+            addStatement(
                     "$L.startObjectField(" + f.format() + ")", flatten(generatorVariable.getSimpleName(), f.args()));
         } else {
-            code.addStatement("$L.startObject()", generatorVariable.getSimpleName());
+            addStatement("$L.startObject()", generatorVariable.getSimpleName());
         }
     }
 
     @Override
     protected void endObject() {
-        code.addStatement("$L.endObject()", generatorVariable.getSimpleName());
+        addStatement("$L.endObject()", generatorVariable.getSimpleName());
     }
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
         if (lhs instanceof LHS.Field f) {
-            Snippet.of("$L.writeFieldName($C)", generatorVariable, f).addStatementTo(code);
+            addStatement(of("$L.writeFieldName($C)", generatorVariable, f));
         }
-        Snippet.of(
-                        "$L.$L($C$C)",
-                        instance,
-                        callee,
-                        rhs,
-                        Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass)))
-                .addStatementTo(code);
+        addStatement(of(
+                "$L.$L($C$C)",
+                instance,
+                callee,
+                rhs,
+                joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass))));
     }
 
     @Override
