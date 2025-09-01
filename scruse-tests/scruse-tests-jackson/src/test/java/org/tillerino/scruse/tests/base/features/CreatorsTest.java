@@ -11,6 +11,7 @@ import org.tillerino.scruse.tests.TestSettings;
 import org.tillerino.scruse.tests.model.features.CreatorsModel;
 import org.tillerino.scruse.tests.model.features.CreatorsModel.JsonCreatorConstructorFactoryMultiplePropertiesClass;
 import org.tillerino.scruse.tests.model.features.CreatorsModel.JsonCreatorMethodFactoryMultiplePropertiesRecord;
+import org.tillerino.scruse.tests.model.features.CreatorsModel.PolyInterface;
 import org.tillerino.scruse.tests.model.features.CreatorsModel.Priority;
 import org.tillerino.scruse.tests.model.features.CreatorsModel.Priority.*;
 
@@ -91,6 +92,14 @@ public class CreatorsTest extends ReferenceTest {
             CreatorsModel.JsonValueRecord<Integer> obj = new CreatorsModel.JsonValueRecord<>(boxedInt);
             outputUtils.assertIsEqualToDatabind(obj, serde::write);
         }
+    }
+
+    @Test
+    public void nestedPolyWithChildCreator() throws Exception {
+        inputUtils.assertIsEqualToDatabind(
+                "{ \"@c\": \".CreatorsModel$PolyInterface$PolyChildWithCreator\" }",
+                serde::readPolyInterfaceNestedWithCreator,
+                new TypeReference<PolyInterface>() {});
     }
 
     @Nested

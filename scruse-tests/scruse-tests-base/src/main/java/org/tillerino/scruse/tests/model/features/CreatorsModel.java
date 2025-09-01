@@ -2,10 +2,15 @@ package org.tillerino.scruse.tests.model.features;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.tillerino.scruse.tests.model.features.CreatorsModel.PolyInterface.PolyChildWithCreator;
 
 public interface CreatorsModel {
     @EqualsAndHashCode
@@ -90,6 +95,21 @@ public interface CreatorsModel {
             LinkedHashMap<String, T> map = new LinkedHashMap<>();
             map.put("notprop", prop);
             return map;
+        }
+    }
+
+    /**
+     * Edge case where creator was not being picked up on polymorphism when there was no dedicated prototype for the
+     * child class.
+     */
+    @JsonTypeInfo(use = Id.MINIMAL_CLASS)
+    @JsonSubTypes(@Type(PolyChildWithCreator.class))
+    interface PolyInterface {
+        record PolyChildWithCreator(int i) implements PolyInterface {
+            @JsonCreator(mode = Mode.PROPERTIES)
+            public static PolyChildWithCreator create(Object ignored) {
+                return new PolyChildWithCreator(123);
+            }
         }
     }
 

@@ -508,6 +508,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         Branch branch = Branch.IF;
         for (Polymorphism.Child child : polymorphism.children()) {
             branch.controlFlow(this, "$L.equals($S)", discriminator.name(), child.name());
+            SELF nested = nest(child.type(), Property.INSTANCE, lhs, true, config);
             utils.delegation
                     .findPrototype(utils.tf.getType(child.type()), prototype, false, true, config)
                     .ifPresentOrElse(
@@ -527,16 +528,21 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                                     "Prototype method must have a context parameter");
                                         });
                                 Exceptions.runWithContext(
-                                        () -> nest(child.type(), Property.INSTANCE, lhs, true, config)
-                                                .invokeDelegate(delegateField, delegate.method()),
+                                        () -> nested.invokeDelegate(delegateField, delegate.method()),
                                         "instance",
                                         child.type());
                             },
-                            () -> Exceptions.runWithContext(
-                                    () -> nest(child.type(), Property.INSTANCE, lhs, true, config)
-                                            .readObjectFields(),
-                                    "instance",
-                                    child.type()));
+                            () -> {
+                                Exceptions.runWithContext(
+                                        () -> utils.creators
+                                                .findJsonCreatorMethod(child.type())
+                                                .map(c -> c instanceof Creator.Properties p ? p : null)
+                                                .ifPresentOrElse(
+                                                        c -> nested.readCreator(c.method()),
+                                                        () -> nested.readObjectFields()),
+                                        "instance",
+                                        child.type());
+                            });
             branch = Branch.ELSE_IF;
         }
         if (branch == Branch.IF) {
@@ -564,7 +570,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
     }
 
-    private void readCreator(InstantiatedMethod method) {
+    void readCreator(InstantiatedMethod method) {
         ProtoAndProps verificationForDto =
                 generatedClass.verificationForBlueprint.addReader(prototype, type.getTypeMirror());
 

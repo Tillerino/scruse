@@ -40,6 +40,9 @@ public interface CreatorsSerde {
     @JsonOutput
     void write(JsonValueRecord<Integer> obj, JsonGenerator generator) throws Exception;
 
+    @JsonInput
+    PolyInterface readPolyInterfaceNestedWithCreator(JsonParser parser) throws Exception;
+
     interface Priority {
         @JsonOutput
         void writeJsonValueEnum(JsonValueEnum enumValue, JsonGenerator generator) throws Exception;
