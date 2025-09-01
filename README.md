@@ -192,44 +192,9 @@ See the [converters](scruse-core/src/main/java/org/tillerino/scruse/converters) 
 
 ### Generics
 
-There is some support for generics.
-Suppose you have a record with a generic component:
+Generics are well-supported. Object properties can be generic, but also collection and array components as well as map values.
 
-```java
-  record MyRecord<T>(T genericComponent /*, and a bunch of non-generic components  */) { }
-```
-
-Suppose you need several `@JsonInput` and `@JsonOutput` methods for `MyRecord` with different types of `T`,
-e.g. `MyRecord<String>`, `MyRecord<Integer>`, and so on.
-Firstly, the generics are correctly instantiated, i.e. for `MyRecord<String>`, `genericComponent` is serialized as a String.
-However, simply writing several methods with different types of `T` will produce a lot of repeated code.
-To avoid this, you can pass sub-(de-)serializers to a generic method.
-For a sub-(de-)serializer, you need to define an interface, for example the following:
-
-```java
-interface GenericOutput<T> {
-  @JsonOutput
-  void write(T whatever, JsonGenerator generator) throws IOException;
-}
-```
-
-Then, you can use this interface in the main (de-)serializer:
-
-```java
-interface MyRecordSerde {
-  @JsonOutput
-  <T> void write(MyRecord<T> record, JsonGenerator generator, GenericOutput<T> subSerializer) throws IOException;
-}
-```
-
-The generated code will invoke the passed serializer for the generic component.
-Once `MyRecordSerde` is used by any other (de-)serializer, any matching sub-(de-)serializer from the classes in `@JsonConfig(uses = { ... })`
-will be passed as the `subSerializer` parameter,
-or a _suitable lambda expression_ will be passed to instantiate the sub-(de-)serializer from any method in all available (de-)serializers.
-
-This is a fairly involved feature. Please see the examples in
-[GenericsTest](scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/features/GenericsTest.java)
-and compare the generated code.
+See [generics](docs/generics.md) for details.
 
 ### Polymorphism
 

@@ -159,7 +159,8 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
                 instance,
                 callee,
                 rhs,
-                Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass))));
+                Snippet.joinPrependingCommaToEach(
+                        utils.delegation.findArguments(prototype, callee, 1, generatedClass))));
     }
 
     @Override

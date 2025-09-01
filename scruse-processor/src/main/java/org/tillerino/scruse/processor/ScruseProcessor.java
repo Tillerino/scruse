@@ -42,11 +42,6 @@ public class ScruseProcessor extends AbstractProcessor {
 
     Set<String> generatedClasses = new LinkedHashSet<>();
 
-    @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        super.init(processingEnv);
-    }
-
     private void mapStructSetup(ProcessingEnvironment processingEnv, TypeElement typeElement) {
         if (utils == null) {
             // AFAICT, the typeElement is only used for type resolution, so the first processed type should do fine

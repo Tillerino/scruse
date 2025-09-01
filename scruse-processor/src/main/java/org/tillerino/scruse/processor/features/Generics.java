@@ -4,17 +4,15 @@ import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.*;
+import javax.lang.model.util.AbstractTypeVisitor14;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
-import org.tillerino.scruse.processor.util.InstantiatedVariable;
+import org.tillerino.scruse.processor.util.InstantiatedMethod.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.RebuildingTypeVisitor;
 
 public record Generics(AnnotationProcessorUtils utils) {
@@ -185,6 +183,80 @@ public record Generics(AnnotationProcessorUtils utils) {
             }
         }
         return Optional.empty();
+    }
+
+    /** Finds a parameter of type {@code Class<T>} on the method. */
+    public Optional<Snippet> findClassParameter(InstantiatedMethod method, TypeMirror t) {
+        DeclaredType classOfT = utils.types.getDeclaredType(utils.commonTypes.classElement, t);
+        for (InstantiatedVariable parameter : method.parameters()) {
+            if (utils.types.isSameType(parameter.type(), classOfT)) {
+                return Optional.of(parameter);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Determines if there can be a {@code Class<T>} for a type T. */
+    public static boolean canBeClass(TypeMirror t) {
+        return t.accept(
+                new AbstractTypeVisitor14<>() {
+
+                    @Override
+                    public Boolean visitPrimitive(PrimitiveType t, Boolean aBoolean) {
+                        return true;
+                    }
+
+                    @Override
+                    public Boolean visitNull(NullType t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitArray(ArrayType t, Boolean aBoolean) {
+                        return t.getComponentType().accept(this, true);
+                    }
+
+                    @Override
+                    public Boolean visitDeclared(DeclaredType t, Boolean aBoolean) {
+                        return t.asElement() != null && t.getTypeArguments().isEmpty();
+                    }
+
+                    @Override
+                    public Boolean visitError(ErrorType t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitTypeVariable(TypeVariable t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitWildcard(WildcardType t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitExecutable(ExecutableType t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitNoType(NoType t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitUnion(UnionType t, Boolean aBoolean) {
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitIntersection(IntersectionType t, Boolean aBoolean) {
+                        return false;
+                    }
+                },
+                true);
     }
 
     /** Required since {@link TypeVariable} and its corresponding element do not implement hashCode and equals? */

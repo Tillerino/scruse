@@ -11,6 +11,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 import org.tillerino.scruse.tests.base.PrimitiveScalarsSerde;
+import org.tillerino.scruse.tests.base.features.GenericsSerde.GenericContainersSerde;
 import org.tillerino.scruse.tests.model.PrimitiveArrayFieldsRecord;
 import org.tillerino.scruse.tests.model.ScalarFieldsRecord;
 import org.tillerino.scruse.tests.model.features.DelegationModel.GenericInterface;
@@ -297,5 +298,26 @@ public interface DelegationSerde {
 
         @JsonInput
         UsesGenericInterfaceRaw readOuterRaw(JsonParser parser, DeserializationContext ctx) throws Exception;
+    }
+
+    @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
+    interface DelegateToGenericArrayReader {
+        @JsonInput
+        Double[] readBoxedDoubleArray(JsonParser parser) throws Exception;
+
+        @JsonInput
+        Double[][] readBoxedDoubleMatrix(JsonParser parser) throws Exception;
+
+        @JsonInput
+        Double[][][] readBoxedDoubleTensor(JsonParser parser) throws Exception;
+
+        @JsonInput
+        double[] readPrimitiveDoubleArray(JsonParser parser) throws Exception;
+
+        @JsonInput
+        double[][] readPrimitiveDoubleMatrix(JsonParser parser) throws Exception;
+
+        @JsonInput
+        double[][][] readPrimitiveDoubleTensor(JsonParser parser) throws Exception;
     }
 }

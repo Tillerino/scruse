@@ -38,7 +38,7 @@ public sealed interface PrototypeKind {
 
     TypeMirror javaType();
 
-    List<InstantiatedVariable> otherParameters();
+    List<InstantiatedMethod.InstantiatedVariable> otherParameters();
 
     default String defaultMethodName() {
         String prefix = this instanceof Input ? "read" : "write";
@@ -116,7 +116,8 @@ public sealed interface PrototypeKind {
         return d.asElement().getSimpleName().toString();
     }
 
-    record Input(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
+    record Input(
+            TypeMirror jsonType, TypeMirror javaType, List<InstantiatedMethod.InstantiatedVariable> otherParameters)
             implements PrototypeKind {
         @Override
         public PrototypeKind withJavaType(TypeMirror newType) {
@@ -124,7 +125,8 @@ public sealed interface PrototypeKind {
         }
     }
 
-    record Output(TypeMirror jsonType, TypeMirror javaType, List<InstantiatedVariable> otherParameters)
+    record Output(
+            TypeMirror jsonType, TypeMirror javaType, List<InstantiatedMethod.InstantiatedVariable> otherParameters)
             implements PrototypeKind {
         @Override
         public PrototypeKind withJavaType(TypeMirror newType) {

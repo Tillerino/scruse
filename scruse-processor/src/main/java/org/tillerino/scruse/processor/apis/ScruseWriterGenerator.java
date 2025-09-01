@@ -143,7 +143,7 @@ public class ScruseWriterGenerator extends AbstractWriterGenerator<ScruseWriterG
                 instance,
                 callee,
                 rhs,
-                joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass))));
+                joinPrependingCommaToEach(utils.delegation.findArguments(prototype, callee, 1, generatedClass))));
     }
 
     @Override

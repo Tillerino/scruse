@@ -321,46 +321,114 @@ public class DelegationTest extends ReferenceTest {
     class DelegationWithGenericsTest {
         @Test
         void wildcardCallsWildcard() throws Exception {
-            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+            assertThatImpl(WithGenericsWildcardEdition.class)
                     .method("writeOuterWildcard")
                     .calls("writeGenericInterfaceWildcard");
 
-            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+            assertThatImpl(WithGenericsWildcardEdition.class)
                     .method("readOuterWildcard")
                     .calls("readGenericInterfaceWildcard");
         }
 
         @Test
         void rawCallsWildcard() throws Exception {
-            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+            assertThatImpl(WithGenericsWildcardEdition.class)
                     .method("writeOuterRaw")
                     .calls("writeGenericInterfaceWildcard");
 
-            CodeAssertions.assertThatImpl(WithGenericsWildcardEdition.class)
+            assertThatImpl(WithGenericsWildcardEdition.class)
                     .method("readOuterRaw")
                     .calls("readGenericInterfaceWildcard");
         }
 
         @Test
         void wildcardCallsRaw() throws Exception {
-            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
+            assertThatImpl(WithGenericsRawEdition.class)
                     .method("writeOuterWildcard")
                     .calls("writeGenericInterfaceRaw");
 
-            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
+            assertThatImpl(WithGenericsRawEdition.class)
                     .method("readOuterWildcard")
                     .calls("readGenericInterfaceRaw");
         }
 
         @Test
         void rawCallsRaw() throws Exception {
-            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
-                    .method("writeOuterRaw")
-                    .calls("writeGenericInterfaceRaw");
+            assertThatImpl(WithGenericsRawEdition.class).method("writeOuterRaw").calls("writeGenericInterfaceRaw");
 
-            CodeAssertions.assertThatImpl(WithGenericsRawEdition.class)
-                    .method("readOuterRaw")
-                    .calls("readGenericInterfaceRaw");
+            assertThatImpl(WithGenericsRawEdition.class).method("readOuterRaw").calls("readGenericInterfaceRaw");
+        }
+    }
+
+    @Nested
+    class DelegateToGenericArrayReaderTest {
+        DelegateToGenericArrayReader serde = SerdeUtil.impl(DelegateToGenericArrayReader.class);
+
+        @Test
+        void boxedDoubleArray() throws Exception {
+            inputUtils.assertIsEqualToDatabind(
+                    "[ null, 1, 2 ]", serde::readBoxedDoubleArray, new TypeReference<Double[]>() {});
+
+            assertThatImpl(DelegateToGenericArrayReader.class)
+                    .method("readBoxedDoubleArray")
+                    .calls("readGenericArray")
+                    .references("readBoxedDoubleX");
+        }
+
+        @Test
+        void boxedDoubleMatrix() throws Exception {
+            inputUtils.assertIsEqualToDatabind(
+                    "[ [ null, 1 ], [ 2, 3 ] ]", serde::readBoxedDoubleMatrix, new TypeReference<Double[][]>() {});
+
+            assertThatImpl(DelegateToGenericArrayReader.class)
+                    .method("readBoxedDoubleMatrix")
+                    .calls("readGenericArray")
+                    .references("readBoxedDoubleArray");
+        }
+
+        @Test
+        void boxedDoubleTensor() throws Exception {
+            inputUtils.assertIsEqualToDatabind(
+                    "[ [ [ null, 1 ], [ 2, 3 ] ], [ [ 4, 5 ], [ 6, 7 ] ] ]",
+                    serde::readBoxedDoubleTensor,
+                    new TypeReference<Double[][][]>() {});
+
+            assertThatImpl(DelegateToGenericArrayReader.class)
+                    .method("readBoxedDoubleTensor")
+                    .calls("readGenericArray")
+                    .references("readBoxedDoubleMatrix");
+        }
+
+        @Test
+        void primitiveDoubleArray() throws Exception {
+            inputUtils.assertIsEqualToDatabind(
+                    "[ 1.0, 2.0, 3.0 ]", serde::readPrimitiveDoubleArray, new TypeReference<double[]>() {});
+        }
+
+        @Test
+        void primitiveDoubleMatrix() throws Exception {
+            inputUtils.assertIsEqualToDatabind(
+                    "[ [ 1.0, 2.0 ], [ 3.0, 4.0 ] ]",
+                    serde::readPrimitiveDoubleMatrix,
+                    new TypeReference<double[][]>() {});
+
+            assertThatImpl(DelegateToGenericArrayReader.class)
+                    .method("readPrimitiveDoubleMatrix")
+                    .calls("readGenericArray")
+                    .references("readPrimitiveDoubleArray");
+        }
+
+        @Test
+        void primitiveDoubleTensor() throws Exception {
+            inputUtils.assertIsEqualToDatabind(
+                    "[ [ [ 1.0, 2.0 ], [ 3.0, 4.0 ] ], [ [ 5.0, 6.0 ], [ 7.0, 8.0 ] ] ]",
+                    serde::readPrimitiveDoubleTensor,
+                    new TypeReference<double[][][]>() {});
+
+            assertThatImpl(DelegateToGenericArrayReader.class)
+                    .method("readPrimitiveDoubleTensor")
+                    .calls("readGenericArray")
+                    .references("readPrimitiveDoubleMatrix");
         }
     }
 }

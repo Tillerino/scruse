@@ -9,7 +9,7 @@ The `@JsonTemplate` annotation allows you to generate many prototypes based on s
 Consider these generic interfaces:
 
 ```java
-//../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/GenericsSerde.java#L16-L20
+//../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/GenericsSerde.java#L17-L21
 
 @JsonConfig(implement = JsonConfig.ImplementationMode.DO_NOT_IMPLEMENT)
 interface GenericInputSerde<V> {
@@ -18,7 +18,7 @@ interface GenericInputSerde<V> {
 }
 ```
 ```java
-//../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/GenericsSerde.java#L23-L27
+//../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/GenericsSerde.java#L24-L28
 
 @JsonConfig(implement = JsonConfig.ImplementationMode.DO_NOT_IMPLEMENT)
 interface GenericOutputSerde<U> {

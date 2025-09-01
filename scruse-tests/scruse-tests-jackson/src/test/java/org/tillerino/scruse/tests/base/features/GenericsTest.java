@@ -1,5 +1,6 @@
 package org.tillerino.scruse.tests.base.features;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.tillerino.scruse.tests.CodeAssertions.assertThatImpl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,9 +22,9 @@ class GenericsTest extends ReferenceTest {
 
     IntegerRecordSerde integerRecordSerde = SerdeUtil.impl(IntegerRecordSerde.class);
 
-    DoubleListSerde doubleListSerde = SerdeUtil.impl(DoubleListSerde.class);
+    GenericContainersSerde genericContainersSerde = SerdeUtil.impl(GenericContainersSerde.class);
 
-    GenericMapSerde genericMapSerde = SerdeUtil.impl(GenericMapSerde.class);
+    ConcreteContainerSerde concreteContainerSerde = SerdeUtil.impl(ConcreteContainerSerde.class);
 
     PointlessGenericsSerde pointlessGenericsSerde = SerdeUtil.impl(PointlessGenericsSerde.class);
 
@@ -75,16 +76,16 @@ class GenericsTest extends ReferenceTest {
     void genericListSerde() throws Exception {
         outputUtils.roundTrip(
                 List.of(1.0, 2.0, 3.0),
-                doubleListSerde::writeDoubleList,
-                doubleListSerde::readDoubleList,
+                concreteContainerSerde::writeDoubleList,
+                concreteContainerSerde::readDoubleList,
                 new TypeReference<>() {});
 
-        assertThatImpl(DoubleListSerde.class)
+        assertThatImpl(ConcreteContainerSerde.class)
                 .method("writeDoubleList")
                 .calls("writeGenericList")
                 .references("writeBoxedDoubleX");
 
-        assertThatImpl(DoubleListSerde.class)
+        assertThatImpl(ConcreteContainerSerde.class)
                 .method("readDoubleList")
                 .calls("readGenericList")
                 .references("readBoxedDoubleX");
@@ -94,16 +95,16 @@ class GenericsTest extends ReferenceTest {
     void genericMapSerde() throws Exception {
         outputUtils.roundTrip(
                 Map.of("a", 1.0, "b", 2.0, "c", 3.0),
-                genericMapSerde::writeStringDoubleMap,
-                genericMapSerde::readStringDoubleMap,
+                concreteContainerSerde::writeStringDoubleMap,
+                concreteContainerSerde::readStringDoubleMap,
                 new TypeReference<>() {});
 
-        assertThatImpl(GenericMapSerde.class)
+        assertThatImpl(ConcreteContainerSerde.class)
                 .method("writeStringDoubleMap")
                 .calls("writeGenericMap")
                 .references("writeBoxedDoubleX");
 
-        assertThatImpl(GenericMapSerde.class)
+        assertThatImpl(ConcreteContainerSerde.class)
                 .method("readStringDoubleMap")
                 .calls("readGenericMap")
                 .references("readBoxedDoubleX");
@@ -116,5 +117,22 @@ class GenericsTest extends ReferenceTest {
                 pointlessGenericsSerde::write,
                 pointlessGenericsSerde::read,
                 new TypeReference<>() {});
+    }
+
+    @Test
+    void genericArrayDeserialization() throws Exception {
+        inputUtils.assertIsEqualToDatabind(
+                "[ \"1\", \"2\" ]",
+                p -> genericContainersSerde.readGenericArray(p, stringSerde, String[].class),
+                new TypeReference<String[]>() {});
+    }
+
+    @Test
+    void genericArrayInGenericRecordDeserialization() throws Exception {
+        GenericRecord<String[]> deserialized = inputUtils.deserialize(
+                "{ \"f\": [ \"1\", \"2\" ] }",
+                p -> concreteContainerSerde.readGenericRecord(p, stringSerde, String[].class));
+
+        assertThat(deserialized.f()).containsExactly("1", "2");
     }
 }

@@ -159,7 +159,8 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                     newValue.name,
                     method.callSymbol(utils),
                     rhs,
-                    Snippet.joinPrependingCommaToEach(prototype.findArguments(method, 1, generatedClass))));
+                    Snippet.joinPrependingCommaToEach(
+                            utils.delegation.findArguments(prototype, method, 1, generatedClass))));
             nest(method.returnType(), lhs, null, newValue, true, config).build();
             return;
         }

@@ -158,7 +158,8 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
                 instance,
                 callee,
                 rhs,
-                Snippet.joinPrependingCommaToEach(prototype.findArguments(callee, 1, generatedClass))));
+                Snippet.joinPrependingCommaToEach(
+                        utils.delegation.findArguments(prototype, callee, 1, generatedClass))));
     }
 
     @Override

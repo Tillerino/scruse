@@ -67,6 +67,6 @@ public final class ScruseBlueprint {
 
     @Override
     public String toString() {
-        return className.importName();
+        return className.className();
     }
 }

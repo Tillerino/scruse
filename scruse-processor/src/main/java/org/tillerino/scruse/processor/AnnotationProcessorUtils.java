@@ -128,6 +128,9 @@ public class AnnotationProcessorUtils {
                 elements.getTypeElement(Character.class.getName()).asType();
         public final TypeMirror object =
                 elements.getTypeElement(Object.class.getName()).asType();
+
+        public final TypeElement classElement = elements.getTypeElement(Class.class.getName());
+
         public final TypeMirror serializationContext =
                 elements.getTypeElement(SerializationContext.class.getName()).asType();
         public final TypeMirror deserializationContext =

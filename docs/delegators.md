@@ -6,6 +6,7 @@
 - [Delegate to other classes](#delegate-to-other-classes)
 - [Build a library](#build-a-library)
 - [Recursive Types](#recursive-types)
+- [Additional arguments](#additional-arguments)
 
 <!-- tocstop -->
 
@@ -16,7 +17,7 @@ This is very important for keeping the generated code small.
 Take the following example:
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L23-L27
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L24-L28
 
 @JsonInput
 ScalarFieldsRecord deserializeSingle(JsonParser parser) throws Exception;
@@ -61,7 +62,7 @@ public interface PrimitiveScalarsSerde {
 ```
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L61-L64
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L62-L65
 
 @JsonConfig(uses = PrimitiveScalarsSerde.class)
 interface BoxedScalarsSerde {
@@ -164,7 +165,7 @@ public interface PrimitiveScalarsSerde {
 
 Then define boxed serializers that reuse the primitive serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L61-L73
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L62-L74
 
 @JsonConfig(uses = PrimitiveScalarsSerde.class)
 interface BoxedScalarsSerde {
@@ -184,7 +185,7 @@ interface BoxedScalarsSerde {
 
 Finally, define array serializers that reuse both primitive and boxed serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L125-L137
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L126-L138
 
 @JsonConfig(uses = BoxedScalarsSerde.class)
 interface ScalarArraysSerde {
@@ -216,7 +217,7 @@ record SelfReferencingRecord(String prop, SelfReferencingRecord self) {}
 
 This type cannot be used in any other serialization without adding a dedicated serializer:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L233-L237
+// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L234-L238
 
 @JsonInput
 SelfReferencingRecord deserializeRecord(JsonParser input) throws Exception;
@@ -235,3 +236,17 @@ case "self": {
   break;
 }
 ```
+
+## Additional arguments
+
+When delegating to a prototype, any parameter that is not the DTO type itself, is filled automatically from the context of the caller.
+Any parameter that matches any of caller's parameters, is filled by the caller's parameter.
+This includes the parser/formatter and the de/serialization can be passed directly, but can be anything.
+You can pass around your own context objects, which you can use to build more elaborate features.
+
+Scruse will also create method references to instantiate functional interfaces (which is used for generics) and
+class instances (which is used for generic array deserialization).
+
+It is recommended to keep the signatures of your prototypes as homogenous as possible, since that will allow deep
+passing of context objects. Using your [generics](generics.md) interfaces in [templates](templates.md) will make that
+quite simple.

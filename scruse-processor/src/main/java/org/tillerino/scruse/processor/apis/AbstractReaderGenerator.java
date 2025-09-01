@@ -45,7 +45,7 @@ import org.tillerino.scruse.processor.features.UnknownProperties;
 import org.tillerino.scruse.processor.features.Verification.ProtoAndProps;
 import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
-import org.tillerino.scruse.processor.util.InstantiatedVariable;
+import org.tillerino.scruse.processor.util.InstantiatedMethod.InstantiatedVariable;
 
 public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerator<SELF>>
         extends AbstractCodeGeneratorStack<SELF> {
@@ -268,7 +268,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 "$C($L$C)",
                 method.callSymbol(utils),
                 creatorArg.name,
-                joinPrependingCommaToEach(prototype.findArguments(method, 1, generatedClass)))));
+                joinPrependingCommaToEach(utils.delegation.findArguments(prototype, method, 1, generatedClass)))));
         if (branch == ELSE_IF) {
             endControlFlow();
         }
@@ -346,7 +346,16 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             }
             endControlFlow(); // end of loop
             afterArray();
-            if (utils.types.isSameType(rawRawComponentType, rawComponentType)) {
+            if (type.isArrayTypeVar()) {
+                Optional<Snippet> classParameter =
+                        utils.generics.findClassParameter(prototype.asInstantiatedMethod(), type.getTypeMirror());
+                if (classParameter.isEmpty()) {
+                    throw new ContextedRuntimeException(
+                            "You are trying to read a generic array. For this, you need the array class at runtime.\n"
+                                    + " Add a parameter Class<%s> to %s.".formatted(type, prototype));
+                }
+                addStatement(lhs.assign("$T.copyOf($C, $L, $C)", Arrays.class, varName, len, classParameter.get()));
+            } else if (utils.types.isSameType(rawRawComponentType, rawComponentType)) {
                 addStatement(lhs.assign("$T.copyOf($C, $L)", Arrays.class, varName, len));
             } else {
                 addStatement(lhs.assign("$T.copyOf($C, $L, $T[].class)", Arrays.class, varName, len, rawComponentType));

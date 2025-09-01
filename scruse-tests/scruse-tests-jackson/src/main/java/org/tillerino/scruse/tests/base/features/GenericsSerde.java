@@ -10,6 +10,7 @@ import org.tillerino.scruse.annotations.JsonOutput;
 import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsSerde;
 import org.tillerino.scruse.tests.model.features.GenericsModel.GenericRecord;
 import org.tillerino.scruse.tests.model.features.GenericsModel.PointlessGenericsRecord;
+import org.tillerino.scruse.tests.model.features.GenericsModel.UsesGenericRecord;
 
 public interface GenericsSerde {
     // use 'V' instead of 'T' to make sure that we actually instantiate the type
@@ -46,6 +47,19 @@ public interface GenericsSerde {
 
         @JsonOutput
         void writeIntegerRecord(GenericRecord<Integer> obj, JsonGenerator gen) throws Exception;
+    }
+
+    @JsonConfig(
+            uses = {
+                BoxedScalarsSerde.class,
+                GenericRecordSerde.class,
+            })
+    interface UsesGenericRecordSerde {
+        @JsonOutput
+        void writeUsesGenericRecord(UsesGenericRecord usesGenericRecord, JsonGenerator gen) throws Exception;
+
+        @JsonInput
+        UsesGenericRecord readUsesGenericRecord(JsonParser parser) throws Exception;
     }
 
     @JsonConfig(
@@ -95,24 +109,38 @@ public interface GenericsSerde {
 
         @JsonInput
         <V> Map<String, V> readGenericMap(JsonParser parser, GenericInputSerde<V> valueReader) throws Exception;
+
+        @JsonOutput
+        <T> void writeGenericArray(T[] ts, JsonGenerator gen, GenericOutputSerde<T> componentWriter) throws Exception;
+
+        @JsonInput
+        <T> T[] readGenericArray(JsonParser parser, GenericInputSerde<T> componentReader, Class<T[]> arrayClass)
+                throws Exception;
     }
 
     @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
-    interface DoubleListSerde {
+    interface ConcreteContainerSerde {
         @JsonOutput
         void writeDoubleList(List<Double> l, JsonGenerator gen) throws Exception;
 
         @JsonInput
         List<Double> readDoubleList(JsonParser parser) throws Exception;
-    }
 
-    @JsonConfig(uses = {GenericContainersSerde.class, BoxedScalarsSerde.class})
-    interface GenericMapSerde {
         @JsonOutput
         void writeStringDoubleMap(Map<String, Double> map, JsonGenerator gen) throws Exception;
 
         @JsonInput
         Map<String, Double> readStringDoubleMap(JsonParser parser) throws Exception;
+
+        @JsonOutput
+        void writeDoubleArray(Double[] doubles, JsonGenerator gen) throws Exception;
+
+        @JsonInput
+        Double[] readDoubleArray(JsonParser parser) throws Exception;
+
+        @JsonInput
+        <T> GenericRecord<T[]> readGenericRecord(
+                JsonParser parser, GenericInputSerde<T> componentDelegator, Class<T[]> arrayClass) throws Exception;
     }
 
     interface PointlessGenericsSerde {

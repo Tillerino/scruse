@@ -155,8 +155,11 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
 
     @Override
     protected void invokeDelegate(String instance, InstantiatedMethod callee) {
-        addStatement(lhs.assign(
-                of("$L.$L($C)", instance, callee, join(prototype.findArguments(callee, 0, generatedClass), ", "))));
+        addStatement(lhs.assign(of(
+                "$L.$L($C)",
+                instance,
+                callee,
+                join(utils.delegation.findArguments(prototype, callee, 0, generatedClass), ", "))));
     }
 
     @Override

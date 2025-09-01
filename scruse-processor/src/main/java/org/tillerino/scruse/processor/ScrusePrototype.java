@@ -2,19 +2,17 @@ package org.tillerino.scruse.processor;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.*;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
-import org.tillerino.scruse.processor.util.InstantiatedVariable;
+import org.tillerino.scruse.processor.util.InstantiatedMethod.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.PrototypeKind;
 
 /**
@@ -136,35 +134,6 @@ public record ScrusePrototype(
             }
         }
         return Optional.empty();
-    }
-
-    public List<Snippet> findArguments(InstantiatedMethod callee, int firstArgument, GeneratedClass generatedClass) {
-        return IntStream.range(firstArgument, callee.parameters().size())
-                .mapToObj(i -> {
-                    InstantiatedVariable targetArgument = callee.parameters().get(i);
-                    return findArgument(generatedClass, targetArgument).orElseThrow(() -> new ContextedRuntimeException(
-                                    "Could not find value to pass to method argument")
-                            .addContextValue("argument", targetArgument)
-                            .addContextValue("callee", callee)
-                            .addContextValue("caller", asInstantiatedMethod()));
-                })
-                .collect(Collectors.toList());
-    }
-
-    private Optional<Snippet> findArgument(GeneratedClass generatedClass, InstantiatedVariable targetArgument) {
-        // search in caller's own parameters
-        for (InstantiatedVariable instantiatedParameter : instantiatedParameters) {
-            if (utils.types.isAssignable(instantiatedParameter.type(), targetArgument.type())) {
-                return Optional.of(Snippet.of("$L", instantiatedParameter.name()));
-            }
-        }
-        // see if we can instantiate an instance from our list of used blueprints
-        String delegateeInField = generatedClass.getOrCreateUsedBlueprintWithTypeField(targetArgument.type(), config);
-        if (delegateeInField != null) {
-            return Optional.of(Snippet.of("$L", delegateeInField));
-        }
-        // see if we can instantiate a lambda from our list of used blueprints
-        return utils.generics.getOrCreateLambda(generatedClass, targetArgument.type(), instantiatedParameters, 0);
     }
 
     @Override

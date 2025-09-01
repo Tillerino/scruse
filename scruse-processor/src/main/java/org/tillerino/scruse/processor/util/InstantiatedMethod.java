@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.*;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
@@ -48,7 +47,7 @@ public record InstantiatedMethod(
     public String toString() {
         return String.format(
                 "%s %s.%s(%s)",
-                returnType,
+                ShortName.of(returnType),
                 element.getEnclosingElement().getSimpleName(),
                 name,
                 parameters.stream().map(InstantiatedVariable::toString).collect(Collectors.joining(", ")));
@@ -56,5 +55,22 @@ public record InstantiatedMethod(
 
     public InstantiatedMethod withName(String name) {
         return new InstantiatedMethod(name, returnType, parameters, element, config);
+    }
+
+    public record InstantiatedVariable(TypeMirror type, String name, AnyConfig config) implements Snippet {
+        @Override
+        public String toString() {
+            return ShortName.of(type) + " " + name();
+        }
+
+        @Override
+        public String format() {
+            return "$L";
+        }
+
+        @Override
+        public Object[] args() {
+            return new Object[] {name};
+        }
     }
 }
