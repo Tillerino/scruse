@@ -25,7 +25,8 @@ public class UnknownProperties {
                             ConfigProperty.ConfigPropertyRetriever.jsonConfigPropertyRetriever(
                                     "unknownProperties", JsonConfig.UnknownPropertiesMode.class)),
                     JsonConfig.UnknownPropertiesMode.DEFAULT,
-                    ConfigProperty.MergeFunction.notDefault(JsonConfig.UnknownPropertiesMode.DEFAULT));
+                    ConfigProperty.MergeFunction.notDefault(JsonConfig.UnknownPropertiesMode.DEFAULT),
+                    null);
 
     public static boolean shouldThrow(AnyConfig config) {
         return config.resolveProperty(UNKNOWN_PROPERTIES).value() != JsonConfig.UnknownPropertiesMode.IGNORE;

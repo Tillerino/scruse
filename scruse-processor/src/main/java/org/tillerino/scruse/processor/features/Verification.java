@@ -22,7 +22,8 @@ public class Verification {
             List.of(LocationKind.values()),
             List.of(ConfigPropertyRetriever.jsonConfigPropertyRetriever("verifySymmetry", VerificationMode.class)),
             VerificationMode.NO_VERIFICATION,
-            MergeFunction.notDefault(VerificationMode.NO_VERIFICATION));
+            MergeFunction.notDefault(VerificationMode.NO_VERIFICATION),
+            null);
 
     final Map<ScruseBlueprint, ForBlueprint> st = new ConcurrentHashMap<>();
     final AnnotationProcessorUtils utils;

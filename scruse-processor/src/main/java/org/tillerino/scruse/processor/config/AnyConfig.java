@@ -6,9 +6,10 @@ import java.util.stream.Stream;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
-import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.util.accessor.Accessor;
 import org.mapstruct.ap.internal.util.accessor.AccessorType;
 import org.mapstruct.ap.internal.util.accessor.ExecutableElementAccessor;
@@ -28,6 +29,7 @@ public final class AnyConfig {
         IgnoreProperty.IGNORE_PROPERTY,
         IgnoreProperties.IGNORED_PROPERTIES,
         Verification.VERIFY_SYMMETRY,
+        References.REFERENCES,
         // leave a trailing comma for cleaner diffs :)
     };
 
@@ -61,6 +63,21 @@ public final class AnyConfig {
         return new AnyConfig(list);
     }
 
+    public static AnyConfig empty() {
+        return new AnyConfig(List.of());
+    }
+
+    /**
+     * Currently only using "DTO" and only calling in AbstractCodeGeneratorStack constructor. This might be the only
+     * kind required.
+     */
+    public AnyConfig propagateTo(LocationKind newLocation) {
+        return new AnyConfig(properties.stream()
+                .filter(p -> p.property().doNotPropagateTo == null
+                        || p.property().doNotPropagateTo.compareTo(newLocation) < 0)
+                .toList());
+    }
+
     /**
      * @param property the accessor. in recursive calls the element might be missing
      * @param accessorName to reconstruct the element in recursive calls
@@ -71,7 +88,7 @@ public final class AnyConfig {
     public static AnyConfig fromAccessorConsideringField(
             Accessor property,
             String accessorName,
-            Type dto,
+            TypeMirror dto,
             String canonicalPropertyName,
             AnnotationProcessorUtils utils) {
 
@@ -83,11 +100,12 @@ public final class AnyConfig {
             return accessorConfig;
         }
 
-        for (Type directSuperType : dto.getDirectSuperTypes()) {
-            if (directSuperType.toString().equals(Object.class.getName())) {
+        for (TypeMirror directSuperType : utils.types.directSupertypes(dto)) {
+            if (directSuperType.toString().equals(Object.class.getName())
+                    || !(directSuperType instanceof DeclaredType d)) {
                 continue;
             }
-            TypeElement superTypeElement = directSuperType.getTypeElement();
+            TypeElement superTypeElement = (TypeElement) d.asElement();
             Optional<ExecutableElement> superMethod =
                     ElementFilter.methodsIn(superTypeElement.getEnclosedElements()).stream()
                             .filter(m -> m.getSimpleName().contentEquals(accessorName))
@@ -105,18 +123,22 @@ public final class AnyConfig {
     }
 
     private static AnyConfig fromAccessorAndField(
-            Accessor property, Type dto, String canonicalPropertyName, AnnotationProcessorUtils utils) {
+            Accessor property, TypeMirror dto, String canonicalPropertyName, AnnotationProcessorUtils utils) {
         AnyConfig accessorConfig =
                 property.getElement() != null ? create(property.getElement(), LocationKind.PROPERTY, utils) : null;
         if (property.getAccessorType() == AccessorType.FIELD) {
             return accessorConfig;
         }
+        if (!(dto instanceof DeclaredType d)) {
+            return accessorConfig;
+        }
 
-        Optional<AnyConfig> maybeFieldConfig =
-                ElementFilter.fieldsIn(dto.getTypeElement().getEnclosedElements()).stream()
-                        .filter(f -> f.getSimpleName().contentEquals(canonicalPropertyName))
-                        .findFirst()
-                        .map(f -> create(f, LocationKind.PROPERTY, utils));
+        Optional<AnyConfig> maybeFieldConfig = ElementFilter.fieldsIn(
+                        d.asElement().getEnclosedElements())
+                .stream()
+                .filter(f -> f.getSimpleName().contentEquals(canonicalPropertyName))
+                .findFirst()
+                .map(f -> create(f, LocationKind.PROPERTY, utils));
 
         return maybeFieldConfig
                 .map(anyConfig -> accessorConfig != null ? anyConfig.merge(accessorConfig) : anyConfig)
@@ -168,12 +190,6 @@ public final class AnyConfig {
         }
         return value.map(inst -> new ResolvedProperty<>(inst.value(), inst.sourceLocation()))
                 .orElseGet(() -> new ResolvedProperty<>(prop.defaultValue, null));
-    }
-
-    public AnyConfig keepUntilIncluding(LocationKind locationKind) {
-        return new AnyConfig(properties.stream()
-                .filter(p -> p.locationKind().compareTo(locationKind) <= 0)
-                .toList());
     }
 
     public record ResolvedProperty<T>(T value, @Nullable String location) {}

@@ -20,7 +20,8 @@ public class IgnoreProperties {
                                     .map(AnnotationValueWrapper::asString)
                                     .collect(ConfigProperty.toUnmodifiableSet())))),
             Set.of(),
-            MergeFunction.mergeSets());
+            MergeFunction.mergeSets(),
+            LocationKind.DTO);
 
     public static Snippet toSnippet(Set<String> ignoredProperties) {
         return Snippet.join(

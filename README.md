@@ -558,7 +558,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonFilter
 - [ ] JsonFormat
 - [ ] JsonGetter
-- [ ] JsonIdentityInfo
+- [X] JsonIdentityInfo (regular generators and property-based IDs (`PropertyGenerator`) are supported. JSOG not supported)
 - [ ] JsonIdentityReference
 - [X] JsonIgnore
 - [X] JsonIgnoreProperties (`value` and `ignoreUnknown` properties)

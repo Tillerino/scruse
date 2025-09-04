@@ -3,6 +3,7 @@ package org.tillerino.scruse.processor.features;
 import java.util.List;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.util.Annotations;
 
 public class PropertyName {
@@ -12,7 +13,8 @@ public class PropertyName {
                     "com.fasterxml.jackson.annotation.JsonProperty",
                     (ann, utils) -> ann.method("value", true).map(Annotations.AnnotationValueWrapper::asString))),
             "",
-            ConfigProperty.MergeFunction.notDefault(""));
+            ConfigProperty.MergeFunction.notDefault(""),
+            LocationKind.DTO);
 
     public static String resolvePropertyName(AnyConfig config, String canonicalPropertyName) {
         String customPropertyName = config.resolveProperty(PROPERTY_NAME).value();

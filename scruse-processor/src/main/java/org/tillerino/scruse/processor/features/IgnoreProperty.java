@@ -14,5 +14,6 @@ public class IgnoreProperty {
                     "com.fasterxml.jackson.annotation.JsonIgnore",
                     (ann, utils) -> ann.method("value", true).map(AnnotationValueWrapper::asBoolean))),
             false,
-            MergeFunction.notDefault(false));
+            MergeFunction.notDefault(false),
+            LocationKind.DTO);
 }

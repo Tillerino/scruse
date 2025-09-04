@@ -25,20 +25,23 @@ public final class ConfigProperty<T> {
                                     .flatMap(ScruseBlueprint::includeUses)
                                     .collect(toUnmodifiableSet())))),
             Set.of(),
-            MergeFunction.mergeSets());
+            MergeFunction.mergeSets(),
+            null);
 
     public static ConfigProperty<JsonConfig.DelegateeMode> DELEGATEE = createConfigProperty(
             List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE),
             List.of(ConfigPropertyRetriever.jsonConfigPropertyRetriever("delegateTo", JsonConfig.DelegateeMode.class)),
             JsonConfig.DelegateeMode.DEFAULT,
-            MergeFunction.notDefault(JsonConfig.DelegateeMode.DEFAULT));
+            MergeFunction.notDefault(JsonConfig.DelegateeMode.DEFAULT),
+            LocationKind.DTO);
 
     public static ConfigProperty<JsonConfig.ImplementationMode> IMPLEMENT = createConfigProperty(
             List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE),
             List.of(ConfigPropertyRetriever.jsonConfigPropertyRetriever(
                     "implement", JsonConfig.ImplementationMode.class)),
             JsonConfig.ImplementationMode.DEFAULT,
-            MergeFunction.notDefault(JsonConfig.ImplementationMode.DEFAULT));
+            MergeFunction.notDefault(JsonConfig.ImplementationMode.DEFAULT),
+            LocationKind.DTO);
 
     final int index = counter.incrementAndGet();
 
@@ -46,24 +49,28 @@ public final class ConfigProperty<T> {
     public final List<ConfigPropertyRetriever<T>> retrievers;
     public final T defaultValue;
     public final MergeFunction<T> merger;
+    public final LocationKind doNotPropagateTo;
 
     public ConfigProperty(
             List<LocationKind> locationKind,
             List<ConfigPropertyRetriever<T>> retrievers,
             T defaultValue,
-            MergeFunction<T> merger) {
+            MergeFunction<T> merger,
+            LocationKind doNotPropagateTo) {
         this.locationKind = locationKind;
         this.retrievers = retrievers;
         this.defaultValue = defaultValue;
         this.merger = merger;
+        this.doNotPropagateTo = doNotPropagateTo;
     }
 
     public static <T> ConfigProperty<T> createConfigProperty(
             List<LocationKind> locationKind,
             List<ConfigPropertyRetriever<T>> retriever,
             T defaultValue,
-            MergeFunction<T> merger) {
-        return new ConfigProperty<>(locationKind, retriever, defaultValue, merger);
+            MergeFunction<T> merger,
+            LocationKind doNotPropagateTo) {
+        return new ConfigProperty<>(locationKind, retriever, defaultValue, merger, doNotPropagateTo);
     }
 
     Optional<InstantiatedProperty<T>> instantiate(

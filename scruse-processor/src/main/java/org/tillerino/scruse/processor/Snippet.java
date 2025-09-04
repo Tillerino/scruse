@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.Validate;
 import org.tillerino.scruse.processor.util.Named;
 
@@ -100,6 +101,33 @@ public interface Snippet {
             }
         } else {
             aggregator.add(o);
+        }
+    }
+
+    interface TypedSnippet extends Snippet {
+        TypeMirror type();
+
+        static TypedSnippet of(TypeMirror type, Snippet nested) {
+            return new TypedSnippet() {
+                @Override
+                public TypeMirror type() {
+                    return type;
+                }
+
+                @Override
+                public String format() {
+                    return nested.format();
+                }
+
+                @Override
+                public Object[] args() {
+                    return nested.args();
+                }
+            };
+        }
+
+        static TypedSnippet of(TypeMirror type, String format, Object... args) {
+            return of(type, Snippet.of(format, args));
         }
     }
 }

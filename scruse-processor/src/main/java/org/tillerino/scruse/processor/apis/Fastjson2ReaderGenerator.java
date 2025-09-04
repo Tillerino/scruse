@@ -3,7 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import static org.tillerino.scruse.processor.Snippet.join;
 import static org.tillerino.scruse.processor.Snippet.of;
 
-import com.squareup.javapoet.CodeBlock;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import javax.lang.model.element.VariableElement;
@@ -30,22 +30,18 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     public Fastjson2ReaderGenerator(
-            ScrusePrototype prototype,
-            AnnotationProcessorUtils utils,
             Type type,
             Property property,
-            CodeBlock.Builder code,
-            VariableElement parserVariable,
             LHS lhs,
-            Fastjson2ReaderGenerator parent,
+            @Nonnull Fastjson2ReaderGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
-        this.parserVariable = parserVariable;
+        super(parent, type, stackRelevantType, property, lhs, config);
+        this.parserVariable = parent.parserVariable;
     }
 
     @Override
-    protected void readNullable(Branch branch, boolean nullable) {
+    protected void readNullable(Branch branch, boolean nullable, boolean lastCase) {
         if (type.isArrayType()) {
             if (type.getComponentType().isString()) {
                 addStatement(lhs.assign("$L.readStringArray()", parserVariable.getSimpleName()));
@@ -60,7 +56,7 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
                 return;
             }
         }
-        super.readNullable(branch, nullable);
+        super.readNullable(branch, nullable, lastCase);
     }
 
     @Override
@@ -188,16 +184,6 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     @Override
     protected Fastjson2ReaderGenerator nest(
             TypeMirror type, @Nullable Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
-        return new Fastjson2ReaderGenerator(
-                prototype,
-                utils,
-                utils.tf.getType(type),
-                property,
-                code,
-                parserVariable,
-                lhs,
-                this,
-                stackRelevantType,
-                config);
+        return new Fastjson2ReaderGenerator(utils.tf.getType(type), property, lhs, this, stackRelevantType, config);
     }
 }

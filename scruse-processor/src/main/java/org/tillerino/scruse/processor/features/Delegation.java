@@ -18,7 +18,24 @@ import org.tillerino.scruse.processor.util.PrototypeKind;
 import org.tillerino.scruse.processor.util.ShortName;
 
 public record Delegation(AnnotationProcessorUtils utils) {
-    public Optional<InstantiatedPrototype> findPrototype(
+    public Optional<Delegatee> findDelegatee(
+            Type type,
+            ScrusePrototype caller,
+            boolean allowRecursion,
+            boolean allowExact,
+            AnyConfig config,
+            GeneratedClass generatedClass) {
+        return findPrototype(type, caller, allowRecursion, allowExact, config)
+                .map(d -> new Delegatee(
+                        generatedClass.getOrCreateDelegateeField(
+                                caller.blueprint(),
+                                d.blueprint(),
+                                !d.prototype().overrides()),
+                        d.method()))
+                .or(() -> utils.delegation.findDelegateeInMethodParameters(caller, type));
+    }
+
+    private Optional<InstantiatedPrototype> findPrototype(
             Type type, ScrusePrototype caller, boolean allowRecursion, boolean allowExact, AnyConfig config) {
         ScruseBlueprint blueprint = caller.blueprint();
         for (ScrusePrototype callee : blueprint.prototypes) {
@@ -46,7 +63,7 @@ public record Delegation(AnnotationProcessorUtils utils) {
         return callee.config().resolveProperty(ConfigProperty.DELEGATEE).value().canBeDelegatedTo();
     }
 
-    public Optional<Delegatee> findDelegateeInMethodParameters(ScrusePrototype prototype, Type type) {
+    private Optional<Delegatee> findDelegateeInMethodParameters(ScrusePrototype prototype, Type type) {
         for (InstantiatedVariable parameter : prototype.kind().otherParameters()) {
             for (InstantiatedMethod method :
                     utils.generics.instantiateMethods(parameter.type(), LocationKind.PROTOTYPE)) {

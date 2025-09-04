@@ -1,6 +1,5 @@
 package org.tillerino.scruse.processor.apis;
 
-import com.squareup.javapoet.CodeBlock;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -22,30 +21,15 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
     }
 
     protected JacksonJsonGeneratorWriterGenerator(
-            ScrusePrototype prototype,
-            AnnotationProcessorUtils utils,
             Type type,
-            CodeBlock.Builder code,
-            VariableElement generatorVariable,
             JacksonJsonGeneratorWriterGenerator parent,
             LHS lhs,
             RHS rhs,
             Property property,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(
-                utils,
-                parent.generatedClass,
-                prototype,
-                code,
-                parent,
-                type,
-                property,
-                rhs,
-                lhs,
-                stackRelevantType,
-                config);
-        this.generatorVariable = generatorVariable;
+        super(parent, type, property, rhs, lhs, stackRelevantType, config);
+        this.generatorVariable = parent.generatorVariable;
     }
 
     @Override
@@ -166,16 +150,6 @@ public class JacksonJsonGeneratorWriterGenerator extends AbstractWriterGenerator
     protected JacksonJsonGeneratorWriterGenerator nest(
             TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new JacksonJsonGeneratorWriterGenerator(
-                prototype,
-                utils,
-                utils.tf.getType(type),
-                code,
-                generatorVariable,
-                this,
-                lhs,
-                rhs,
-                property,
-                stackRelevantType,
-                config);
+                utils.tf.getType(type), this, lhs, rhs, property, stackRelevantType, config);
     }
 }

@@ -11,4 +11,10 @@ public interface IgnorePropertiesModel {
             String ignoredValue,
             // this is renamed, so it will not actually be ignored
             @JsonProperty("renamed") String ignoredArray) {}
+
+    // make sure that ignore properties is not propagated to the inner class
+    @JsonIgnoreProperties({"ignored"})
+    record OuterJsonIgnoreProperties(String ignored, InnerJsonIgnoreProperties inner) {}
+
+    record InnerJsonIgnoreProperties(String ignored) {}
 }

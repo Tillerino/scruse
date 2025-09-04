@@ -1,6 +1,5 @@
 package org.tillerino.scruse.processor.apis;
 
-import com.squareup.javapoet.CodeBlock;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -23,30 +22,15 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
     }
 
     public Fastjson2WriterGenerator(
-            ScrusePrototype prototype,
-            AnnotationProcessorUtils utils,
             Type type,
-            CodeBlock.Builder code,
-            VariableElement writerVariable,
             Fastjson2WriterGenerator parent,
             LHS lhs,
             RHS rhs,
             Property property,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(
-                utils,
-                parent.generatedClass,
-                prototype,
-                code,
-                parent,
-                type,
-                property,
-                rhs,
-                lhs,
-                stackRelevantType,
-                config);
-        this.writerVariable = writerVariable;
+        super(parent, type, property, rhs, lhs, stackRelevantType, config);
+        this.writerVariable = parent.writerVariable;
     }
 
     @Override
@@ -167,17 +151,7 @@ public class Fastjson2WriterGenerator extends AbstractWriterGenerator<Fastjson2W
     protected Fastjson2WriterGenerator nest(
             TypeMirror type, LHS lhs, Property property, RHS rhs, boolean stackRelevantType, AnyConfig config) {
         return new Fastjson2WriterGenerator(
-                prototype,
-                utils,
-                utils.tf.getType(type),
-                code,
-                writerVariable,
-                this,
-                lhs,
-                rhs,
-                property,
-                stackRelevantType,
-                config);
+                utils.tf.getType(type), this, lhs, rhs, property, stackRelevantType, config);
     }
 
     private boolean writeNatively() {

@@ -28,6 +28,38 @@ public record Generics(AnnotationProcessorUtils utils) {
         return map;
     }
 
+    /** @return null if the super type is not a super type of d */
+    public Map<TypeVar, TypeMirror> recordTypeBindingsFor(DeclaredType d, TypeElement superType) {
+        if (d.asElement().equals(superType)) {
+            Map<TypeVar, TypeMirror> bindings = new LinkedHashMap<>();
+            for (int i = 0; i < superType.getTypeParameters().size(); i++) {
+                bindings.put(
+                        new TypeVar(
+                                superType,
+                                ((TypeVariable) superType
+                                                .getTypeParameters()
+                                                .get(i)
+                                                .asType())
+                                        .asElement()
+                                        .getSimpleName()
+                                        .toString()),
+                        d.getTypeArguments().get(i));
+            }
+            return bindings;
+        }
+
+        for (TypeMirror directSupertype : utils.types.directSupertypes(d)) {
+            if (directSupertype instanceof DeclaredType d2) {
+                Map<TypeVar, TypeMirror> superTypeBindings = recordTypeBindingsFor(d2, superType);
+                if (superTypeBindings != null) {
+                    return superTypeBindings;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public TypeMirror applyTypeBindings(TypeMirror t, Map<TypeVar, TypeMirror> bindings) {
         return t.accept(
                 new RebuildingTypeVisitor() {

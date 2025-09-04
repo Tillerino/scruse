@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
+import org.tillerino.scruse.tests.model.features.IgnorePropertiesModel.InnerJsonIgnoreProperties;
 import org.tillerino.scruse.tests.model.features.IgnorePropertiesModel.JsonIgnorePropertiesValue;
+import org.tillerino.scruse.tests.model.features.IgnorePropertiesModel.OuterJsonIgnoreProperties;
 
 class IgnorePropertiesTest extends ReferenceTest {
 
@@ -26,5 +28,20 @@ class IgnorePropertiesTest extends ReferenceTest {
         JsonIgnorePropertiesValue value =
                 new JsonIgnorePropertiesValue("Moopsy", 123, "ignored", "not actually ignored");
         outputUtils.assertIsEqualToDatabind(value, serde::writeJsonIgnorePropertiesValue);
+    }
+
+    @Test
+    void nestedIgnoreSpecificPropertiesWrite() throws Exception {
+        outputUtils.assertIsEqualToDatabind(
+                new OuterJsonIgnoreProperties("foo", new InnerJsonIgnoreProperties("bar")),
+                serde::writeOuterJsonIgnoreProperties);
+    }
+
+    @Test
+    void nestedIgnoreSpecificPropertiesRead() throws Exception {
+        inputUtils.assertIsEqualToDatabind(
+                "{ \"ignored\": \"foo\", \"inner\": { \"ignored\": \"bar\" }}",
+                serde::readOuterJsonIgnoreProperties,
+                new TypeReference<OuterJsonIgnoreProperties>() {});
     }
 }

@@ -43,6 +43,10 @@ public record InstantiatedMethod(
         return true;
     }
 
+    public boolean hasParameterAssignableFrom(TypeMirror t, AnnotationProcessorUtils utils) {
+        return parameters.stream().anyMatch(p -> utils.types.isAssignable(t, p.type));
+    }
+
     @Override
     public String toString() {
         return String.format(

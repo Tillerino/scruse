@@ -4,7 +4,7 @@ import static org.tillerino.scruse.processor.Snippet.join;
 import static org.tillerino.scruse.processor.Snippet.of;
 
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock.Builder;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import javax.lang.model.element.VariableElement;
@@ -29,18 +29,14 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     }
 
     public JakartaJsonParserGenerator(
-            ScrusePrototype prototype,
-            AnnotationProcessorUtils utils,
             Type type,
             Property property,
-            Builder code,
-            VariableElement parserVariable,
             LHS lhs,
-            JakartaJsonParserGenerator parent,
+            @Nonnull JakartaJsonParserGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
-        this.parserVariable = parserVariable;
+        super(parent, type, stackRelevantType, property, lhs, config);
+        this.parserVariable = parent.parserVariable;
     }
 
     @Override
@@ -205,17 +201,7 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     @Override
     protected JakartaJsonParserGenerator nest(
             TypeMirror type, @Nullable Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
-        return new JakartaJsonParserGenerator(
-                prototype,
-                utils,
-                utils.tf.getType(type),
-                property,
-                code,
-                parserVariable,
-                lhs,
-                this,
-                stackRelevantType,
-                config);
+        return new JakartaJsonParserGenerator(utils.tf.getType(type), property, lhs, this, stackRelevantType, config);
     }
 
     private Class<JakartaJsonParserHelper> importHelper() {

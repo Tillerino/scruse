@@ -3,7 +3,7 @@ package org.tillerino.scruse.processor.apis;
 import static org.tillerino.scruse.processor.Snippet.join;
 import static org.tillerino.scruse.processor.Snippet.of;
 
-import com.squareup.javapoet.CodeBlock;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
@@ -29,18 +29,14 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
     }
 
     public GsonJsonReaderReaderGenerator(
-            ScrusePrototype prototype,
-            AnnotationProcessorUtils utils,
             Type type,
             Property property,
-            CodeBlock.Builder code,
-            VariableElement parserVariable,
             LHS lhs,
-            GsonJsonReaderReaderGenerator parent,
+            @Nonnull GsonJsonReaderReaderGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
-        this.parserVariable = parserVariable;
+        super(parent, type, stackRelevantType, property, lhs, config);
+        this.parserVariable = parent.parserVariable;
     }
 
     @Override
@@ -177,15 +173,6 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
     protected GsonJsonReaderReaderGenerator nest(
             TypeMirror type, @Nullable Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
         return new GsonJsonReaderReaderGenerator(
-                prototype,
-                utils,
-                utils.tf.getType(type),
-                property,
-                code,
-                parserVariable,
-                lhs,
-                this,
-                stackRelevantType,
-                config);
+                utils.tf.getType(type), property, lhs, this, stackRelevantType, config);
     }
 }

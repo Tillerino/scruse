@@ -18,10 +18,12 @@ import static org.tillerino.scruse.processor.features.PropertyName.resolveProper
 import static org.tillerino.scruse.processor.util.Exceptions.runWithContext;
 
 import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.CodeBlock.Builder;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -41,6 +43,7 @@ import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.Polymorphism;
+import org.tillerino.scruse.processor.features.References.Setup;
 import org.tillerino.scruse.processor.features.UnknownProperties;
 import org.tillerino.scruse.processor.features.Verification.ProtoAndProps;
 import org.tillerino.scruse.processor.util.Exceptions;
@@ -52,7 +55,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     protected final LHS lhs;
 
     AbstractReaderGenerator(AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
-        this(
+        super(
                 utils,
                 generatedClass,
                 prototype,
@@ -61,40 +64,29 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 utils.tf.getType(prototype.instantiatedReturnType()),
                 true,
                 null,
-                new LHS.Return(),
                 prototype.config());
+        lhs = new LHS.Return();
     }
 
     protected AbstractReaderGenerator(
-            AnnotationProcessorUtils utils,
-            GeneratedClass generatedClass,
-            ScrusePrototype prototype,
-            Builder code,
-            SELF parent,
-            Type type,
-            boolean stackRelevantType,
-            Property property,
-            LHS lhs,
-            AnyConfig config) {
-        super(utils, generatedClass, prototype, code, parent, type, stackRelevantType, property, config);
+            @Nonnull SELF parent, Type type, boolean stackRelevantType, Property property, LHS lhs, AnyConfig config) {
+        super(parent, type, stackRelevantType, property, config);
         this.lhs = lhs;
     }
 
     public CodeBlock.Builder build() {
         initializeParser();
-        return build(Branch.IF, true);
+        return build(Branch.IF, true, true);
     }
 
-    CodeBlock.Builder build(Branch branch, boolean nullable) {
-        Optional<Delegatee> delegate = utils.delegation
-                .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
-                .map(d -> new Delegatee(
-                        generatedClass.getOrCreateDelegateeField(
-                                prototype.blueprint(),
-                                d.blueprint(),
-                                !d.prototype().overrides()),
-                        d.method()))
-                .or(() -> utils.delegation.findDelegateeInMethodParameters(prototype, type));
+    CodeBlock.Builder build(Branch branch, boolean nullable, boolean lastCase) {
+        Optional<Setup> resolveSetup = utils.references.resolveSetup(config, prototype, type.getTypeMirror());
+        if (resolveSetup.isPresent()) {
+            resolveId(branch, resolveSetup.get());
+            branch = ELSE_IF;
+        }
+        Optional<Delegatee> delegate = utils.delegation.findDelegatee(
+                type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config, generatedClass);
         if (delegate.isPresent()) {
             if (branch != Branch.IF) {
                 nextControlFlow("else");
@@ -117,7 +109,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             addStatement(of("$T $C", method.parameters().get(0).type(), converterArg));
             runWithContext(
                     () -> nest(method.parameters().get(0).type(), null, converterArg, true, config)
-                            .build(IF, nullable),
+                            .build(IF, nullable, lastCase),
                     "converter",
                     converter.get());
             addStatement(lhs.assign(of("$C($C)", method.callSymbol(utils), converterArg)));
@@ -129,18 +121,35 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
         detectSelfReferencingType();
         if (type.isPrimitive()) {
-            readPrimitive(branch, type.getTypeMirror());
+            readPrimitive(branch, type.getTypeMirror(), lastCase);
         } else {
-            readNullable(branch, nullable);
+            readNullable(branch, nullable, lastCase);
         }
         return code;
+    }
+
+    private void resolveId(Branch branch, Setup setup) {
+        ScopedVar idVar = createVariable("id");
+        TypeMirror idType = setup.finalIdType(type, utils);
+        addStatement("$T $C", idType, idVar);
+        nest(idType, new Property("id", "id"), Variable.from(idVar), false, config.propagateTo(LocationKind.DTO))
+                .build(branch, false, false);
+        ScopedVar resolvedVar = createVariable("resolved");
+        addStatement(
+                "$T $C = ($T) $C", type.getTypeMirror(), resolvedVar, type.getTypeMirror(), setup.resolveId(idVar));
+        beginControlFlow("if ($C == null)", resolvedVar);
+        addStatement("throw new IOException($S + $C)", "Unresolved ID: ", idVar);
+        endControlFlow();
+        addStatement(lhs.assign(resolvedVar));
+
+        // a bunch of else-if follow after this
     }
 
     /**
      * Reads non-primitive types. This is a good method to override if you want to add specializations for some types
      * that work with null values.
      */
-    protected void readNullable(Branch branch, boolean nullable) {
+    protected void readNullable(Branch branch, boolean nullable, boolean lastCase) {
         if (nullable) {
             Snippet cond = nullCaseCondition();
             if (canBePolyChild) {
@@ -152,13 +161,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 branch.controlFlow(this, cond.format(), cond.args());
             }
             addStatement(lhs.assign("null"));
-            readNullCheckedObject(Branch.ELSE_IF);
+            readNullCheckedObject(Branch.ELSE_IF, lastCase);
         } else {
-            readNullCheckedObject(branch);
+            readNullCheckedObject(branch, lastCase);
         }
     }
 
-    protected void readPrimitive(Branch branch, TypeMirror type) {
+    protected void readPrimitive(Branch branch, TypeMirror type, boolean lastCase) {
         String typeName;
         switch (type.getKind()) {
             case BOOLEAN -> {
@@ -186,9 +195,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         } else {
             readPrimitive(type);
         }
-        nextControlFlow("else");
-        throwUnexpected(typeName);
-        endControlFlow();
+        elseThrowUnexpected(typeName, lastCase);
     }
 
     private void readCharFromString() {
@@ -225,35 +232,35 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         return stringVar;
     }
 
-    private void readNullCheckedObject(Branch branch) {
+    void readNullCheckedObject(Branch branch, boolean lastCase) {
         Optional<Creator> jsonCreatorMethod = utils.creators.findJsonCreatorMethod(type.getTypeMirror());
         if (jsonCreatorMethod.isPresent()) {
             if (jsonCreatorMethod.get() instanceof Creator.Converter c) {
-                readFactory(branch, c.method());
+                readFactory(branch, c.method(), lastCase);
             } else if (jsonCreatorMethod.get() instanceof Creator.Properties p) {
-                readObject(branch, p);
+                readObject(branch, p, lastCase);
             } else {
                 throw Exceptions.unexpected();
             }
         } else if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false, config)
-                    .build(branch, true);
+                    .build(branch, true, lastCase);
         } else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
-            readString(branch, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY);
+            readString(branch, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY, lastCase);
         } else if (type.isEnumType()) {
-            readEnum(branch);
+            readEnum(branch, lastCase);
         } else if (type.isArrayType()) {
-            readArray(branch);
+            readArray(branch, lastCase);
         } else if (type.isIterableType()) {
-            readCollection(branch);
+            readCollection(branch, lastCase);
         } else if (type.isMapType()) {
-            readMap(branch);
+            readMap(branch, lastCase);
         } else {
-            readObject(branch, null);
+            readObject(branch, null, lastCase);
         }
     }
 
-    private void readFactory(Branch branch, InstantiatedMethod method) {
+    private void readFactory(Branch branch, InstantiatedMethod method, boolean lastCase) {
         if (branch == ELSE_IF) {
             nextControlFlow("else");
         }
@@ -261,7 +268,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         addStatement(of("$T $L", method.parameters().get(0).type(), creatorArg.name));
         runWithContext(
                 () -> nest(method.parameters().get(0).type(), null, creatorArg, true, config)
-                        .build(IF, false),
+                        .build(IF, false, lastCase),
                 "creator",
                 method);
         addStatement(lhs.assign(of(
@@ -274,15 +281,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
     }
 
-    private void readString(Branch branch, StringKind stringKind) {
+    private void readString(Branch branch, StringKind stringKind, boolean lastCase) {
         startStringCase(branch);
         readString(stringKind);
-        nextControlFlow("else");
-        throwUnexpected("string");
-        endControlFlow();
+        elseThrowUnexpected("string", lastCase);
     }
 
-    private void readEnum(Branch branch) {
+    private void readEnum(Branch branch, boolean lastCase) {
         startStringCase(branch);
         {
             String enumValuesField = generatedClass.getOrCreateEnumField(type.getTypeMirror());
@@ -291,16 +296,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             nest(utils.commonTypes.string, null, enumVar, false, config).readString(STRING);
             beginControlFlow("if ($L.containsKey($L))", enumValuesField, enumVar.name);
             addStatement(lhs.assign("$L.get($L)", enumValuesField, enumVar.name));
-            nextControlFlow("else");
-            throwUnexpected("enum value");
-            endControlFlow();
+            elseThrowUnexpected("enum value", lastCase);
         }
-        nextControlFlow("else");
-        throwUnexpected("string");
-        endControlFlow();
+        elseThrowUnexpected("string", lastCase);
     }
 
-    private void readArray(Branch branch) {
+    private void readArray(Branch branch, boolean lastCase) {
         Type componentType = type.getComponentType();
         startArrayCase(branch);
         {
@@ -340,7 +341,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                         new LHS.Array(varName.name(), len),
                                         true,
                                         config)
-                                .build(Branch.IF, true),
+                                .build(Branch.IF, true, lastCase),
                         "component",
                         componentType);
             }
@@ -366,14 +367,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             ScopedVar stringVar = readStringInstead();
             addStatement(lhs.assign("$T.getDecoder().decode($C)", Base64.class, stringVar));
         }
-        nextControlFlow("else");
-        {
-            throwUnexpected("array");
-        }
-        endControlFlow();
+        elseThrowUnexpected("array", lastCase);
     }
 
-    private void readCollection(Branch branch) {
+    private void readCollection(Branch branch, boolean lastCase) {
         startArrayCase(branch);
         {
             Type componentType = type.determineTypeArguments(Iterable.class).get(0);
@@ -384,7 +381,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             {
                 runWithContext(
                         () -> nest(componentType.getTypeMirror(), ITEM, new Collection(varName), true, config)
-                                .build(IF, true),
+                                .build(IF, true, lastCase),
                         "component",
                         componentType);
             }
@@ -392,9 +389,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             afterArray();
             addStatement(lhs.assign("$L", varName));
         }
-        nextControlFlow("else");
-        throwUnexpected("array");
-        endControlFlow();
+        elseThrowUnexpected("array", lastCase);
     }
 
     private TypeMirror determineCollectionType() {
@@ -410,18 +405,17 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private String instantiateContainer(TypeMirror collectionType) {
-        String varName;
         if (lhs instanceof LHS.Variable v) {
-            varName = v.name();
-            addStatement("$L = new $T<>()", varName, collectionType);
+            addStatement("$L = new $T<>()", v.name(), collectionType);
+            return v.name();
         } else {
-            varName = createVariable("container").name();
-            addStatement("$T $L = new $T<>()", type.getTypeMirror(), varName, collectionType);
+            ScopedVar variable = createVariable("container");
+            addStatement("$T $C = new $T<>()", type.getTypeMirror(), variable, collectionType);
+            return variable.name();
         }
-        return varName;
     }
 
-    private void readMap(Branch branch) {
+    private void readMap(Branch branch, boolean lastCase) {
         Snippet cond = objectCaseCondition();
         branch.controlFlow(this, cond.format(), flatten(cond.args()));
         {
@@ -444,12 +438,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                         new LHS.Map(varName, keyVar),
                                         true,
                                         config)
-                                .build(Branch.IF, true),
+                                .build(Branch.IF, true, lastCase),
                         "value",
                         valueType);
-                nextControlFlow("else");
-                throwUnexpected("field name");
-                endControlFlow();
+                elseThrowUnexpected("field name", lastCase);
             }
             endControlFlow(); // end of loop
             afterObject();
@@ -458,9 +450,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 addStatement(lhs.assign("$L", varName));
             }
         }
-        nextControlFlow("else");
-        throwUnexpected("object");
-        endControlFlow();
+        elseThrowUnexpected("object", lastCase);
     }
 
     private TypeMirror determineMapType() {
@@ -471,7 +461,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
     }
 
-    private void readObject(Branch branch, @Nullable Creator.Properties properties) {
+    private void readObject(Branch branch, @Nullable Creator.Properties properties, boolean lastCase) {
         Snippet cond = objectCaseCondition();
         if (canBePolyChild) {
             branch.controlFlow(
@@ -483,19 +473,19 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
 
         if (properties != null) {
-            readCreator(properties.method());
+            readCreator(properties.method(), lastCase);
         } else {
             Optional.ofNullable(type.getTypeElement())
                     .flatMap(t -> Polymorphism.of(t, utils))
-                    .ifPresentOrElse(this::readPolymorphicObject, this::readObjectFields);
+                    .ifPresentOrElse(
+                            polymorphism -> readPolymorphicObject(polymorphism, lastCase),
+                            () -> readObjectFields(lastCase));
         }
 
-        nextControlFlow("else");
-        throwUnexpected("object");
-        endControlFlow();
+        elseThrowUnexpected("object", lastCase);
     }
 
-    private void readPolymorphicObject(Polymorphism polymorphism) {
+    private void readPolymorphicObject(Polymorphism polymorphism, boolean lastCase) {
         LHS.Variable discriminator = LHS.Variable.from(createVariable("discriminator"));
         addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
         nest(
@@ -510,25 +500,22 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             branch.controlFlow(this, "$L.equals($S)", discriminator.name(), child.name());
             SELF nested = nest(child.type(), Property.INSTANCE, lhs, true, config);
             utils.delegation
-                    .findPrototype(utils.tf.getType(child.type()), prototype, false, true, config)
+                    .findDelegatee(utils.tf.getType(child.type()), prototype, false, true, config, generatedClass)
                     .ifPresentOrElse(
-                            delegate -> {
-                                String delegateField = generatedClass.getOrCreateDelegateeField(
-                                        prototype.blueprint(),
-                                        delegate.blueprint(),
-                                        !delegate.prototype().overrides());
-                                if (delegate.prototype().contextParameter().isEmpty()) {
+                            delegatee -> {
+                                VariableElement callerContext = prototype
+                                        .contextParameter()
+                                        .orElseThrow(() -> new ContextedRuntimeException(
+                                                "Prototype method must have a context parameter"));
+                                if (!delegatee.method().hasParameterAssignableFrom(callerContext.asType(), utils)) {
                                     throw new ContextedRuntimeException(
                                             "Delegate method must have a context parameter");
                                 }
-                                prototype
-                                        .contextParameter()
-                                        .ifPresentOrElse(ctx -> addStatement("$L.markObjectOpen()", ctx), () -> {
-                                            throw new ContextedRuntimeException(
-                                                    "Prototype method must have a context parameter");
-                                        });
+                                addStatement(
+                                        "$L.markObjectOpen()",
+                                        prototype.contextParameter().get());
                                 Exceptions.runWithContext(
-                                        () -> nested.invokeDelegate(delegateField, delegate.method()),
+                                        () -> nested.invokeDelegate(delegatee.fieldOrParameter(), delegatee.method()),
                                         "instance",
                                         child.type());
                             },
@@ -538,8 +525,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                                 .findJsonCreatorMethod(child.type())
                                                 .map(c -> c instanceof Creator.Properties p ? p : null)
                                                 .ifPresentOrElse(
-                                                        c -> nested.readCreator(c.method()),
-                                                        () -> nested.readObjectFields()),
+                                                        c -> nested.readCreator(c.method(), lastCase),
+                                                        () -> nested.readObjectFields(lastCase)),
                                         "instance",
                                         child.type());
                             });
@@ -553,7 +540,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         endControlFlow(); // ends the loop
     }
 
-    void readObjectFields() {
+    void readObjectFields(boolean lastCase) {
         if (type.getTypeElement() != null && type.isRecord()) {
             Map<TypeVar, TypeMirror> typeBindings =
                     utils.generics.recordTypeBindings((DeclaredType) type.getTypeMirror());
@@ -562,15 +549,15 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                             .get(0),
                     typeBindings,
                     LocationKind.CREATOR);
-            readCreator(instantiatedConstructor);
+            readCreator(instantiatedConstructor, lastCase);
         } else if (type.getTypeElement() != null) {
-            readObjectFromAccessors();
+            readObjectFromAccessors(lastCase);
         } else {
             throw new ContextedRuntimeException("Cannot read " + type);
         }
     }
 
-    void readCreator(InstantiatedMethod method) {
+    void readCreator(InstantiatedMethod method, boolean lastCase) {
         ProtoAndProps verificationForDto =
                 generatedClass.verificationForBlueprint.addReader(prototype, type.getTypeMirror());
 
@@ -602,27 +589,36 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             verificationForDto.addProperty(propertyName, parameter.type(), propertyConfig);
             nested.add(nest);
         }
-        readProperties(nested);
+        ScopedVar idVar = readProperties(nested, lastCase);
         String args = nested.stream().map(p -> ((Variable) p.lhs).name()).collect(joining(", "));
-        addStatement(lhs.assign(of("$C($L)", method.callSymbol(utils), args)));
+        Snippet creatorCall = of("$C($L)", method.callSymbol(utils), args);
+        utils.references
+                .resolveSetup(config, prototype, type.getTypeMirror())
+                .ifPresentOrElse(
+                        setup -> lhs.assignAnd(
+                                creatorCall,
+                                this,
+                                type.getTypeMirror(),
+                                objectVar -> addStatement(setup.bindItem(idVar, objectVar))),
+                        () -> addStatement(lhs.assign(creatorCall)));
     }
 
-    private void readObjectFromAccessors() {
+    private void readObjectFromAccessors(boolean lastCase) {
         ProtoAndProps verificationForDto =
                 generatedClass.verificationForBlueprint.addReader(prototype, type.getTypeMirror());
 
         List<SELF> nested = new ArrayList<>();
-        String objectVar = createVariable("object").name();
-        addStatement("$T $L = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
+        ScopedVar objectVar = createVariable("object");
+        addStatement("$T $C = new $T()", type.getTypeMirror(), objectVar, type.getTypeMirror());
         type.getPropertyWriteAccessors(SETTER_PREFERRED).forEach((canonicalPropertyName, accessor) -> {
             AnyConfig propertyConfig = fromAccessorConsideringField(
-                            accessor, accessor.getSimpleName(), type, canonicalPropertyName, utils)
+                            accessor, accessor.getSimpleName(), type.getTypeMirror(), canonicalPropertyName, utils)
                     .merge(config);
             if (propertyConfig.resolveProperty(IGNORE_PROPERTY).value()) {
                 return;
             }
 
-            LHS lhs = from(accessor, objectVar);
+            LHS lhs = from(accessor, objectVar.name());
             String propertyName = resolvePropertyName(propertyConfig, canonicalPropertyName);
             verificationForDto.addProperty(propertyName, accessor.getAccessedType(), propertyConfig);
             SELF nest = nest(
@@ -633,11 +629,24 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     propertyConfig);
             nested.add(nest);
         });
-        readProperties(nested);
-        addStatement(lhs.assign("$L", objectVar));
+        ScopedVar idVar = readProperties(nested, lastCase);
+        utils.references.resolveSetup(config, prototype, type.getTypeMirror()).ifPresent(setup -> {
+            addStatement(setup.bindItem(idVar, objectVar));
+        });
+        addStatement(lhs.assign("$C", objectVar));
     }
 
-    private void readProperties(List<SELF> properties) {
+    private ScopedVar readProperties(List<SELF> properties, boolean lastCase) {
+        Optional<Setup> referencesSetup = utils.references.resolveSetup(config, prototype, type.getTypeMirror());
+        ScopedVar idVar = referencesSetup
+                .map(setup -> {
+                    ScopedVar variable = createVariable("id");
+                    TypeMirror idType = setup.finalIdType(type, utils);
+                    addStatement("$T $C = null", idType, variable);
+                    return variable;
+                })
+                .orElse(null);
+
         iterateOverFields();
         startFieldCase(Branch.IF);
         String fieldVar = createVariable("field").name();
@@ -652,7 +661,26 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 continue;
             }
             beginControlFlow("case $S:", nest.property.serializedName());
-            Exceptions.runWithContext(() -> nest.build(Branch.IF, true), "property", nest.property.serializedName());
+            Exceptions.runWithContext(
+                    () -> {
+                        if (referencesSetup
+                                .filter(setup -> setup.isPropertyBased()
+                                        && setup.property().equals(nest.property.serializedName()))
+                                .isPresent()) {
+                            SELF tmpNest = nest(
+                                    nest.type.getTypeMirror(),
+                                    nest.property,
+                                    Variable.from(idVar),
+                                    nest.stackRelevantType,
+                                    nest.config);
+                            tmpNest.build(IF, true, lastCase);
+                            addStatement(nest.lhs.assign(idVar));
+                        } else {
+                            nest.build(Branch.IF, true, lastCase);
+                        }
+                    },
+                    "property",
+                    nest.property.serializedName());
             addStatement("break");
             endControlFlow();
         }
@@ -662,6 +690,18 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             addStatement("break");
             endControlFlow();
         }
+        referencesSetup.filter(setup -> !setup.isPropertyBased()).ifPresent(setup -> {
+            beginControlFlow("case $S:", setup.property());
+            nest(
+                            setup.idType(),
+                            new Property(setup.property(), setup.property()),
+                            LHS.Variable.from(idVar),
+                            true,
+                            config.propagateTo(LocationKind.DTO))
+                    .build(IF, true, lastCase);
+            addStatement("break");
+            endControlFlow();
+        });
         {
             beginControlFlow("default:");
             if (UnknownProperties.shouldThrow(config)) {
@@ -672,11 +712,18 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             endControlFlow();
         }
         endControlFlow(); // ends the last field
-        nextControlFlow("else");
-        throwUnexpected("field name");
-        endControlFlow();
+        elseThrowUnexpected("field name", lastCase);
         endControlFlow(); // ends the loop
         afterObject();
+        return idVar;
+    }
+
+    private void elseThrowUnexpected(String typeName, boolean lastCase) {
+        if (lastCase) {
+            nextControlFlow("else");
+            throwUnexpected(typeName);
+            endControlFlow();
+        }
     }
 
     protected abstract void initializeParser();
@@ -745,6 +792,22 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             }
         }
 
+        default void assignAnd(
+                Snippet rhs, AbstractCodeGeneratorStack stack, TypeMirror t, Consumer<Snippet> tmpAction) {
+            if (this instanceof Variable v) {
+                stack.addStatement(assign(rhs));
+                tmpAction.accept(v);
+            } else if (this instanceof Field f) {
+                stack.addStatement(assign(rhs));
+                tmpAction.accept(f);
+            } else {
+                ScopedVar tmp = stack.createVariable("tmp");
+                stack.addStatement("$T $C = $C", t, tmp, rhs);
+                tmpAction.accept(tmp);
+                stack.addStatement(assign(tmp));
+            }
+        }
+
         static LHS from(Accessor a, String objectVar) {
             return switch (a.getAccessorType()) {
                 case FIELD -> new Field(
@@ -786,7 +849,17 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
         record Map(String mapVar, String keyVar) implements LHS {}
 
-        record Field(String objectVar, String fieldName) implements LHS {}
+        record Field(String objectVar, String fieldName) implements LHS, Snippet {
+            @Override
+            public String format() {
+                return "$L.$L";
+            }
+
+            @Override
+            public Object[] args() {
+                return new Object[] {objectVar, fieldName};
+            }
+        }
 
         record Setter(String objectVar, String methodName) implements LHS {}
     }

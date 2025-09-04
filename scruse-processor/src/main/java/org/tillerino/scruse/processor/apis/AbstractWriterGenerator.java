@@ -9,17 +9,23 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.mapstruct.ap.internal.util.accessor.ReadAccessor;
 import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
+import org.tillerino.scruse.processor.Snippet.TypedSnippet;
 import org.tillerino.scruse.processor.apis.AbstractReaderGenerator.Branch;
+import org.tillerino.scruse.processor.apis.AbstractWriterGenerator.RHS.AnySnippet;
+import org.tillerino.scruse.processor.apis.AbstractWriterGenerator.RHS.Variable;
 import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
 import org.tillerino.scruse.processor.features.IgnoreProperty;
 import org.tillerino.scruse.processor.features.Polymorphism;
 import org.tillerino.scruse.processor.features.PropertyName;
+import org.tillerino.scruse.processor.features.References.Setup;
 import org.tillerino.scruse.processor.features.Verification.ProtoAndProps;
 import org.tillerino.scruse.processor.util.Exceptions;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
@@ -31,10 +37,6 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     protected final RHS rhs;
 
     protected AbstractWriterGenerator(
-            AnnotationProcessorUtils utils,
-            GeneratedClass generatedClass,
-            ScrusePrototype prototype,
-            CodeBlock.Builder code,
             SELF parent,
             Type type,
             Property property,
@@ -42,45 +44,32 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             LHS lhs,
             boolean isStackRelevantType,
             AnyConfig config) {
-        super(utils, generatedClass, prototype, code, parent, type, isStackRelevantType, property, config);
+        super(parent, type, isStackRelevantType, property, config);
         this.lhs = lhs;
         this.rhs = rhs;
     }
 
     protected AbstractWriterGenerator(
             AnnotationProcessorUtils utils, ScrusePrototype prototype, GeneratedClass generatedClass) {
-        this(
+        super(
                 utils,
                 generatedClass,
                 prototype,
                 CodeBlock.builder(),
                 null,
                 utils.tf.getType(prototype.instantiatedParameters().get(0).type()),
-                null,
-                new RHS.Variable(
-                        prototype
-                                .methodElement()
-                                .getParameters()
-                                .get(0)
-                                .getSimpleName()
-                                .toString(),
-                        true),
-                new LHS.Return(),
                 true,
+                null,
                 prototype.config());
+        this.rhs = new RHS.Variable(
+                prototype.methodElement().getParameters().get(0).getSimpleName().toString(), true);
+        this.lhs = new LHS.Return();
     }
 
     public CodeBlock.Builder build() {
         Optional<Delegatee> delegate = utils.delegation
                 // delegate to any of the used blueprints
-                .findPrototype(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config)
-                .map(d -> new Delegatee(
-                        generatedClass.getOrCreateDelegateeField(
-                                prototype.blueprint(),
-                                d.blueprint(),
-                                !d.prototype().overrides()),
-                        d.method()))
-                .or(() -> utils.delegation.findDelegateeInMethodParameters(prototype, type));
+                .findDelegatee(type, prototype, !(lhs instanceof LHS.Return), stackDepth() > 1, config, generatedClass);
         if (delegate.isPresent()) {
             invokeDelegate(delegate.get().fieldOrParameter(), delegate.get().method());
             return code;
@@ -120,7 +109,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                 RHS.Variable nest = new RHS.Variable(
                         createVariable(property.canonicalName()).name(), true);
                 addStatement("$T $L = " + rhs.format(), flatten(type.getTypeMirror(), nest.name(), rhs.args()));
-                nest(type.getTypeMirror(), lhs, null, nest, false, config).build();
+                nest(type.getTypeMirror(), lhs, null, nest, false, config).writeNullable();
                 return;
             }
         }
@@ -139,31 +128,29 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
      * specializations for some types that require a dedicated null check.
      */
     protected void writeNullCheckedObject() {
-        Optional<InstantiatedMethod> jsonValueMethod = utils.creators.findJsonValueMethod(type.getTypeMirror());
-        if (jsonValueMethod.isPresent()) {
-            InstantiatedMethod method = jsonValueMethod.get();
-            RHS.Variable newValue = new RHS.Variable(createVariable("value").name(), true);
-            RHS.Accessor valueMethodInvocation = new RHS.Accessor(rhs, method.name() + "()", true);
-            addStatement(Snippet.of("$T $L = $C", method.returnType(), newValue.name, valueMethodInvocation));
-            nest(method.returnType(), lhs, null, newValue, true, config).build();
-            return;
+        Optional<Setup> referenceSetup = utils.references.resolveSetup(config, prototype, type.getTypeMirror());
+        if (referenceSetup.isPresent()) {
+            Setup setup = referenceSetup.get();
+            Variable idVar = new Variable(createVariable("id").name(), false);
+            TypeMirror idType = setup.finalIdType(type, utils);
+            addStatement("$T $C = $C", idType, idVar, setup.previouslyWritten(rhs));
+            beginControlFlow("if ($C != null)", idVar);
+            nest(idType, lhs, new Property("id", "id"), idVar, true, config.propagateTo(LocationKind.DTO))
+                    .build();
+            nextControlFlow("else");
         }
-        Optional<InstantiatedMethod> converter =
-                utils.converters.findOutputConverter(prototype.blueprint(), type.getTypeMirror(), config);
+
+        Optional<TypedSnippet> converter = utils.converters
+                .findOutputConverter(TypedSnippet.of(type.getTypeMirror(), rhs), prototype, config, generatedClass)
+                .or(() -> utils.converters.findJsonValueMethod(TypedSnippet.of(type.getTypeMirror(), rhs)));
         if (converter.isPresent()) {
-            InstantiatedMethod method = converter.get();
+            TypedSnippet converted = converter.get();
             RHS.Variable newValue = new RHS.Variable(createVariable("converted").name(), true);
-            addStatement(Snippet.of(
-                    "$T $L = $C($C$C)",
-                    method.returnType(),
-                    newValue.name,
-                    method.callSymbol(utils),
-                    rhs,
-                    Snippet.joinPrependingCommaToEach(
-                            utils.delegation.findArguments(prototype, method, 1, generatedClass))));
-            nest(method.returnType(), lhs, null, newValue, true, config).build();
+            addStatement(Snippet.of("$T $L = $C", converted.type(), newValue.name, converted));
+            nest(converted.type(), lhs, null, newValue, true, config).build();
             return;
         }
+
         if (utils.isBoxed(type.getTypeMirror())) {
             nest(utils.types.unboxedType(type.getTypeMirror()), lhs, null, rhs, false, config)
                     .build();
@@ -182,6 +169,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         } else {
             writeObjectAsMap();
         }
+        referenceSetup.ifPresent(__ -> endControlFlow());
     }
 
     protected void writeIterable() {
@@ -261,23 +249,18 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             addStatement("$T $L = ($T) " + rhs.format(), flatten(child.type(), casted.name, child.type(), rhs.args()));
 
             utils.delegation
-                    .findPrototype(utils.tf.getType(child.type()), prototype, false, true, config)
+                    .findDelegatee(utils.tf.getType(child.type()), prototype, false, true, config, generatedClass)
                     .ifPresentOrElse(
-                            delegate -> {
-                                String delegateField = generatedClass.getOrCreateDelegateeField(
-                                        prototype.blueprint(),
-                                        delegate.blueprint(),
-                                        !delegate.prototype().overrides());
-                                VariableElement calleeContext = delegate.prototype()
-                                        .contextParameter()
-                                        .orElseThrow(() -> new ContextedRuntimeException(
-                                                        "Delegate method must have a context parameter")
-                                                .addContextValue("delegate", delegate.method()));
+                            delegatee -> {
                                 VariableElement callerContext = prototype
                                         .contextParameter()
                                         .orElseThrow(() -> new ContextedRuntimeException(
                                                 "Prototype method must have a context parameter"));
-                                if (!utils.types.isAssignable(callerContext.asType(), calleeContext.asType())) {
+                                if (!delegatee.method().hasParameterAssignableFrom(callerContext.asType(), utils)) {
+                                    throw new ContextedRuntimeException(
+                                            "Delegate method must have a context parameter");
+                                }
+                                if (!utils.types.isAssignable(callerContext.asType(), callerContext.asType())) {
                                     throw new ContextedRuntimeException("Context types must be compatible");
                                 }
                                 addStatement(
@@ -288,7 +271,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                                 // TODO crude call
                                 Exceptions.runWithContext(
                                         () -> nest(child.type(), lhs, Property.INSTANCE, casted, true, config)
-                                                .invokeDelegate(delegateField, delegate.method()),
+                                                .invokeDelegate(delegatee.fieldOrParameter(), delegatee.method()),
                                         "instance",
                                         child.type());
                             },
@@ -338,35 +321,43 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             endControlFlow();
         }
 
+        Optional<Setup> referencesSetup = utils.references.resolveSetup(config, prototype, type.getTypeMirror());
+        referencesSetup.ifPresent(setup -> setup.generateId(rhs).ifPresent(id -> nest(
+                        setup.idType(),
+                        new LHS.Field("$S", new Object[] {setup.property()}),
+                        new Property("id", "id"),
+                        new AnySnippet(id, false),
+                        true,
+                        config.propagateTo(LocationKind.DTO))
+                .build()));
+
         ProtoAndProps verificationForDto =
                 generatedClass.verificationForBlueprint.addWriter(prototype, type.getTypeMirror());
         Set<String> ignoredProperties =
                 config.resolveProperty(IgnoreProperties.IGNORED_PROPERTIES).value();
 
-        type.getPropertyReadAccessors().forEach((canonicalPropertyName, accessor) -> {
-            AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
-                            accessor, accessor.getSimpleName(), type, canonicalPropertyName, utils)
-                    .merge(config);
-            if (propertyConfig.resolveProperty(IgnoreProperty.IGNORE_PROPERTY).value()) {
+        outputProperties(type).forEach(property -> {
+            if (property.config()
+                            .resolveProperty(IgnoreProperty.IGNORE_PROPERTY)
+                            .value()
+                    || ignoredProperties.contains(property.externalName())) {
                 return;
             }
-            String propertyName = PropertyName.resolvePropertyName(propertyConfig, canonicalPropertyName);
+            verificationForDto.addProperty(
+                    property.externalName(), property.accessor().getAccessedType(), property.config());
 
-            if (ignoredProperties.contains(propertyName)) {
-                return;
-            }
-            verificationForDto.addProperty(propertyName, accessor.getAccessedType(), propertyConfig);
-
-            LHS lhs = new LHS.Field("$S", new Object[] {propertyName});
-            RHS.Accessor nest = new RHS.Accessor(rhs, accessor.getReadValueSource(), true);
+            LHS lhs = new LHS.Field("$S", new Object[] {property.externalName()});
+            RHS.Accessor accessorCall =
+                    new RHS.Accessor(rhs, property.accessor().getReadValueSource(), true);
             SELF nested = nest(
-                    accessor.getAccessedType(),
+                    property.accessor().getAccessedType(),
                     lhs,
-                    new Property(canonicalPropertyName, propertyName),
-                    nest,
+                    new Property(property.canonicalName(), property.externalName()),
+                    accessorCall,
                     true,
-                    propertyConfig);
-            Exceptions.runWithContext(() -> nested.build(), "property", canonicalPropertyName);
+                    property.config());
+            Exceptions.runWithContext(nested::build, "property", property.canonicalName());
+            referencesSetup.flatMap(s -> s.rememberId(rhs, accessorCall)).ifPresent(this::addStatement);
             code.add("\n");
         });
     }
@@ -418,6 +409,23 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
     Snippet charArrayToString(Snippet snippet) {
         return Snippet.of("new $T($C)", String.class, snippet);
     }
+
+    protected List<OutputProperty> outputProperties(Type type) {
+        return type.getPropertyReadAccessors().entrySet().stream()
+                .map(entry -> {
+                    String canonicalName = entry.getKey();
+                    ReadAccessor accessor = entry.getValue();
+                    AnyConfig propertyConfig = AnyConfig.fromAccessorConsideringField(
+                                    accessor, accessor.getSimpleName(), type.getTypeMirror(), canonicalName, utils)
+                            .merge(config);
+                    String externalName = PropertyName.resolvePropertyName(propertyConfig, canonicalName);
+                    return new OutputProperty(canonicalName, externalName, accessor, propertyConfig);
+                })
+                .toList();
+    }
+
+    protected record OutputProperty(
+            String canonicalName, String externalName, ReadAccessor accessor, AnyConfig config) {}
 
     protected sealed interface LHS {
 

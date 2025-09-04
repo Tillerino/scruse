@@ -39,6 +39,7 @@ public class AnnotationProcessorUtils {
     public final Annotations annotations;
     public final Verification verification;
     public final Creators creators;
+    public final References references;
 
     public final Messager messager;
 
@@ -54,6 +55,7 @@ public class AnnotationProcessorUtils {
         templates = new Templates(this);
         verification = new Verification(this);
         creators = new Creators(this);
+        references = new References(this);
         messager = processingEnv.getMessager();
 
         AnnotationProcessorContext apc = new AnnotationProcessorContext(

@@ -5,7 +5,7 @@ import static org.tillerino.scruse.processor.Snippet.join;
 import static org.tillerino.scruse.processor.Snippet.of;
 
 import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
+import jakarta.annotation.Nonnull;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
@@ -28,18 +28,14 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
     }
 
     public ScruseReaderGenerator(
-            ScrusePrototype prototype,
-            AnnotationProcessorUtils utils,
             Type type,
             Property property,
-            CodeBlock.Builder code,
-            VariableElement parserVariable,
             LHS lhs,
-            ScruseReaderGenerator parent,
+            @Nonnull ScruseReaderGenerator parent,
             boolean stackRelevantType,
             AnyConfig config) {
-        super(utils, parent.generatedClass, prototype, code, parent, type, stackRelevantType, property, lhs, config);
-        this.parserVariable = parserVariable;
+        super(parent, type, stackRelevantType, property, lhs, config);
+        this.parserVariable = parent.parserVariable;
     }
 
     @Override
@@ -165,17 +161,7 @@ public class ScruseReaderGenerator extends AbstractReaderGenerator<ScruseReaderG
     @Override
     protected ScruseReaderGenerator nest(
             TypeMirror type, Property property, LHS lhs, boolean stackRelevantType, AnyConfig config) {
-        return new ScruseReaderGenerator(
-                prototype,
-                utils,
-                utils.tf.getType(type),
-                property,
-                code,
-                parserVariable,
-                lhs,
-                this,
-                stackRelevantType,
-                config);
+        return new ScruseReaderGenerator(utils.tf.getType(type), property, lhs, this, stackRelevantType, config);
     }
 
     private String importAdvance(ScruseReader.Advance advance) {

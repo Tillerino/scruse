@@ -2,6 +2,7 @@ package org.tillerino.scruse.processor.apis;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.CodeBlock.Builder;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.util.*;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
@@ -12,6 +13,7 @@ import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Polymorphism;
 
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
@@ -36,6 +38,20 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
     protected final Stack<Set<String>> variables;
 
     protected AbstractCodeGeneratorStack(
+            @Nonnull SELF parent, Type type, boolean stackRelevantType, @Nullable Property property, AnyConfig config) {
+        this(
+                parent.utils,
+                parent.generatedClass,
+                parent.prototype,
+                parent.code,
+                parent,
+                type,
+                stackRelevantType,
+                property,
+                config);
+    }
+
+    protected AbstractCodeGeneratorStack(
             AnnotationProcessorUtils utils,
             GeneratedClass generatedClass,
             ScrusePrototype prototype,
@@ -55,7 +71,7 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         this.property = property;
         if (stackRelevantType && type.getTypeElement() != null) {
             config = AnyConfig.create(type.getTypeElement(), ConfigProperty.LocationKind.DTO, utils)
-                    .merge(config);
+                    .merge(config.propagateTo(LocationKind.DTO));
         }
         this.config = config;
         this.canBePolyChild = prototype.contextParameter().isPresent()
