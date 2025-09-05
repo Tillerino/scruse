@@ -7,12 +7,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.List;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 import org.tillerino.scruse.tests.ReferenceTest;
 import org.tillerino.scruse.tests.SerdeUtil;
+import org.tillerino.scruse.tests.base.features.ReferencesSerde.ReferenceInheritanceSerde;
 import org.tillerino.scruse.tests.model.features.ReferencesModel.*;
+import org.tillerino.scruse.tests.model.features.ReferencesModel.IntSequenceParent.IntSequenceChild;
 
 class ReferencesTest extends ReferenceTest {
     ReferencesSerde serde = SerdeUtil.impl(ReferencesSerde.class);
@@ -93,5 +96,41 @@ class ReferencesTest extends ReferenceTest {
         List<PropertyIdPojo> list = inputUtils.assertIsEqualToDatabind(
                 "[{\"prop\":\"bla\"},\"bla\"]", serde::readListOfPropertyIdPojo, new TypeReference<>() {});
         assertThat(list.get(0)).isSameAs(list.get(1));
+    }
+
+    @Nested
+    class ReferenceInheritanceTest {
+        ReferenceInheritanceSerde serde = SerdeUtil.impl(ReferenceInheritanceSerde.class);
+
+        @Test
+        void testWriteParent() throws Exception {
+            IntSequenceParent bla = new IntSequenceChild();
+            String json = outputUtils.serialize2(
+                    List.of(bla, bla), new SerializationContext(), serde::writeListOfIntSequenceParent);
+            assertThat(json)
+                    .isEqualTo("[{\"@c\":\".ReferencesModel$IntSequenceParent$IntSequenceChild\",\"@id\":1},1]");
+        }
+
+        @Test
+        void testReadParent() throws Exception {
+            List<IntSequenceParent> list = inputUtils.deserialize2(
+                    "[ { \"@c\":\".ReferencesModel$IntSequenceParent$IntSequenceChild\", \"@id\": 1 }, 1 ]",
+                    new DeserializationContext(),
+                    serde::readListOfIntSequenceParent);
+            assertThat(list.get(0)).isSameAs(list.get(1));
+        }
+
+        @Test
+        void testWriteChild() throws Exception {
+            IntSequenceChild bla = new IntSequenceChild();
+            outputUtils.assertIsEqualToDatabind(List.of(bla, bla), serde::writeListOfIntSequenceChild);
+        }
+
+        @Test
+        void testReadChild() throws Exception {
+            List<IntSequenceChild> list = inputUtils.deserialize2(
+                    "[ { \"@id\": 1 }, 1 ]", new DeserializationContext(), serde::readListOfIntSequenceChild);
+            assertThat(list.get(0)).isSameAs(list.get(1));
+        }
     }
 }

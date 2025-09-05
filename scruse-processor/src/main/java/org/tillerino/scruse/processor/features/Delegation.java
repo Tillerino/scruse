@@ -8,16 +8,34 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.processor.*;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.ConfigPropertyRetriever;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.config.ConfigProperty.MergeFunction;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 import org.tillerino.scruse.processor.util.InstantiatedMethod.InstantiatedVariable;
 import org.tillerino.scruse.processor.util.PrototypeKind;
 import org.tillerino.scruse.processor.util.ShortName;
 
 public record Delegation(AnnotationProcessorUtils utils) {
+    public static ConfigProperty<JsonConfig.DelegateeMode> DELEGATE_TO = ConfigProperty.createConfigProperty(
+            List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE),
+            List.of(ConfigPropertyRetriever.jsonConfigPropertyRetriever("delegateTo", JsonConfig.DelegateeMode.class)),
+            JsonConfig.DelegateeMode.DEFAULT,
+            MergeFunction.notDefault(JsonConfig.DelegateeMode.DEFAULT),
+            List.of());
+
+    public static ConfigProperty<Boolean> DELEGATE_FROM = ConfigProperty.createConfigProperty(
+            List.of(LocationKind.PROPERTY),
+            List.of(/* can only be set from within annotation processor */ ),
+            true,
+            (x, y) -> x,
+            List.of(PropagationKind.SUBSTITUTE));
+
     public Optional<Delegatee> findDelegatee(
             Type type,
             ScrusePrototype caller,
@@ -37,6 +55,9 @@ public record Delegation(AnnotationProcessorUtils utils) {
 
     private Optional<InstantiatedPrototype> findPrototype(
             Type type, ScrusePrototype caller, boolean allowRecursion, boolean allowExact, AnyConfig config) {
+        if (!config.resolveProperty(DELEGATE_FROM).value()) {
+            return Optional.empty();
+        }
         ScruseBlueprint blueprint = caller.blueprint();
         for (ScrusePrototype callee : blueprint.prototypes) {
             if (canBeDelegatedTo(callee) && (callee != caller || allowRecursion)) {
@@ -60,7 +81,7 @@ public record Delegation(AnnotationProcessorUtils utils) {
     }
 
     private static boolean canBeDelegatedTo(ScrusePrototype callee) {
-        return callee.config().resolveProperty(ConfigProperty.DELEGATEE).value().canBeDelegatedTo();
+        return callee.config().resolveProperty(DELEGATE_TO).value().canBeDelegatedTo();
     }
 
     private Optional<Delegatee> findDelegateeInMethodParameters(ScrusePrototype prototype, Type type) {

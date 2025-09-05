@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -128,4 +129,12 @@ public record Polymorphism(String discriminator, JsonTypeInfo.Id id, List<Child>
     }
 
     public record Child(TypeMirror type, String name) {}
+
+    public static List<DeclaredType> directSupertypes(TypeMirror type, AnnotationProcessorUtils utils) {
+        return utils.types.directSupertypes(type).stream()
+                .flatMap(t -> t instanceof DeclaredType dt && !t.toString().equals("java.lang.Object")
+                        ? Stream.of(dt)
+                        : Stream.empty())
+                .toList();
+    }
 }

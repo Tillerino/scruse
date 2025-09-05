@@ -4,6 +4,7 @@ import java.util.List;
 import org.tillerino.scruse.annotations.JsonConfig;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.util.Annotations;
 
 public class UnknownProperties {
@@ -26,7 +27,7 @@ public class UnknownProperties {
                                     "unknownProperties", JsonConfig.UnknownPropertiesMode.class)),
                     JsonConfig.UnknownPropertiesMode.DEFAULT,
                     ConfigProperty.MergeFunction.notDefault(JsonConfig.UnknownPropertiesMode.DEFAULT),
-                    null);
+                    PropagationKind.all());
 
     public static boolean shouldThrow(AnyConfig config) {
         return config.resolveProperty(UNKNOWN_PROPERTIES).value() != JsonConfig.UnknownPropertiesMode.IGNORE;

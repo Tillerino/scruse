@@ -5,6 +5,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.ConfigPropertyRetriever;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.config.ConfigProperty.MergeFunction;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
 
 public class IgnoreProperty {
@@ -15,5 +16,5 @@ public class IgnoreProperty {
                     (ann, utils) -> ann.method("value", true).map(AnnotationValueWrapper::asBoolean))),
             false,
             MergeFunction.notDefault(false),
-            LocationKind.DTO);
+            PropagationKind.none());
 }

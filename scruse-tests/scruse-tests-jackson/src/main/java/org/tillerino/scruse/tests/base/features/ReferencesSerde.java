@@ -10,7 +10,9 @@ import org.tillerino.scruse.api.DeserializationContext;
 import org.tillerino.scruse.api.SerializationContext;
 import org.tillerino.scruse.converters.UuidInputConverters;
 import org.tillerino.scruse.converters.UuidOutputConverters;
+import org.tillerino.scruse.tests.base.features.DelegationSerde.BoxedScalarsSerde;
 import org.tillerino.scruse.tests.model.features.ReferencesModel.*;
+import org.tillerino.scruse.tests.model.features.ReferencesModel.IntSequenceParent.IntSequenceChild;
 
 @JsonConfig(uses = {UuidInputConverters.class, UuidOutputConverters.class})
 public interface ReferencesSerde {
@@ -81,4 +83,42 @@ public interface ReferencesSerde {
 
     @JsonInput
     List<PropertyIdPojo> readListOfPropertyIdPojo(JsonParser parser, DeserializationContext ctx) throws Exception;
+
+    @JsonConfig(uses = BoxedScalarsSerde.class)
+    interface DoNotDelegateInitialResolveSerde {
+        @JsonInput
+        IntSequenceIdRecord readIntSequenceIdRecord(JsonParser parser, DeserializationContext ctx) throws Exception;
+    }
+
+    interface ReferenceInheritanceSerde {
+        @JsonOutput
+        void writeIntSequenceParent(IntSequenceParent hasIntId, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        IntSequenceParent readIntSequenceParent(JsonParser parser, DeserializationContext ctx) throws Exception;
+
+        @JsonOutput
+        void writeListOfIntSequenceParent(
+                List<IntSequenceParent> hasIntIds, JsonGenerator gen, SerializationContext ctx) throws Exception;
+
+        @JsonInput
+        List<IntSequenceParent> readListOfIntSequenceParent(JsonParser parser, DeserializationContext ctx)
+                throws Exception;
+
+        @JsonOutput
+        void writeIntSequenceChild(IntSequenceChild hasIntId, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        IntSequenceChild readIntSequenceChild(JsonParser parser, DeserializationContext ctx) throws Exception;
+
+        @JsonOutput
+        void writeListOfIntSequenceChild(List<IntSequenceChild> hasIntIds, JsonGenerator gen, SerializationContext ctx)
+                throws Exception;
+
+        @JsonInput
+        List<IntSequenceChild> readListOfIntSequenceChild(JsonParser parser, DeserializationContext ctx)
+                throws Exception;
+    }
 }

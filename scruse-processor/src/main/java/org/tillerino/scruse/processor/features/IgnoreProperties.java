@@ -7,6 +7,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.ConfigPropertyRetriever;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.config.ConfigProperty.MergeFunction;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
 
 public class IgnoreProperties {
@@ -21,7 +22,7 @@ public class IgnoreProperties {
                                     .collect(ConfigProperty.toUnmodifiableSet())))),
             Set.of(),
             MergeFunction.mergeSets(),
-            LocationKind.DTO);
+            PropagationKind.none());
 
     public static Snippet toSnippet(Set<String> ignoredProperties) {
         return Snippet.join(

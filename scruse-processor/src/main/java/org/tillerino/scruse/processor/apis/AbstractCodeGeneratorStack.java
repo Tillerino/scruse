@@ -13,7 +13,6 @@ import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
-import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Polymorphism;
 
 public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGeneratorStack<SELF>> {
@@ -69,19 +68,19 @@ public abstract class AbstractCodeGeneratorStack<SELF extends AbstractCodeGenera
         this.generatedClass = Objects.requireNonNull(generatedClass);
         this.stackRelevantType = stackRelevantType;
         this.property = property;
-        if (stackRelevantType && type.getTypeElement() != null) {
-            config = AnyConfig.create(type.getTypeElement(), ConfigProperty.LocationKind.DTO, utils)
-                    .merge(config.propagateTo(LocationKind.DTO));
-        }
-        this.config = config;
         this.canBePolyChild = prototype.contextParameter().isPresent()
                 && stackDepth() == 1
                 && Polymorphism.isSomeChild(type.getTypeMirror(), utils.types);
         if (parent != null) {
             variables = parent.variables;
+            this.config = config;
         } else {
             variables = new Stack<>();
             variables.push(new LinkedHashSet<>());
+            this.config = type.getTypeElement() != null
+                    ? AnyConfig.create(type.getTypeElement(), ConfigProperty.LocationKind.DTO, utils)
+                            .merge(prototype.config())
+                    : prototype.config();
         }
     }
 

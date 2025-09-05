@@ -174,7 +174,10 @@ public class ScruseProcessor extends AbstractProcessor {
                         System.out.println(((ContextedRuntimeException) e).getContextEntries());
                     }
                     e.printStackTrace();
-                    processingEnv.getMessager().printMessage(ERROR, e.getMessage());
+                    String msg = e.getMessage() != null
+                            ? e.getMessage()
+                            : e.getClass().getName();
+                    processingEnv.getMessager().printMessage(ERROR, msg);
                 }
             }
         }

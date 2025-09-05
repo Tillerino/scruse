@@ -17,13 +17,14 @@ import org.tillerino.scruse.processor.AnnotationProcessorUtils;
 import org.tillerino.scruse.processor.ScruseBlueprint;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.features.*;
 
 public final class AnyConfig {
     static final ConfigProperty[] available = {
         UnknownProperties.UNKNOWN_PROPERTIES,
         ConfigProperty.USES,
-        ConfigProperty.DELEGATEE,
+        Delegation.DELEGATE_TO,
         ConfigProperty.IMPLEMENT,
         PropertyName.PROPERTY_NAME,
         IgnoreProperty.IGNORE_PROPERTY,
@@ -60,6 +61,17 @@ public final class AnyConfig {
                 .flatMap(prop -> prop.instantiate(element, elementType, utils).stream())
                 .toList();
 
+        if (element instanceof TypeElement) {
+            AnyConfig superConfig = null;
+            for (DeclaredType directSupertype : Polymorphism.directSupertypes(element.asType(), utils)) {
+                AnyConfig thisSuperConfig = create(directSupertype.asElement(), elementType, utils);
+                superConfig = superConfig != null ? thisSuperConfig.merge(superConfig) : thisSuperConfig;
+            }
+            if (superConfig != null) {
+                return new AnyConfig(list).merge(superConfig);
+            }
+        }
+
         return new AnyConfig(list);
     }
 
@@ -71,10 +83,9 @@ public final class AnyConfig {
      * Currently only using "DTO" and only calling in AbstractCodeGeneratorStack constructor. This might be the only
      * kind required.
      */
-    public AnyConfig propagateTo(LocationKind newLocation) {
+    public AnyConfig propagateTo(PropagationKind newLocation) {
         return new AnyConfig(properties.stream()
-                .filter(p -> p.property().doNotPropagateTo == null
-                        || p.property().doNotPropagateTo.compareTo(newLocation) < 0)
+                .filter(p -> p.property().propagateTo.contains(newLocation))
                 .toList());
     }
 
@@ -100,11 +111,7 @@ public final class AnyConfig {
             return accessorConfig;
         }
 
-        for (TypeMirror directSuperType : utils.types.directSupertypes(dto)) {
-            if (directSuperType.toString().equals(Object.class.getName())
-                    || !(directSuperType instanceof DeclaredType d)) {
-                continue;
-            }
+        for (DeclaredType d : Polymorphism.directSupertypes(dto, utils)) {
             TypeElement superTypeElement = (TypeElement) d.asElement();
             Optional<ExecutableElement> superMethod =
                     ElementFilter.methodsIn(superTypeElement.getEnclosedElements()).stream()
@@ -112,8 +119,8 @@ public final class AnyConfig {
                             .findFirst();
             ExecutableElementAccessor parentAccessor = new ExecutableElementAccessor(
                     superMethod.orElse(null), property.getAccessedType(), property.getAccessorType());
-            AnyConfig superConfig = fromAccessorConsideringField(
-                    parentAccessor, accessorName, directSuperType, canonicalPropertyName, utils);
+            AnyConfig superConfig =
+                    fromAccessorConsideringField(parentAccessor, accessorName, d, canonicalPropertyName, utils);
             if (superConfig != null) {
                 accessorConfig = accessorConfig != null ? accessorConfig.merge(superConfig) : superConfig;
             }

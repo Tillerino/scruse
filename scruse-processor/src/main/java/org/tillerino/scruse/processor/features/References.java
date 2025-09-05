@@ -19,6 +19,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.ConfigPropertyRetriever;
 import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.util.Annotations.AnnotationValueWrapper;
 import org.tillerino.scruse.processor.util.Exceptions;
@@ -46,7 +47,7 @@ public record References(AnnotationProcessorUtils utils) {
                             strong.value().resolver.or(weak.value()::resolver),
                             strong.value().scope.or(weak.value()::scope)),
                     "Merged " + strong.sourceLocation() + " and " + weak.sourceLocation()),
-            LocationKind.DTO);
+            PropagationKind.none());
 
     public Optional<Setup> resolveSetup(AnyConfig anyConfig, ScrusePrototype prototype, TypeMirror dto) {
         ResolvedProperty<Config> configResolvedProperty = anyConfig.resolveProperty(REFERENCES);

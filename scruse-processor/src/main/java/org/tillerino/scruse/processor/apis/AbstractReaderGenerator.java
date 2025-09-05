@@ -37,8 +37,11 @@ import org.tillerino.scruse.processor.GeneratedClass;
 import org.tillerino.scruse.processor.ScrusePrototype;
 import org.tillerino.scruse.processor.Snippet;
 import org.tillerino.scruse.processor.config.AnyConfig;
+import org.tillerino.scruse.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.features.Creators.Creator;
+import org.tillerino.scruse.processor.features.Delegation;
 import org.tillerino.scruse.processor.features.Delegation.Delegatee;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
 import org.tillerino.scruse.processor.features.IgnoreProperties;
@@ -64,7 +67,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 utils.tf.getType(prototype.instantiatedReturnType()),
                 true,
                 null,
-                prototype.config());
+                null);
         lhs = new LHS.Return();
     }
 
@@ -108,7 +111,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             Variable converterArg = Variable.from(createVariable("toConvert"));
             addStatement(of("$T $C", method.parameters().get(0).type(), converterArg));
             runWithContext(
-                    () -> nest(method.parameters().get(0).type(), null, converterArg, true, config)
+                    () -> nest(
+                                    method.parameters().get(0).type(),
+                                    null,
+                                    converterArg,
+                                    true,
+                                    config.propagateTo(PropagationKind.SUBSTITUTE))
                             .build(IF, nullable, lastCase),
                     "converter",
                     converter.get());
@@ -132,7 +140,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         ScopedVar idVar = createVariable("id");
         TypeMirror idType = setup.finalIdType(type, utils);
         addStatement("$T $C", idType, idVar);
-        nest(idType, new Property("id", "id"), Variable.from(idVar), false, config.propagateTo(LocationKind.DTO))
+        // We cannot call a delegator from this nested serializer or an else-branch is forced!
+        AnyConfig nestedConfig = new AnyConfig(List.of(
+                        new InstantiatedProperty(Delegation.DELEGATE_FROM, LocationKind.PROPERTY, false, "(internal)")))
+                .merge(config.propagateTo(PropagationKind.PROPERTY));
+        nest(idType, new Property("id", "id"), Variable.from(idVar), false, nestedConfig)
                 .build(branch, false, false);
         ScopedVar resolvedVar = createVariable("resolved");
         addStatement(
@@ -226,7 +238,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
     private ScopedVar readStringInstead() {
         ScopedVar stringVar = createVariable("string");
-        SELF nested = nest(utils.commonTypes.string, null, LHS.Variable.from(stringVar), false, config);
+        SELF nested = nest(
+                utils.commonTypes.string,
+                null,
+                LHS.Variable.from(stringVar),
+                false,
+                config.propagateTo(PropagationKind.SUBSTITUTE));
         addStatement("$T $C", nested.type.getTypeMirror(), stringVar);
         nested.readString(StringKind.STRING);
         return stringVar;
@@ -243,7 +260,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 throw Exceptions.unexpected();
             }
         } else if (utils.isBoxed(type.getTypeMirror())) {
-            nest(utils.types.unboxedType(type.getTypeMirror()), null, lhs, false, config)
+            nest(
+                            utils.types.unboxedType(type.getTypeMirror()),
+                            null,
+                            lhs,
+                            false,
+                            config.propagateTo(PropagationKind.SUBSTITUTE))
                     .build(branch, true, lastCase);
         } else if (type.isString() || AnnotationProcessorUtils.isArrayOf(type, TypeKind.CHAR)) {
             readString(branch, type.isString() ? StringKind.STRING : StringKind.CHAR_ARRAY, lastCase);
@@ -267,7 +289,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         Variable creatorArg = Variable.from(createVariable("creator"));
         addStatement(of("$T $L", method.parameters().get(0).type(), creatorArg.name));
         runWithContext(
-                () -> nest(method.parameters().get(0).type(), null, creatorArg, true, config)
+                () -> nest(
+                                method.parameters().get(0).type(),
+                                null,
+                                creatorArg,
+                                true,
+                                config.propagateTo(PropagationKind.SUBSTITUTE))
                         .build(IF, false, lastCase),
                 "creator",
                 method);
@@ -293,7 +320,8 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             String enumValuesField = generatedClass.getOrCreateEnumField(type.getTypeMirror());
             Variable enumVar = Variable.from(createVariable("string"));
             addStatement("$T $L", utils.commonTypes.string, enumVar.name);
-            nest(utils.commonTypes.string, null, enumVar, false, config).readString(STRING);
+            nest(utils.commonTypes.string, null, enumVar, false, config.propagateTo(PropagationKind.SUBSTITUTE))
+                    .readString(STRING);
             beginControlFlow("if ($L.containsKey($L))", enumValuesField, enumVar.name);
             addStatement(lhs.assign("$L.get($L)", enumValuesField, enumVar.name));
             elseThrowUnexpected("enum value", lastCase);
@@ -340,7 +368,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                         Property.ITEM,
                                         new LHS.Array(varName.name(), len),
                                         true,
-                                        config)
+                                        config.propagateTo(PropagationKind.PROPERTY))
                                 .build(Branch.IF, true, lastCase),
                         "component",
                         componentType);
@@ -380,7 +408,12 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             iterateOverElements();
             {
                 runWithContext(
-                        () -> nest(componentType.getTypeMirror(), ITEM, new Collection(varName), true, config)
+                        () -> nest(
+                                        componentType.getTypeMirror(),
+                                        ITEM,
+                                        new Collection(varName),
+                                        true,
+                                        config.propagateTo(PropagationKind.PROPERTY))
                                 .build(IF, true, lastCase),
                         "component",
                         componentType);
@@ -437,7 +470,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                                         Property.VALUE,
                                         new LHS.Map(varName, keyVar),
                                         true,
-                                        config)
+                                        config.propagateTo(PropagationKind.PROPERTY))
                                 .build(Branch.IF, true, lastCase),
                         "value",
                         valueType);
@@ -493,12 +526,19 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                         new Property("discriminator", polymorphism.discriminator()),
                         discriminator,
                         false,
-                        config)
+                        config.propagateTo(PropagationKind.PROPERTY))
                 .readDiscriminator(polymorphism.discriminator());
         Branch branch = Branch.IF;
         for (Polymorphism.Child child : polymorphism.children()) {
             branch.controlFlow(this, "$L.equals($S)", discriminator.name(), child.name());
-            SELF nested = nest(child.type(), Property.INSTANCE, lhs, true, config);
+            SELF nested = nest(
+                    child.type(),
+                    Property.INSTANCE,
+                    lhs,
+                    true,
+                    config.propagateTo(
+                            PropagationKind.SUBSTITUTE /* this is fine with the configuration options that we
+                 currently have */));
             utils.delegation
                     .findDelegatee(utils.tf.getType(child.type()), prototype, false, true, config, generatedClass)
                     .ifPresentOrElse(
@@ -576,7 +616,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     new Property(parameter.name(), propertyName),
                     new Variable(varName),
                     true,
-                    propertyConfig);
+                    propertyConfig.propagateTo(PropagationKind.PROPERTY));
             Snippet defaultValue = utils.defaultValues
                     .findInputDefaultValue(prototype.blueprint(), nest.type.getTypeMirror(), propertyConfig)
                     .map(m -> of("$C()", m.callSymbol(utils)))
@@ -626,7 +666,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     new Property(canonicalPropertyName, propertyName),
                     lhs,
                     true,
-                    propertyConfig);
+                    propertyConfig.propagateTo(PropagationKind.PROPERTY));
             nested.add(nest);
         });
         ScopedVar idVar = readProperties(nested, lastCase);
@@ -697,7 +737,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                             new Property(setup.property(), setup.property()),
                             LHS.Variable.from(idVar),
                             true,
-                            config.propagateTo(LocationKind.DTO))
+                            config.propagateTo(PropagationKind.PROPERTY))
                     .build(IF, true, lastCase);
             addStatement("break");
             endControlFlow();

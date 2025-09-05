@@ -48,12 +48,10 @@ public record Generics(AnnotationProcessorUtils utils) {
             return bindings;
         }
 
-        for (TypeMirror directSupertype : utils.types.directSupertypes(d)) {
-            if (directSupertype instanceof DeclaredType d2) {
-                Map<TypeVar, TypeMirror> superTypeBindings = recordTypeBindingsFor(d2, superType);
-                if (superTypeBindings != null) {
-                    return superTypeBindings;
-                }
+        for (DeclaredType d2 : Polymorphism.directSupertypes(d, utils)) {
+            Map<TypeVar, TypeMirror> superTypeBindings = recordTypeBindingsFor(d2, superType);
+            if (superTypeBindings != null) {
+                return superTypeBindings;
             }
         }
 

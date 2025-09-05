@@ -1,6 +1,8 @@
 package org.tillerino.scruse.tests.model.features;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators.IntSequenceGenerator;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators.PropertyGenerator;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators.UUIDGenerator;
@@ -26,5 +28,11 @@ public interface ReferencesModel {
     @Data
     class PropertyIdPojo {
         String prop;
+    }
+
+    @JsonIdentityInfo(generator = IntSequenceGenerator.class)
+    @JsonTypeInfo(use = Id.MINIMAL_CLASS)
+    sealed interface IntSequenceParent {
+        record IntSequenceChild() implements IntSequenceParent {}
     }
 }

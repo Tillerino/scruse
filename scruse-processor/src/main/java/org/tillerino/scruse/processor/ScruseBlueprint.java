@@ -11,6 +11,7 @@ import org.tillerino.scruse.processor.config.AnyConfig;
 import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.features.Generics.TypeVar;
+import org.tillerino.scruse.processor.features.Polymorphism;
 import org.tillerino.scruse.processor.util.InstantiatedMethod;
 
 /** Accessor object for the interface which contains Scruse methods. */
@@ -37,11 +38,7 @@ public final class ScruseBlueprint {
 
     static ScruseBlueprint of(TypeElement element, AnnotationProcessorUtils utils) {
         Map<TypeVar, TypeMirror> typeBindings = new LinkedHashMap<>();
-        for (TypeMirror directSupertype : utils.types.directSupertypes(element.asType())) {
-            if (directSupertype.toString().equals(Object.class.getName())
-                    || !(directSupertype instanceof DeclaredType dt)) {
-                continue;
-            }
+        for (DeclaredType dt : Polymorphism.directSupertypes(element.asType(), utils)) {
             typeBindings.putAll(utils.generics.recordTypeBindings(dt));
         }
 

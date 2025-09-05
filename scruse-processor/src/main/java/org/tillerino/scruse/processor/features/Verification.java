@@ -15,6 +15,7 @@ import org.tillerino.scruse.processor.config.ConfigProperty;
 import org.tillerino.scruse.processor.config.ConfigProperty.ConfigPropertyRetriever;
 import org.tillerino.scruse.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.scruse.processor.config.ConfigProperty.MergeFunction;
+import org.tillerino.scruse.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.scruse.processor.util.Exceptions;
 
 public class Verification {
@@ -23,7 +24,7 @@ public class Verification {
             List.of(ConfigPropertyRetriever.jsonConfigPropertyRetriever("verifySymmetry", VerificationMode.class)),
             VerificationMode.NO_VERIFICATION,
             MergeFunction.notDefault(VerificationMode.NO_VERIFICATION),
-            null);
+            PropagationKind.none());
 
     final Map<ScruseBlueprint, ForBlueprint> st = new ConcurrentHashMap<>();
     final AnnotationProcessorUtils utils;

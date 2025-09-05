@@ -26,14 +26,7 @@ public final class ConfigProperty<T> {
                                     .collect(toUnmodifiableSet())))),
             Set.of(),
             MergeFunction.mergeSets(),
-            null);
-
-    public static ConfigProperty<JsonConfig.DelegateeMode> DELEGATEE = createConfigProperty(
-            List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE),
-            List.of(ConfigPropertyRetriever.jsonConfigPropertyRetriever("delegateTo", JsonConfig.DelegateeMode.class)),
-            JsonConfig.DelegateeMode.DEFAULT,
-            MergeFunction.notDefault(JsonConfig.DelegateeMode.DEFAULT),
-            LocationKind.DTO);
+            PropagationKind.all());
 
     public static ConfigProperty<JsonConfig.ImplementationMode> IMPLEMENT = createConfigProperty(
             List.of(LocationKind.BLUEPRINT, LocationKind.PROTOTYPE),
@@ -41,7 +34,7 @@ public final class ConfigProperty<T> {
                     "implement", JsonConfig.ImplementationMode.class)),
             JsonConfig.ImplementationMode.DEFAULT,
             MergeFunction.notDefault(JsonConfig.ImplementationMode.DEFAULT),
-            LocationKind.DTO);
+            List.of());
 
     final int index = counter.incrementAndGet();
 
@@ -49,19 +42,19 @@ public final class ConfigProperty<T> {
     public final List<ConfigPropertyRetriever<T>> retrievers;
     public final T defaultValue;
     public final MergeFunction<T> merger;
-    public final LocationKind doNotPropagateTo;
+    public final List<PropagationKind> propagateTo;
 
     public ConfigProperty(
             List<LocationKind> locationKind,
             List<ConfigPropertyRetriever<T>> retrievers,
             T defaultValue,
             MergeFunction<T> merger,
-            LocationKind doNotPropagateTo) {
+            List<PropagationKind> propagateTo) {
         this.locationKind = locationKind;
         this.retrievers = retrievers;
         this.defaultValue = defaultValue;
         this.merger = merger;
-        this.doNotPropagateTo = doNotPropagateTo;
+        this.propagateTo = propagateTo;
     }
 
     public static <T> ConfigProperty<T> createConfigProperty(
@@ -69,7 +62,7 @@ public final class ConfigProperty<T> {
             List<ConfigPropertyRetriever<T>> retriever,
             T defaultValue,
             MergeFunction<T> merger,
-            LocationKind doNotPropagateTo) {
+            List<PropagationKind> doNotPropagateTo) {
         return new ConfigProperty<>(locationKind, retriever, defaultValue, merger, doNotPropagateTo);
     }
 
@@ -133,6 +126,30 @@ public final class ConfigProperty<T> {
         DTO,
         PROTOTYPE,
         BLUEPRINT,
+        ;
+
+        public static List<LocationKind> all() {
+            return List.of(values());
+        }
+    }
+
+    public enum PropagationKind {
+        /** During code generation, a type is substituted, e.g. when converting or @JsonCreator/@JsonValue. */
+        SUBSTITUTE,
+        /**
+         * During code generation, we descend into a property, map value, array component, etc: a new type is pushed
+         * onto the stack, which is not a substitute.
+         */
+        PROPERTY,
+        ;
+
+        public static List<PropagationKind> all() {
+            return List.of(values());
+        }
+
+        public static List<PropagationKind> none() {
+            return List.of();
+        }
     }
 
     public record ConfigPropertyRetriever<T>(
