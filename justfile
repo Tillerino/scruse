@@ -57,10 +57,8 @@ shaded-sizes:
     if [ -f $dir/original-$name ]; then
       # size of shaded jar
       size=$(du -b $f | cut -f1)
-      # size of generated classes
-      orig=$(du -b $dir/original-$name | cut -f1)
       # difference in KiB
-      eff=$(($(($size - $orig)) / 1024))
+      eff=$(($size / 1024))
 
       name=$(dirname $dir)
       name=${name#jagger-tests-}

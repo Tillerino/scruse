@@ -1,15 +1,18 @@
 # Jagger
 
-Jagger is an annotation-processor that generates databind classes to map JSON (and similar formats) to Java classes and vice versa.
-It is intended for two contexts:
+Jagger is an annotation-processor that generates databind classes to map JSON and similar formats to Java classes and vice versa.
+It has several advantages over most traditional libraries:
 
-1) Reflection is not possible or is discouraged, e.g. when working with GraalVM native images.
-2) A tiny footprint is required, i.e. jars like jackson-databind are too big.
-3) Guarantees about serialization are required at compile time, e.g. [symmetry](#verification).
+1) No reflection is required. Works great with AOT, e.g. when working with GraalVM native images.
+2) Barely any runtime dependencies. Shaded jars can get very small. With Nanojson, the overhead is just 34 KiB including the parser.
+3) Some errors, which are usually only discovered at runtime, are now compiler errors.
+   E.g. no accessible constructor, duplicate property names, unsuitable types for factory methods.
+   Static code analysis, e.g. nullness checks, can be extended to the serialization code.
+   Jagger includes additional compile time checks, see [symmetry](#verification).
 
 Jagger does not include any parsers or formatters and requires external ones.
 Various JSON libraries are supported out-of-the-box, including:
-- Jackson streaming (`JsonParser` and `JsonGenerator`) - note that this gives you support of many additional input and output formats
+- Jackson streaming (`JsonParser` and `JsonGenerator`). This gives you support of many additional input and output formats
   through existing extensions of these classes like YAML, CBOR, Smile, and more.
 - Jackson objects (`JsonNode`)
 - Gson (`JsonParser` and `JsonWriter`)
@@ -17,9 +20,12 @@ Various JSON libraries are supported out-of-the-box, including:
 - Fastjson2 (`JSONReader` and `JSONWriter`)
 - Nanojson
 
-Note that Jagger is not a beginner-friendly library.
-It optimizes for constraints that are not common in most applications.
-If you _just_ want to serialize and deserialize JSON and do not have any of the constraints above, you are probably better off with Jackson.
+You can use any backend by implementing the `JaggerReader` and `JaggerWriter` adapter classes and generating code
+for the adapters.
+
+See [Backends](docs/backends.md).
+
+## Table of contents
 
 <!-- toc -->
 
@@ -37,20 +43,9 @@ If you _just_ want to serialize and deserialize JSON and do not have any of the 
   * [Jackson Annotation Compatibility](#jackson-annotation-compatibility)
 - [Exotic use cases](#exotic-use-cases)
   * [Custom implementation](#custom-implementation)
-  * [Deduplication / Injection](#deduplication--injection)
-  * [Pointing individual properties to serializers](#pointing-individual-properties-to-serializers)
-  * [Custom state](#custom-state)
-- [Backends](#backends)
-  * [Jackson Core (streaming)](#jackson-core-streaming)
-  * [Jackson Databind (objects)](#jackson-databind-objects)
-  * [Gson](#gson)
-  * [fastjson2](#fastjson2)
-  * [Jakarta JSON-P](#jakarta-json-p)
-  * [Nanojson](#nanojson)
 - [Alternatives](#alternatives)
 - [Compatibility](#compatibility)
   * [Notable exceptions](#notable-exceptions)
-  * [Features](#features-1)
   * [Jackson annotations compatibility](#jackson-annotations-compatibility)
 - [Roadmap](#roadmap)
   * [Short-term:](#short-term)
@@ -348,163 +343,6 @@ interface CustomizedSerialization {
 
 This works for output and input.
 
-### Deduplication / Injection
-
-Using custom serializers and custom contexts, you can implement simple deduplication during serialization and
-injection during deserialization.
-
-Refer to [InjectionTest.java](jagger-tests/jagger-tests-jackson/src/test/java/org/tillerino/jagger/tests/base/cases/InjectionTest.java) for details.
-
-### Pointing individual properties to serializers
-
-(TODO; something like @JsonSerializer, but this annotation is in databind, so off limits)
-
-### Custom state
-
-(TODO; allow extending context classes, allow abstract classes as mappers, handle constructors of those)
-
-## Backends
-
-Jagger supports multiple backends for reading and writing JSON.
-You can choose the backend that best fits your requirements and dependencies.
-
-You can get a clearer idea of each backend in practice by looking at the modules in the `jagger-tests` directory.
-We run the entire test suite for each backend with some exceptions.
-The tests are written for the `jackson-core` backend and copied/adapted to the other backends in the `generate-sources` phase.
-
-The jar of each test module is shaded with the `minimizeJar` flag for each test module to estimate the overhead of each backend.
-In many cases, this can be optimized further, but we provide this number as a baseline.
-
-If you have trouble picking a backend, here are some ideas:
-- Jackson Core if you do not want to worry about anything.
-- Fastjson2 if you want speed.
-- Nanojson if you want a small footprint.
-
-### Jackson Core (streaming)
-
-`jackson-core` provides `JsonParser` and `JsonGenerator` for reading and writing JSON.
-We consider this the default backend and use it for most examples.
-The required dependency is:
-
-```xml
-<dependency>
-  <groupId>com.fasterxml.jackson.core</groupId>
-  <artifactId>jackson-core</artifactId>
-  <version>${jackson.version}</version>
-</dependency>
-```
-
-Overhead: 740kiB
-
-### Jackson Databind (objects)
-
-`jackson-databind` provides `JsonNode` for reading and writing JSON.
-You would only use this instead of `jackson-core` if you have some special requirements, e.g.
-you cannot guarantee that the order of fields in JSON is stable and require polymorphism.
-To correctly handle visibility of discriminators and unknown properties, we need adapters for `JsonNode`.
-Use `JacksonJsonNodeReaderAdapter` and `JacksonJsonNodeWriterAdapter` to write your `@JsonInput` and `@JsonOutput` methods.
-The required dependency is:
-
-```xml
-<dependency>
-  <groupId>com.fasterxml.jackson.core</groupId>
-  <artifactId>jackson-databind</artifactId>
-  <version>${jackson.version}</version>
-</dependency>
-```
-
-Overhead: 2100kiB
-
-### Gson
-
-`gson` provides `JsonParser` and `JsonWriter` for reading and writing JSON.
-The required dependency is:
-
-```xml
-<dependency>
-  <groupId>com.google.code.gson</groupId>
-  <artifactId>gson</artifactId>
-  <version>${gson.version}</version>
-</dependency>
-```
-
-Overhead: 280kiB
-
-### fastjson2
-
-`fastjson2` provides `JSONReader` and `JSONWriter` for reading and writing JSON.
-At the time of writing it is the fastest JSON library for Java
-according to [some benchmarks](https://github.com/fabienrenaud/java-json-benchmark).
-The required dependency is:
-
-```xml
-<dependency>
-  <groupId>com.alibaba.fastjson2</groupId>
-  <artifactId>fastjson2</artifactId>
-  <version>${fastjson2.version}</version>
-</dependency>
-```
-
-Overhead: 1920kiB
-
-### Jakarta JSON-P
-
-`jakarta.json-api` is an API definition which provides `JsonParser` and `JsonGenerator` for reading and writing JSON.
-`JsonParser#currentToken` is fairly new and not supported by all implementations.
-Additionally, `JsonParser` does not allow us to properly save the state of _the input has ended_.
-This is why we wrap `JsonParserWrapper` around it.
-
-The required dependency is:
-
-```xml
-<dependency>
-  <groupId>jakarta.json</groupId>
-  <artifactId>jakarta.json-api</artifactId>
-  <version>${jakarta.json.version}</version>
-</dependency>
-```
-
-In addition to the API, you need to include an implementation. There are several available.
-
-```xml
-<dependency>
-  <groupId>org.apache.johnzon</groupId>
-  <artifactId>johnzon-core</artifactId>
-  <version>${johnzon.version}</version>
-</dependency>
-```
-
-Johnzon and the API have an overhead of 180kiB.
-
-```xml
-<dependency>
-  <groupId>org.glassfish</groupId>
-  <artifactId>jakarta.json</artifactId>
-  <version>${glassfish.json.version}</version>
-</dependency>
-```
-
-The Glassfish implementation has an overhead of 137kiB.
-
-### Nanojson
-
-`nanojson` is a small JSON parser and writer.
-Its `JsonParser` class just misses what we need. To read JSON, you need to create a `NanojsonReaderAdapter` instance
-from an `InputStream` or `Reader`.
-We use `JsonAppendableWriter` for writing JSON, which can be obtained from the `JsonWriter` factory.
-
-The required dependency is:
-
-```xml
-<dependency>
-  <groupId>com.grack</groupId>
-  <artifactId>nanojson</artifactId>
-  <version>${nanojson.version}</version>
-</dependency>
-```
-
-Overhead: 30kiB
-
 ## Alternatives
 
 - [jackson-databind](https://github.com/FasterXML/jackson-databind):
@@ -512,7 +350,6 @@ Overhead: 30kiB
   It is entirely based on reflection, and even includes a mechanism to write Java bytecode at runtime to boost performance.
   Jackson is so large that there is a smaller version called [jackson-jr](https://github.com/FasterXML/jackson-jr). 
 - https://github.com/ngs-doo/dsl-json
-  
 
 ## Compatibility
 
@@ -530,16 +367,6 @@ Some of Jackson's annotations are supported, but not all and not each supported 
   An example of this is that Jagger will initialize an absent `Optional<Optional<T>>` property with `Optional.empty()`
   whereas Jackson will instead initialize it with `Optional.of(Optional.empty())`.
   I asked here: https://github.com/FasterXML/jackson-modules-java8/issues/310
-
-### Features
-
-- [x] Polymorphism
-- [x] Reflection bridge
-
-Escape hatches: fucky mechanisms to work around missing features, e.g. ghetto injection.
-- [x] Allow extending Contexts
-- [ ] Custom converters per property
-- [ ] Abstract converter classes with constructors.
 
 ### Jackson annotations compatibility
 
@@ -584,11 +411,12 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 
 ## Roadmap
 
-### Short-term:
+### Short-term
 - Sort out required properties.
-- Allow polymorphism for sealed interfaces without further annotations.
+- Custom converters per property.
+- Abstract converter classes with constructors.
 
-### Long-term:
+### Long-term
 
 - Slowly add support for more Jackson annotations, but on a need-to-have basis.
   There are so many annotations that we cannot support them all.

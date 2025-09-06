@@ -120,9 +120,14 @@
                                         <exclude>**/package-info.class</exclude>
                                         <exclude>**/module-info.class</exclude>
                                         <exclude>META-INF/**/*</exclude>
-                                        <exclude>org/tillerino/jagger/tests/model/**/*</exclude>
-                                        <exclude>org/tillerino/jagger/tests/function/**/*</exclude>
-                                        <exclude>org/tillerino/jagger/tests/*</exclude>
+                                        <exclude>**/*.txt</exclude>
+                                        <exclude>**/*.dtd</exclude>
+                                        <exclude>**/*.xsd</exclude>
+                                        <exclude>**/*.ftl</exclude>
+                                        <exclude>**/*.properties</exclude>
+                                        <exclude>org/tillerino/jagger/tests/**/*</exclude>
+                                        <exclude>com/fasterxml/jackson/annotation/**/*</exclude>
+                                        <exclude>org/apache/commons/**/*</exclude>
                                     </excludes>
                                 </filter>
                             </filters>

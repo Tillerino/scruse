@@ -3,7 +3,6 @@ package org.tillerino.jagger.tests;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 import org.apache.commons.lang3.function.FailableBiFunction;
 import org.apache.commons.lang3.function.FailableConsumer;
@@ -14,7 +13,7 @@ import org.tillerino.jagger.api.SerializationContext;
 
 public record OutputUtils(InputUtils inputUtils) {
     public String withJsonGenerator(FailableConsumer<JacksonJsonNodeWriterAdapter, Exception> output) throws Exception {
-        JacksonJsonNodeWriterAdapter adapter = new JacksonJsonNodeWriterAdapter(new ObjectMapper().getNodeFactory());
+        JacksonJsonNodeWriterAdapter adapter = new JacksonJsonNodeWriterAdapter(ToShadeHelper.jsonNodeFactory());
         output.accept(adapter);
         return adapter.getResult().toString();
     }

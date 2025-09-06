@@ -23,7 +23,7 @@ public class InputUtils {
 
     public <T> T withJsonParser(String json, FailableFunction<JacksonJsonNodeReaderAdapter, T, Exception> consumer)
             throws Exception {
-        return consumer.apply(new JacksonJsonNodeReaderAdapter(new ObjectMapper().readTree(json)));
+        return consumer.apply(new JacksonJsonNodeReaderAdapter(ToShadeHelper.readNode(json)));
     }
 
     public <T> T assertIsEqualToDatabind(
