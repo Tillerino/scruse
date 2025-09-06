@@ -50,8 +50,8 @@ readme-links:
 # estimate size of shaded libraries
 shaded-sizes:
   #!/bin/sh
-  cd scruse-tests
-  for f in */target/scruse-tests-*.jar; do
+  cd jagger-tests
+  for f in */target/jagger-tests-*.jar; do
     dir=$(dirname $f)
     name=$(basename $f)
     if [ -f $dir/original-$name ]; then
@@ -63,7 +63,7 @@ shaded-sizes:
       eff=$(($(($size - $orig)) / 1024))
 
       name=$(dirname $dir)
-      name=${name#scruse-tests-}
+      name=${name#jagger-tests-}
       echo "$name: $eff KiB"
     fi
   done
@@ -76,10 +76,10 @@ check-feature-organization:
     from pathlib import Path
     
     # Check if features and their tests are properly organized
-    processor_features_dir = Path("scruse-processor/src/main/java/org/tillerino/scruse/processor/features")
-    jackson_tests_dir = Path("scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/features")
-    jackson_serde_dir = Path("scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features")
-    base_model_dir = Path("scruse-tests/scruse-tests-base/src/main/java/org/tillerino/scruse/tests/model/features")
+    processor_features_dir = Path("jagger-processor/src/main/java/org/tillerino/jagger/processor/features")
+    jackson_tests_dir = Path("jagger-tests/jagger-tests-jackson/src/test/java/org/tillerino/jagger/tests/base/features")
+    jackson_serde_dir = Path("jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features")
+    base_model_dir = Path("jagger-tests/jagger-tests-base/src/main/java/org/tillerino/jagger/tests/model/features")
     
     # Get all feature classes
     feature_files = list(processor_features_dir.glob("*.java"))
@@ -123,4 +123,4 @@ release:
     just format
     # don't use mvnd here. no need to overoptimize
     mvn release:prepare -DtagNameFormat=@{project.version} '-Darguments=-Dmaven.build.cache.skipCache=true'
-    mvn release:perform -P release '-Darguments=-Dmaven.build.cache.skipCache=true --projects scruse-processor --also-make'
+    mvn release:perform -P release '-Darguments=-Dmaven.build.cache.skipCache=true --projects jagger-processor --also-make'

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.tillerino.scruse</groupId>
-    <artifactId>scruse-parent</artifactId>
+    <groupId>org.tillerino.jagger</groupId>
+    <artifactId>jagger-parent</artifactId>
     <version>0.6.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Scruse parent POM</name>
+    <name>Jagger parent POM</name>
     <description>A databind annotation processor for Java</description>
-    <url>https://github.com/Tillerino/scruse</url>
+    <url>https://github.com/Tillerino/jagger</url>
 
     <licenses>
         <license>
@@ -25,16 +25,16 @@
     </developers>
 
     <modules>
-        <module>scruse-core</module>
-        <module>scruse-processor</module>
-        <module>scruse-tests</module>
+        <module>jagger-core</module>
+        <module>jagger-processor</module>
+        <module>jagger-tests</module>
     </modules>
 
     <scm>
-        <connection>scm:git:git@github.com:Tillerino/scruse.git</connection>
-        <developerConnection>scm:git:git@github.com:Tillerino/scruse.git</developerConnection>
+        <connection>scm:git:git@github.com:Tillerino/jagger.git</connection>
+        <developerConnection>scm:git:git@github.com:Tillerino/jagger.git</developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/Tillerino/scruse</url>
+        <url>https://github.com/Tillerino/jagger</url>
     </scm>
     <distributionManagement>
         <repository>

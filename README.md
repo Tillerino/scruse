@@ -1,13 +1,13 @@
-# Scruse
+# Jagger
 
-Scruse is an annotation-processor that generates databind classes to map JSON (and similar formats) to Java classes and vice versa.
+Jagger is an annotation-processor that generates databind classes to map JSON (and similar formats) to Java classes and vice versa.
 It is intended for two contexts:
 
 1) Reflection is not possible or is discouraged, e.g. when working with GraalVM native images.
 2) A tiny footprint is required, i.e. jars like jackson-databind are too big.
 3) Guarantees about serialization are required at compile time, e.g. [symmetry](#verification).
 
-Scruse does not include any parsers or formatters and requires external ones.
+Jagger does not include any parsers or formatters and requires external ones.
 Various JSON libraries are supported out-of-the-box, including:
 - Jackson streaming (`JsonParser` and `JsonGenerator`) - note that this gives you support of many additional input and output formats
   through existing extensions of these classes like YAML, CBOR, Smile, and more.
@@ -17,7 +17,7 @@ Various JSON libraries are supported out-of-the-box, including:
 - Fastjson2 (`JSONReader` and `JSONWriter`)
 - Nanojson
 
-Note that Scruse is not a beginner-friendly library.
+Note that Jagger is not a beginner-friendly library.
 It optimizes for constraints that are not common in most applications.
 If you _just_ want to serialize and deserialize JSON and do not have any of the constraints above, you are probably better off with Jackson.
 
@@ -60,15 +60,15 @@ If you _just_ want to serialize and deserialize JSON and do not have any of the 
 
 ## Usage
 
-If you have ever used [Mapstruct](https://github.com/mapstruct/mapstruct), you will feel right at home with Scruse.
+If you have ever used [Mapstruct](https://github.com/mapstruct/mapstruct), you will feel right at home with Jagger.
 
 Include the following in your POM:
 
 ```xml
 <dependency>
-    <groupId>org.tillerino.scruse</groupId>
-    <artifactId>scruse-core</artifactId>
-    <version>${scruse.version}</version>
+    <groupId>org.tillerino.jagger</groupId>
+    <artifactId>jagger-core</artifactId>
+    <version>${jagger.version}</version>
 </dependency>
 ```
 
@@ -79,9 +79,9 @@ Include the following in your POM:
     <configuration>
         <annotationProcessorPaths>
             <annotationProcessorPath>
-                <groupId>org.tillerino.scruse</groupId>
-                <artifactId>scruse-processor</artifactId>
-                <version>${scruse.version}</version>
+                <groupId>org.tillerino.jagger</groupId>
+                <artifactId>jagger-processor</artifactId>
+                <version>${jagger.version}</version>
             </annotationProcessorPath>
         </annotationProcessorPaths>
         <compilerArgs>
@@ -104,7 +104,7 @@ interface MyObjectSerde {
 ```
 
 The example above is based on Jackson streaming, which provides `JsonParser` for parsing and `JsonGenerator` for writing JSON.
-The Scruse annotation processor will generate `MyJsonMapperImpl`, which implements the interface.
+The Jagger annotation processor will generate `MyJsonMapperImpl`, which implements the interface.
 The context parameters can be omitted if they are not explicitly needed.
 
 ## Features
@@ -114,7 +114,7 @@ The context parameters can be omitted if they are not explicitly needed.
 The `@JsonTemplate` annotation allows you to specify prototypes from templates without specifying each as a separate method.
 
 ```java
-// scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/TemplatesSerde.java#L14-L16
+// jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features/TemplatesSerde.java#L14-L16
 
 @JsonTemplate(
         templates = {GenericInputSerde.class, GenericOutputSerde.class},
@@ -125,7 +125,7 @@ The `@JsonTemplate` annotation allows you to specify prototypes from templates w
 
 ### Delegators
 
-To keep the generated code small, Scruse can split up implementations across multiple, reusable methods.
+To keep the generated code small, Jagger can split up implementations across multiple, reusable methods.
 Take the following example:
 
 ```java
@@ -186,9 +186,9 @@ public class OptionalConverters {
 ```
 
 This specific case has already been implemented for reuse
-in [OptionalInputConverters](scruse-core/src/main/java/org/tillerino/scruse/converters/OptionalInputConverters.java)
-and [OptionalOutputConverters](scruse-core/src/main/java/org/tillerino/scruse/converters/OptionalOutputConverters.java).
-See the [converters](scruse-core/src/main/java/org/tillerino/scruse/converters) package for more premade converters.
+in [OptionalInputConverters](jagger-core/src/main/java/org/tillerino/jagger/converters/OptionalInputConverters.java)
+and [OptionalOutputConverters](jagger-core/src/main/java/org/tillerino/jagger/converters/OptionalOutputConverters.java).
+See the [converters](jagger-core/src/main/java/org/tillerino/jagger/converters) package for more premade converters.
 
 ### Generics
 
@@ -198,7 +198,7 @@ See [generics](docs/generics.md) for details.
 
 ### Polymorphism
 
-Scruse supports polymorphism through Jackson's `@JsonTypeInfo` and `@JsonSubTypes` annotations, as well as automatic detection for sealed interfaces and classes. It handles various type identification strategies:
+Jagger supports polymorphism through Jackson's `@JsonTypeInfo` and `@JsonSubTypes` annotations, as well as automatic detection for sealed interfaces and classes. It handles various type identification strategies:
 
 1. **Class-based identification** (`JsonTypeInfo.Id.CLASS`): Uses the full class name as the type identifier
 2. **Name-based identification** (`JsonTypeInfo.Id.NAME`): Uses custom names defined in `@JsonSubTypes`
@@ -253,7 +253,7 @@ The generated serializer will include a type discriminator in the JSON output (e
 
 ### Default Values
 
-When deserializing JSON and a property is missing, Scruse can use default values defined with the `@JsonInputDefaultValue` annotation.
+When deserializing JSON and a property is missing, Jagger can use default values defined with the `@JsonInputDefaultValue` annotation.
 
 ```java
 interface MySerde {
@@ -276,7 +276,7 @@ The main consideration is: For each serialized type, is the set of written prope
 
 Consider the following class:
 ```java
-//scruse-tests/scruse-tests-base/src/main/java/org/tillerino/scruse/tests/model/features/VerificationModel.java#L18-L25
+//jagger-tests/jagger-tests-base/src/main/java/org/tillerino/jagger/tests/model/features/VerificationModel.java#L18-L25
 
 class MoreSettersThanGetters {
     @Getter
@@ -304,7 +304,7 @@ It is recommended to generate all code with this configuration.
 
 ## Configuration
 
-Scruse supports several configuration options through annotations that can be applied at different levels:
+Jagger supports several configuration options through annotations that can be applied at different levels:
 
 ### @JsonConfig Annotation
 
@@ -317,7 +317,7 @@ The `@JsonConfig` annotation provides several configuration options:
 
 ### Jackson Annotation Compatibility
 
-Scruse supports several Jackson annotations for configuration:
+Jagger supports several Jackson annotations for configuration:
 
 - `@JsonProperty`: Customize property names in JSON
 - `@JsonIgnore`: Ignore specific properties during serialization/deserialization
@@ -325,8 +325,8 @@ Scruse supports several Jackson annotations for configuration:
 
 ## Exotic use cases
 
-Obviously, Scruse is not complete in any sense, and you may reach the limits of the core functionality.
-In this section, we show some ways to get your own functionality into scruse.
+Obviously, Jagger is not complete in any sense, and you may reach the limits of the core functionality.
+In this section, we show some ways to get your own functionality into jagger.
 
 ### Custom implementation
 
@@ -353,7 +353,7 @@ This works for output and input.
 Using custom serializers and custom contexts, you can implement simple deduplication during serialization and
 injection during deserialization.
 
-Refer to [InjectionTest.java](scruse-tests/scruse-tests-jackson/src/test/java/org/tillerino/scruse/tests/base/cases/InjectionTest.java) for details.
+Refer to [InjectionTest.java](jagger-tests/jagger-tests-jackson/src/test/java/org/tillerino/jagger/tests/base/cases/InjectionTest.java) for details.
 
 ### Pointing individual properties to serializers
 
@@ -365,10 +365,10 @@ Refer to [InjectionTest.java](scruse-tests/scruse-tests-jackson/src/test/java/or
 
 ## Backends
 
-Scruse supports multiple backends for reading and writing JSON.
+Jagger supports multiple backends for reading and writing JSON.
 You can choose the backend that best fits your requirements and dependencies.
 
-You can get a clearer idea of each backend in practice by looking at the modules in the `scruse-tests` directory.
+You can get a clearer idea of each backend in practice by looking at the modules in the `jagger-tests` directory.
 We run the entire test suite for each backend with some exceptions.
 The tests are written for the `jackson-core` backend and copied/adapted to the other backends in the `generate-sources` phase.
 
@@ -508,7 +508,7 @@ Overhead: 30kiB
 ## Alternatives
 
 - [jackson-databind](https://github.com/FasterXML/jackson-databind):
-  The definitive standard for Java JSON serialization :heart:. Jackson is the anti-Scruse:
+  The definitive standard for Java JSON serialization :heart:. Jackson is the anti-Jagger:
   It is entirely based on reflection, and even includes a mechanism to write Java bytecode at runtime to boost performance.
   Jackson is so large that there is a smaller version called [jackson-jr](https://github.com/FasterXML/jackson-jr). 
 - https://github.com/ngs-doo/dsl-json
@@ -516,18 +516,18 @@ Overhead: 30kiB
 
 ## Compatibility
 
-In general, Scruse tries to be compatible with Jackson's default behaviour.
+In general, Jagger tries to be compatible with Jackson's default behaviour.
 Some of Jackson's annotations are supported, but not all and not each supported annotation is supported fully.
 
 ### Notable exceptions
 
 - With polymorphism, Jackson will always write and require a discriminator, even when explicitly limiting the type to a specific subtype.
-  Scruse will not write or require a discriminator when the subtype is known.
+  Jagger will not write or require a discriminator when the subtype is known.
 - Jackson requires `ParameterNamesModule` and compilation with the `-parameters` flag to support creator-based deserialization without
-  @JsonProperty annotations. Scruse does not require this since this information is always present during annotation processing.
-- Scruse will assign the default value of the property type to absent properties even when converters are used.
+  @JsonProperty annotations. Jagger does not require this since this information is always present during annotation processing.
+- Jagger will assign the default value of the property type to absent properties even when converters are used.
   Jackson will always use the converter and invoke it with its default argument - _I think_.
-  An example of this is that Scruse will initialize an absent `Optional<Optional<T>>` property with `Optional.empty()`
+  An example of this is that Jagger will initialize an absent `Optional<Optional<T>>` property with `Optional.empty()`
   whereas Jackson will instead initialize it with `Optional.of(Optional.empty())`.
   I asked here: https://github.com/FasterXML/jackson-modules-java8/issues/310
 

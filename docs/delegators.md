@@ -12,12 +12,12 @@
 
 ## Basics
 
-Scruse will delegate to other suitable `@JsonInput` and `@JsonOutput` methods whenever possible.
+Jagger will delegate to other suitable `@JsonInput` and `@JsonOutput` methods whenever possible.
 This is very important for keeping the generated code small.
 Take the following example:
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L24-L28
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features/DelegationSerde.java#L24-L28
 
 @JsonInput
 ScalarFieldsRecord deserializeSingle(JsonParser parser) throws Exception;
@@ -28,7 +28,7 @@ List<ScalarFieldsRecord> deserializeList(JsonParser parser) throws Exception;
 
 `deserializeList` will then refer to `deserializeSingle` instead of repeating the entire deserialization of `ScalarFieldsRecord`.
 ```java
-// ../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/DelegationSerde$SimpleDelegationSerdeImpl.java#L326-L343
+// ../jagger-tests/jagger-tests-jackson/target/generated-sources/annotations/org/tillerino/jagger/tests/base/features/DelegationSerde$SimpleDelegationSerdeImpl.java#L326-L343
 
 @Override
 public List<ScalarFieldsRecord> deserializeList(JsonParser parser) throws Exception {
@@ -54,7 +54,7 @@ public List<ScalarFieldsRecord> deserializeList(JsonParser parser) throws Except
 
 To organize your methods, you can use the `uses` attribute of the `@JsonConfig` annotation:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/PrimitiveScalarsSerde.java#L8-L10
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/PrimitiveScalarsSerde.java#L8-L10
 
 public interface PrimitiveScalarsSerde {
     @JsonOutput
@@ -62,7 +62,7 @@ public interface PrimitiveScalarsSerde {
 ```
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L62-L65
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features/DelegationSerde.java#L62-L65
 
 @JsonConfig(uses = PrimitiveScalarsSerde.class)
 interface BoxedScalarsSerde {
@@ -73,7 +73,7 @@ interface BoxedScalarsSerde {
 The implementation of `BoxedScalarsSerde` will then call instantiate and call the first serializer:
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/DelegationSerde$BoxedScalarsSerdeImpl.java#L23-L33
+// ../jagger-tests/jagger-tests-jackson/target/generated-sources/annotations/org/tillerino/jagger/tests/base/features/DelegationSerde$BoxedScalarsSerdeImpl.java#L23-L33
 
 public class DelegationSerde$BoxedScalarsSerdeImpl implements DelegationSerde.BoxedScalarsSerde {
   PrimitiveScalarsSerde primitiveScalarsSerde$0$delegate = new PrimitiveScalarsSerdeImpl();
@@ -94,7 +94,7 @@ To keep the generated code small and readable, it is recommended to build a libr
 Even something as simple as reading a `Float[]` generates a lot of code:
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/ScalarArraysSerdeImpl.java#L717-L759
+// ../jagger-tests/jagger-tests-jackson/target/generated-sources/annotations/org/tillerino/jagger/tests/base/ScalarArraysSerdeImpl.java#L717-L759
 
 public Float[] readBoxedFloatArray(JsonParser parser) throws Exception {
   if (!parser.hasCurrentToken()) {
@@ -146,7 +146,7 @@ common arrays, e.g. `double[]`, etc. This is how you would go about that:
 
 First, define primitive serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/PrimitiveScalarsSerde.java#L8-L19
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/PrimitiveScalarsSerde.java#L8-L19
 
 public interface PrimitiveScalarsSerde {
     @JsonOutput
@@ -165,7 +165,7 @@ public interface PrimitiveScalarsSerde {
 
 Then define boxed serializers that reuse the primitive serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L62-L74
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features/DelegationSerde.java#L62-L74
 
 @JsonConfig(uses = PrimitiveScalarsSerde.class)
 interface BoxedScalarsSerde {
@@ -185,7 +185,7 @@ interface BoxedScalarsSerde {
 
 Finally, define array serializers that reuse both primitive and boxed serializers:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L126-L138
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features/DelegationSerde.java#L126-L138
 
 @JsonConfig(uses = BoxedScalarsSerde.class)
 interface ScalarArraysSerde {
@@ -210,14 +210,14 @@ Note that `uses` works transitively,
 For recursive types, delegation is crucial. Without delegation, the generated code would have to be infinite.
 Take the following Type:
 ```java
-// ../scruse-tests/scruse-tests-base/src/main/java/org/tillerino/scruse/tests/model/features/DelegationModel.java#L12-L12
+// ../jagger-tests/jagger-tests-base/src/main/java/org/tillerino/jagger/tests/model/features/DelegationModel.java#L12-L12
 
 record SelfReferencingRecord(String prop, SelfReferencingRecord self) {}
 ```
 
 This type cannot be used in any other serialization without adding a dedicated serializer:
 ```java
-// ../scruse-tests/scruse-tests-jackson/src/main/java/org/tillerino/scruse/tests/base/features/DelegationSerde.java#L234-L238
+// ../jagger-tests/jagger-tests-jackson/src/main/java/org/tillerino/jagger/tests/base/features/DelegationSerde.java#L234-L238
 
 @JsonInput
 SelfReferencingRecord deserializeRecord(JsonParser input) throws Exception;
@@ -229,7 +229,7 @@ List<SelfReferencingRecord> deserializeList(JsonParser input) throws Exception;
 This is because when serializing `SelfReferencingRecord`, a recursive call must be made:
 
 ```java
-// ../scruse-tests/scruse-tests-jackson/target/generated-sources/annotations/org/tillerino/scruse/tests/base/features/DelegationSerde$SelfReferencingSerdeImpl.java#L66-L69
+// ../jagger-tests/jagger-tests-jackson/target/generated-sources/annotations/org/tillerino/jagger/tests/base/features/DelegationSerde$SelfReferencingSerdeImpl.java#L66-L69
 
 case "self": {
   self = this.deserializeRecord(input);
@@ -244,7 +244,7 @@ Any parameter that matches any of caller's parameters, is filled by the caller's
 This includes the parser/formatter and the de/serialization can be passed directly, but can be anything.
 You can pass around your own context objects, which you can use to build more elaborate features.
 
-Scruse will also create method references to instantiate functional interfaces (which is used for generics) and
+Jagger will also create method references to instantiate functional interfaces (which is used for generics) and
 class instances (which is used for generic array deserialization).
 
 It is recommended to keep the signatures of your prototypes as homogenous as possible, since that will allow deep
