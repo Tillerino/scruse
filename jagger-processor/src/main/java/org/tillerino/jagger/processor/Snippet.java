@@ -72,17 +72,17 @@ public interface Snippet {
         return concat(snippet.format(), snippet.args());
     }
 
-    static Snippet join(List<Snippet> snippets, String delimiter) {
+    static Snippet join(Collection<? extends Snippet> snippets, String delimiter) {
         return join(snippets, delimiter, "", "");
     }
 
-    static Snippet join(List<Snippet> snippets, String delimiter, String before, String after) {
+    static Snippet join(Collection<? extends Snippet> snippets, String delimiter, String before, String after) {
         String format = snippets.stream().map(Snippet::format).collect(Collectors.joining(delimiter, before, after));
         Object[] args = snippets.stream().flatMap(s -> Arrays.stream(s.args())).toArray();
         return Snippet.of(format, args);
     }
 
-    static Snippet joinPrependingCommaToEach(List<Snippet> snippets) {
+    static Snippet joinPrependingCommaToEach(Collection<? extends Snippet> snippets) {
         String format = snippets.stream().map(s -> ", " + s.format()).collect(Collectors.joining());
         Object[] args = snippets.stream().flatMap(s -> Arrays.stream(s.args())).toArray();
         return Snippet.of(format, args);

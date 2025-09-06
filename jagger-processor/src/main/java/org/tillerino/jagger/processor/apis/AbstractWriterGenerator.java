@@ -141,7 +141,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             TypeMirror idType = setup.finalIdType(type, utils);
             addStatement("$T $C = $C", idType, idVar, setup.previouslyWritten(rhs));
             beginControlFlow("if ($C != null)", idVar);
-            nest(idType, lhs, new Property("id", "id"), idVar, true, config.propagateTo(PropagationKind.PROPERTY))
+            nest(idType, lhs, new Property("id", "id", null), idVar, true, config.propagateTo(PropagationKind.PROPERTY))
                     .build();
             nextControlFlow("else");
         }
@@ -308,7 +308,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
                                 nest(
                                                 utils.commonTypes.string,
                                                 new LHS.Field("$S", new Object[] {polymorphism.discriminator()}),
-                                                new Property("discriminator", polymorphism.discriminator()),
+                                                new Property("discriminator", polymorphism.discriminator(), null),
                                                 new RHS.StringLiteral(child.name()),
                                                 false,
                                                 config.propagateTo(PropagationKind.PROPERTY))
@@ -352,7 +352,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
         referencesSetup.ifPresent(setup -> setup.generateId(rhs).ifPresent(id -> nest(
                         setup.idType(),
                         new LHS.Field("$S", new Object[] {setup.property()}),
-                        new Property("id", "id"),
+                        new Property("id", "id", null),
                         new AnySnippet(id, false),
                         true,
                         config.propagateTo(PropagationKind.PROPERTY))
@@ -379,7 +379,7 @@ public abstract class AbstractWriterGenerator<SELF extends AbstractWriterGenerat
             SELF nested = nest(
                     property.accessor().getAccessedType(),
                     lhs,
-                    new Property(property.canonicalName(), property.externalName()),
+                    new Property(property.canonicalName(), property.externalName(), property.config),
                     accessorCall,
                     true,
                     property.config().propagateTo(PropagationKind.PROPERTY));

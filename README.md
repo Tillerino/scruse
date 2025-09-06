@@ -395,7 +395,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 - [ ] JsonKey
 - [ ] JsonManagedReference
 - [ ] JsonMerge
-- [X] JsonProperty (only `value`)
+- [X] JsonProperty (`value` and `required`)
 - [ ] JsonPropertyDescription
 - [ ] JsonPropertyOrder
 - [ ] JsonRawValue

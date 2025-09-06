@@ -19,6 +19,7 @@ import org.tillerino.jagger.processor.config.ConfigProperty.InstantiatedProperty
 import org.tillerino.jagger.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.jagger.processor.config.ConfigProperty.PropagationKind;
 import org.tillerino.jagger.processor.features.*;
+import org.tillerino.jagger.processor.features.RequiredProperty;
 
 public final class AnyConfig {
     static final ConfigProperty[] available = {
@@ -31,6 +32,7 @@ public final class AnyConfig {
         IgnoreProperties.IGNORED_PROPERTIES,
         Verification.VERIFY_SYMMETRY,
         References.REFERENCES,
+        RequiredProperty.REQUIRED_PROPERTY,
         // leave a trailing comma for cleaner diffs :)
     };
 

@@ -1,6 +1,7 @@
 package org.tillerino.jagger.processor.apis;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 import static org.mapstruct.ap.internal.gem.CollectionMappingStrategyGem.SETTER_PREFERRED;
 import static org.tillerino.jagger.processor.Snippet.joinPrependingCommaToEach;
@@ -40,14 +41,11 @@ import org.tillerino.jagger.processor.config.AnyConfig;
 import org.tillerino.jagger.processor.config.ConfigProperty.InstantiatedProperty;
 import org.tillerino.jagger.processor.config.ConfigProperty.LocationKind;
 import org.tillerino.jagger.processor.config.ConfigProperty.PropagationKind;
+import org.tillerino.jagger.processor.features.*;
 import org.tillerino.jagger.processor.features.Creators.Creator;
-import org.tillerino.jagger.processor.features.Delegation;
 import org.tillerino.jagger.processor.features.Delegation.Delegatee;
 import org.tillerino.jagger.processor.features.Generics.TypeVar;
-import org.tillerino.jagger.processor.features.IgnoreProperties;
-import org.tillerino.jagger.processor.features.Polymorphism;
 import org.tillerino.jagger.processor.features.References.Setup;
-import org.tillerino.jagger.processor.features.UnknownProperties;
 import org.tillerino.jagger.processor.features.Verification.ProtoAndProps;
 import org.tillerino.jagger.processor.util.Exceptions;
 import org.tillerino.jagger.processor.util.InstantiatedMethod;
@@ -144,7 +142,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         AnyConfig nestedConfig = new AnyConfig(List.of(
                         new InstantiatedProperty(Delegation.DELEGATE_FROM, LocationKind.PROPERTY, false, "(internal)")))
                 .merge(config.propagateTo(PropagationKind.PROPERTY));
-        nest(idType, new Property("id", "id"), Variable.from(idVar), false, nestedConfig)
+        nest(idType, new Property("id", "id", null), Variable.from(idVar), false, nestedConfig)
                 .build(branch, false, false);
         ScopedVar resolvedVar = createVariable("resolved");
         addStatement(
@@ -523,7 +521,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         addStatement("$T $L = null", utils.commonTypes.string, discriminator.name());
         nest(
                         utils.commonTypes.string,
-                        new Property("discriminator", polymorphism.discriminator()),
+                        new Property("discriminator", polymorphism.discriminator(), null),
                         discriminator,
                         false,
                         config.propagateTo(PropagationKind.PROPERTY))
@@ -613,7 +611,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
             SELF nest = nest(
                     parameter.type(),
-                    new Property(parameter.name(), propertyName),
+                    new Property(parameter.name(), propertyName, propertyConfig),
                     new Variable(varName),
                     true,
                     propertyConfig.propagateTo(PropagationKind.PROPERTY));
@@ -663,7 +661,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             verificationForDto.addProperty(propertyName, accessor.getAccessedType(), propertyConfig);
             SELF nest = nest(
                     accessor.getAccessedType(),
-                    new Property(canonicalPropertyName, propertyName),
+                    new Property(canonicalPropertyName, propertyName, propertyConfig),
                     lhs,
                     true,
                     propertyConfig.propagateTo(PropagationKind.PROPERTY));
@@ -686,6 +684,11 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     return variable;
                 })
                 .orElse(null);
+
+        List<SELF> requiredProperties = properties.stream()
+                .filter(p -> RequiredProperty.isRequired(p.property.config()))
+                .toList();
+        Map<String, ScopedVar> propertyPresentByCanonicalName = createPropertyPresentBooleans(requiredProperties);
 
         iterateOverFields();
         startFieldCase(Branch.IF);
@@ -721,6 +724,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                     },
                     "property",
                     nest.property.serializedName());
+            ScopedVar presentVar = propertyPresentByCanonicalName.get(nest.property.canonicalName());
+            if (presentVar != null) {
+                addStatement("$C = true", presentVar);
+            }
             addStatement("break");
             endControlFlow();
         }
@@ -734,7 +741,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             beginControlFlow("case $S:", setup.property());
             nest(
                             setup.idType(),
-                            new Property(setup.property(), setup.property()),
+                            new Property(setup.property(), setup.property(), null),
                             LHS.Variable.from(idVar),
                             true,
                             config.propagateTo(PropagationKind.PROPERTY))
@@ -754,8 +761,39 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         endControlFlow(); // ends the last field
         elseThrowUnexpected("field name", lastCase);
         endControlFlow(); // ends the loop
+
+        for (SELF property : requiredProperties) {
+            addStatement(
+                    "if (!$C) throw new $T($S)",
+                    propertyPresentByCanonicalName.get(property.property.canonicalName()),
+                    IOException.class,
+                    "Missing property " + property.property.serializedName());
+        }
+
         afterObject();
         return idVar;
+    }
+
+    private Map<String, ScopedVar> createPropertyPresentBooleans(List<SELF> requiredProperties) {
+        Map<String, ScopedVar> propertyPresentByCanonicalName = requiredProperties.stream()
+                .collect(toMap(
+                        p -> p.property.canonicalName(),
+                        p -> createVariable(p.property.canonicalName() + "Present"),
+                        (x, y) -> {
+                            throw Exceptions.unexpected();
+                        },
+                        LinkedHashMap::new));
+
+        if (!requiredProperties.isEmpty()) {
+            addStatement(
+                    "boolean $C",
+                    Snippet.join(
+                            propertyPresentByCanonicalName.values().stream()
+                                    .map(v -> Snippet.of("$C = false", v))
+                                    .toList(),
+                            ", "));
+        }
+        return propertyPresentByCanonicalName;
     }
 
     private void elseThrowUnexpected(String typeName, boolean lastCase) {
