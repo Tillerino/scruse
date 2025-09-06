@@ -4,6 +4,7 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.*;
+import com.squareup.javapoet.TypeSpec.Builder;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
@@ -185,8 +187,13 @@ public class JaggerProcessor extends AbstractProcessor {
 
     private void generateCode(JaggerBlueprint blueprint) throws IOException {
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(blueprint.className.nameInCompilationUnit() + "Impl")
-                .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(blueprint.typeElement.asType());
+                .addModifiers(Modifier.PUBLIC);
+        if (blueprint.typeElement.getKind() == ElementKind.INTERFACE) {
+            classBuilder.addSuperinterface(blueprint.typeElement.asType());
+        } else {
+            classBuilder.superclass(blueprint.typeElement.asType());
+            copyConstructors(blueprint.typeElement, classBuilder);
+        }
         List<MethodSpec> methods = new ArrayList<>();
         GeneratedClass generatedClass = new GeneratedClass(classBuilder, utils, blueprint);
         for (JaggerPrototype method : blueprint.prototypes) {
@@ -220,6 +227,35 @@ public class JaggerProcessor extends AbstractProcessor {
             file.writeTo(writer);
         }
         generatedClass.verificationForBlueprint.finish();
+    }
+
+    private void copyConstructors(TypeElement type, Builder classBuilder) {
+        List<ExecutableElement> constructors = type.getEnclosedElements().stream()
+                .filter(e -> e.getKind() == ElementKind.CONSTRUCTOR)
+                .map(e -> (ExecutableElement) e)
+                .toList();
+        for (ExecutableElement superConstructor : constructors) {
+            MethodSpec.Builder builder = MethodSpec.constructorBuilder();
+
+            if (superConstructor.getParameters().isEmpty() && constructors.size() == 1) {
+                // only default constructor, so not necessary to generate anything
+                return;
+            }
+
+            for (VariableElement parameter : superConstructor.getParameters()) {
+                builder.addParameter(
+                        TypeName.get(parameter.asType()),
+                        parameter.getSimpleName().toString());
+            }
+
+            builder.addStatement(
+                    "super($L)",
+                    superConstructor.getParameters().stream()
+                            .map(p -> p.getSimpleName().toString())
+                            .collect(Collectors.joining(", ")));
+
+            classBuilder.addMethod(builder.build());
+        }
     }
 
     private MethodSpec generateMethod(JaggerPrototype method, GeneratedClass generatedClass) {

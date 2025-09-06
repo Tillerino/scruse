@@ -412,9 +412,7 @@ A checkmark indicates _basic_ compatibility, although there can be edge cases wh
 ## Roadmap
 
 ### Short-term
-- Sort out required properties.
 - Custom converters per property.
-- Abstract converter classes with constructors.
 
 ### Long-term
 
