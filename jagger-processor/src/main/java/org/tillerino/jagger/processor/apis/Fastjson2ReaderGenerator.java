@@ -60,13 +60,13 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     @Override
-    protected Snippet stringCase() {
+    protected Snippet stringCaseCondition() {
         return Snippet.of("$L.isString()", parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startNumberCase(Branch branch) {
-        branch.controlFlow(this, "$L.isNumber()", parserVariable.getSimpleName());
+    protected Snippet numberCaseCondition() {
+        return Snippet.of("$L.isNumber()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -75,22 +75,21 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     @Override
-    protected void startArrayCase(Branch branch) {
-        branch.controlFlow(this, "$L.nextIfArrayStart()", parserVariable.getSimpleName());
+    protected Snippet arrayCaseCondition() {
+        return Snippet.of("$L.nextIfArrayStart()", parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startBooleanCase(Branch branch) {
-        branch.controlFlow(
-                this,
+    protected Snippet booleanCaseCondition() {
+        return Snippet.of(
                 "$L.current() == 'f' || $L.current() == 't'",
                 parserVariable.getSimpleName(),
                 parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startFieldCase(Branch branch) {
-        branch.controlFlow(this, "$L.isString()", parserVariable.getSimpleName());
+    protected Snippet fieldCaseCondition() {
+        return Snippet.of("$L.isString()", parserVariable.getSimpleName());
     }
 
     @Override

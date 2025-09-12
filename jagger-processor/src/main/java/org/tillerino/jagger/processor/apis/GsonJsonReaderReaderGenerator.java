@@ -40,13 +40,13 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
     }
 
     @Override
-    protected Snippet stringCase() {
+    protected Snippet stringCaseCondition() {
         return Snippet.of("$L.peek() == $T.STRING", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
-    protected void startNumberCase(Branch branch) {
-        branch.controlFlow(this, "$L.peek() == $T.NUMBER", parserVariable.getSimpleName(), jsonToken());
+    protected Snippet numberCaseCondition() {
+        return Snippet.of("$L.peek() == $T.NUMBER", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
@@ -55,19 +55,18 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
     }
 
     @Override
-    protected void startArrayCase(Branch branch) {
-        branch.controlFlow(this, "$L.peek() == $T.BEGIN_ARRAY", parserVariable.getSimpleName(), jsonToken());
-        addStatement("$L.beginArray()", parserVariable.getSimpleName());
+    protected Snippet arrayCaseCondition() {
+        return Snippet.of("$T.isBeginArray($L, true)", GsonJsonReaderHelper.class, parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startBooleanCase(Branch branch) {
-        branch.controlFlow(this, "$L.peek() == $T.BOOLEAN", parserVariable.getSimpleName(), jsonToken());
+    protected Snippet booleanCaseCondition() {
+        return Snippet.of("$L.peek() == $T.BOOLEAN", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override
-    protected void startFieldCase(Branch branch) {
-        branch.controlFlow(this, "$L.peek() == $T.NAME", parserVariable.getSimpleName(), jsonToken());
+    protected Snippet fieldCaseCondition() {
+        return Snippet.of("$L.peek() == $T.NAME", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override

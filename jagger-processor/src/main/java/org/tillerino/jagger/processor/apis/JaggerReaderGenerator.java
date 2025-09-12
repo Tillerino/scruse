@@ -39,13 +39,13 @@ public class JaggerReaderGenerator extends AbstractReaderGenerator<JaggerReaderG
     }
 
     @Override
-    protected Snippet stringCase() {
+    protected Snippet stringCaseCondition() {
         return Snippet.of("$L.isText()", parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startNumberCase(Branch branch) {
-        branch.controlFlow(this, "$L.isNumber()", parserVariable.getSimpleName());
+    protected Snippet numberCaseCondition() {
+        return Snippet.of("$L.isNumber()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -54,18 +54,18 @@ public class JaggerReaderGenerator extends AbstractReaderGenerator<JaggerReaderG
     }
 
     @Override
-    protected void startArrayCase(Branch branch) {
-        branch.controlFlow(this, "$L.isArrayStart($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
+    protected Snippet arrayCaseCondition() {
+        return Snippet.of("$L.isArrayStart($L)", parserVariable.getSimpleName(), importAdvance(CONSUME));
     }
 
     @Override
-    protected void startBooleanCase(Branch branch) {
-        branch.controlFlow(this, "$L.isBoolean()", parserVariable.getSimpleName());
+    protected Snippet booleanCaseCondition() {
+        return Snippet.of("$L.isBoolean()", parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startFieldCase(Branch branch) {
-        branch.controlFlow(this, "$L.isFieldName()", parserVariable.getSimpleName());
+    protected Snippet fieldCaseCondition() {
+        return Snippet.of("$L.isFieldName()", parserVariable.getSimpleName());
     }
 
     @Override

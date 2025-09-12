@@ -181,21 +181,21 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         String typeName;
         switch (type.getKind()) {
             case BOOLEAN -> {
-                startBooleanCase(branch);
+                branch.controlFlow(this, booleanCaseCondition());
                 typeName = "boolean";
             }
             case BYTE, SHORT, INT, LONG -> {
-                startNumberCase(branch);
+                branch.controlFlow(this, numberCaseCondition());
                 typeName = "number";
             }
             case FLOAT, DOUBLE -> {
-                branch.controlFlow(this, stringCase());
+                branch.controlFlow(this, stringCaseCondition());
                 readNumberFromString(type);
-                startNumberCase(Branch.ELSE_IF);
+                ELSE_IF.controlFlow(this, numberCaseCondition());
                 typeName = "number";
             }
             case CHAR -> {
-                branch.controlFlow(this, stringCase());
+                branch.controlFlow(this, stringCaseCondition());
                 typeName = "string";
             }
             default -> throw new ContextedRuntimeException(type.getKind().toString());
@@ -307,13 +307,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readString(Branch branch, StringKind stringKind, boolean lastCase) {
-        branch.controlFlow(this, safeNonObjectCase(stringCase()));
+        branch.controlFlow(this, safeNonObjectCase(stringCaseCondition()));
         readString(stringKind);
         elseThrowUnexpected("string", lastCase);
     }
 
     private void readEnum(Branch branch, boolean lastCase) {
-        branch.controlFlow(this, stringCase());
+        branch.controlFlow(this, stringCaseCondition());
         {
             String enumValuesField = generatedClass.getOrCreateEnumField(type.getTypeMirror());
             Variable enumVar = Variable.from(createVariable("string"));
@@ -329,7 +329,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
     private void readArray(Branch branch, boolean lastCase) {
         Type componentType = type.getComponentType();
-        startArrayCase(branch);
+        branch.controlFlow(this, arrayCaseCondition());
         {
             TypeMirror rawComponentType = componentType.asRawType().getTypeMirror();
             TypeMirror rawRawComponentType =
@@ -389,7 +389,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             }
         }
         if (componentType.getTypeMirror().getKind() == TypeKind.BYTE) {
-            ELSE_IF.controlFlow(this, stringCase());
+            ELSE_IF.controlFlow(this, stringCaseCondition());
             ScopedVar stringVar = readStringInstead();
             addStatement(lhs.assign("$T.getDecoder().decode($C)", Base64.class, stringVar));
         }
@@ -397,7 +397,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readCollection(Branch branch, boolean lastCase) {
-        startArrayCase(branch);
+        branch.controlFlow(this, arrayCaseCondition());
         {
             Type componentType = type.determineTypeArguments(Iterable.class).get(0);
             TypeMirror collectionType = determineCollectionType();
@@ -447,8 +447,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readMap(Branch branch, boolean lastCase) {
-        Snippet cond = objectCaseCondition();
-        branch.controlFlow(this, cond.format(), flatten(cond.args()));
+        branch.controlFlow(this, objectCaseCondition());
         {
             Type keyType = type.determineTypeArguments(Map.class).get(0);
             if (!utils.types.isSameType(keyType.getTypeMirror(), utils.commonTypes.string)) {
@@ -459,7 +458,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             String varName = instantiateContainer(mapType);
             iterateOverFields();
             {
-                startFieldCase(Branch.IF);
+                IF.controlFlow(this, fieldCaseCondition());
                 String keyVar = createVariable("key").name();
                 readFieldNameInIteration(keyVar);
                 Exceptions.runWithContext(
@@ -495,13 +494,10 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     private void readObject(Branch branch, @Nullable Creator.Properties properties, boolean lastCase) {
         Snippet cond = objectCaseCondition();
         if (canBePolyChild) {
-            branch.controlFlow(
-                    this,
-                    "$L.isObjectOpen(true) || " + cond.format(),
-                    flatten(prototype.contextParameter().get(), cond.args()));
-        } else {
-            branch.controlFlow(this, cond.format(), cond.args());
+            cond = Snippet.of(
+                    "$L.isObjectOpen(true) || $C", prototype.contextParameter().get(), cond);
         }
+        branch.controlFlow(this, cond);
 
         if (properties != null) {
             readCreator(properties.method(), lastCase);
@@ -691,7 +687,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         Map<String, ScopedVar> propertyPresentByCanonicalName = createPropertyPresentBooleans(requiredProperties);
 
         iterateOverFields();
-        startFieldCase(Branch.IF);
+        Branch.IF.controlFlow(this, fieldCaseCondition());
         String fieldVar = createVariable("field").name();
         readFieldNameInIteration(fieldVar);
 
@@ -813,17 +809,17 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
 
     protected abstract void initializeParser();
 
-    protected abstract void startFieldCase(Branch branch);
+    protected abstract Snippet fieldCaseCondition();
 
-    protected abstract Snippet stringCase();
+    protected abstract Snippet stringCaseCondition();
 
-    protected abstract void startNumberCase(Branch branch);
+    protected abstract Snippet numberCaseCondition();
 
     protected abstract Snippet objectCaseCondition();
 
-    protected abstract void startArrayCase(Branch branch);
+    protected abstract Snippet arrayCaseCondition();
 
-    protected abstract void startBooleanCase(Branch branch);
+    protected abstract Snippet booleanCaseCondition();
 
     protected abstract Snippet nullCaseCondition();
 

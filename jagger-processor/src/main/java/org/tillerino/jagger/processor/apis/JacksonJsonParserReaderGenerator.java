@@ -40,13 +40,13 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
     }
 
     @Override
-    protected Snippet stringCase() {
+    protected Snippet stringCaseCondition() {
         return Snippet.of("$L.currentToken() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
     }
 
     @Override
-    protected void startNumberCase(Branch branch) {
-        branch.controlFlow(this, "$L.currentToken().isNumeric()", parserVariable.getSimpleName());
+    protected Snippet numberCaseCondition() {
+        return Snippet.of("$L.currentToken().isNumeric()", parserVariable.getSimpleName());
     }
 
     @Override
@@ -56,19 +56,19 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
     }
 
     @Override
-    protected void startArrayCase(Branch branch) {
-        branch.controlFlow(this, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("START_ARRAY"));
-        advance();
+    protected Snippet arrayCaseCondition() {
+        importHelper();
+        return Snippet.of("nextIfCurrentTokenIs($L, $L)", parserVariable.getSimpleName(), token("START_ARRAY"));
     }
 
     @Override
-    protected void startBooleanCase(Branch branch) {
-        branch.controlFlow(this, "$L.currentToken().isBoolean()", parserVariable.getSimpleName());
+    protected Snippet booleanCaseCondition() {
+        return Snippet.of("$L.currentToken().isBoolean()", parserVariable.getSimpleName());
     }
 
     @Override
-    protected void startFieldCase(Branch branch) {
-        branch.controlFlow(this, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("FIELD_NAME"));
+    protected Snippet fieldCaseCondition() {
+        return Snippet.of("$L.currentToken() == $L", parserVariable.getSimpleName(), token("FIELD_NAME"));
     }
 
     @Override

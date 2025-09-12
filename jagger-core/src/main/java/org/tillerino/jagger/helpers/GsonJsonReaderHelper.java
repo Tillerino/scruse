@@ -30,6 +30,16 @@ public class GsonJsonReaderHelper {
         return true;
     }
 
+    public static boolean isBeginArray(JsonReader parser, boolean advance) throws IOException {
+        if (parser.peek() != JsonToken.BEGIN_ARRAY) {
+            return false;
+        }
+        if (advance) {
+            parser.beginArray();
+        }
+        return true;
+    }
+
     public static boolean isNull(JsonReader parser, boolean advance) throws IOException {
         if (parser.peek() != JsonToken.NULL) {
             return false;
