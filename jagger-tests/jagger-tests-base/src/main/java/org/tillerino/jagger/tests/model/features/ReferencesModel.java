@@ -35,4 +35,10 @@ public interface ReferencesModel {
     sealed interface IntSequenceParent {
         record IntSequenceChild() implements IntSequenceParent {}
     }
+
+    @JsonIdentityInfo(generator = UUIDGenerator.class)
+    @JsonTypeInfo(use = Id.MINIMAL_CLASS)
+    sealed interface UuidParent {
+        record UuidChild() implements UuidParent {}
+    }
 }

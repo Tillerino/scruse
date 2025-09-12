@@ -189,13 +189,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
                 typeName = "number";
             }
             case FLOAT, DOUBLE -> {
-                startStringCase(branch);
+                branch.controlFlow(this, stringCase());
                 readNumberFromString(type);
                 startNumberCase(Branch.ELSE_IF);
                 typeName = "number";
             }
             case CHAR -> {
-                startStringCase(branch);
+                branch.controlFlow(this, stringCase());
                 typeName = "string";
             }
             default -> throw new ContextedRuntimeException(type.getKind().toString());
@@ -307,13 +307,13 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
     }
 
     private void readString(Branch branch, StringKind stringKind, boolean lastCase) {
-        startStringCase(branch);
+        branch.controlFlow(this, safeNonObjectCase(stringCase()));
         readString(stringKind);
         elseThrowUnexpected("string", lastCase);
     }
 
     private void readEnum(Branch branch, boolean lastCase) {
-        startStringCase(branch);
+        branch.controlFlow(this, stringCase());
         {
             String enumValuesField = generatedClass.getOrCreateEnumField(type.getTypeMirror());
             Variable enumVar = Variable.from(createVariable("string"));
@@ -389,7 +389,7 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             }
         }
         if (componentType.getTypeMirror().getKind() == TypeKind.BYTE) {
-            startStringCase(ELSE_IF);
+            ELSE_IF.controlFlow(this, stringCase());
             ScopedVar stringVar = readStringInstead();
             addStatement(lhs.assign("$T.getDecoder().decode($C)", Base64.class, stringVar));
         }
@@ -804,11 +804,18 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
         }
     }
 
+    private Snippet safeNonObjectCase(Snippet leCase) {
+        return prototype
+                .contextParameter()
+                .map(ctx -> Snippet.of("!$L.isObjectOpen(false) && $C", ctx, leCase))
+                .orElse(leCase);
+    }
+
     protected abstract void initializeParser();
 
     protected abstract void startFieldCase(Branch branch);
 
-    protected abstract void startStringCase(Branch branch);
+    protected abstract Snippet stringCase();
 
     protected abstract void startNumberCase(Branch branch);
 
@@ -952,6 +959,14 @@ public abstract class AbstractReaderGenerator<SELF extends AbstractReaderGenerat
             return switch (this) {
                 case IF -> code.beginControlFlow("if (" + s + ")", args);
                 case ELSE_IF -> code.nextControlFlow("else if (" + s + ")", args);
+            };
+        }
+
+        <T extends AbstractCodeGeneratorStack<T>> AbstractCodeGeneratorStack<T> controlFlow(
+                AbstractCodeGeneratorStack<T> code, Snippet snippet) {
+            return switch (this) {
+                case IF -> code.beginControlFlow("if ($C)", snippet);
+                case ELSE_IF -> code.nextControlFlow("else if ($C)", snippet);
             };
         }
     }

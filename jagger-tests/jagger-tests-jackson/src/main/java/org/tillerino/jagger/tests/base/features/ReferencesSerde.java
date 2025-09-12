@@ -13,6 +13,7 @@ import org.tillerino.jagger.converters.UuidOutputConverters;
 import org.tillerino.jagger.tests.base.features.DelegationSerde.BoxedScalarsSerde;
 import org.tillerino.jagger.tests.model.features.ReferencesModel.*;
 import org.tillerino.jagger.tests.model.features.ReferencesModel.IntSequenceParent.IntSequenceChild;
+import org.tillerino.jagger.tests.model.features.ReferencesModel.UuidParent.UuidChild;
 
 @JsonConfig(uses = {UuidInputConverters.class, UuidOutputConverters.class})
 public interface ReferencesSerde {
@@ -120,5 +121,20 @@ public interface ReferencesSerde {
         @JsonInput
         List<IntSequenceChild> readListOfIntSequenceChild(JsonParser parser, DeserializationContext ctx)
                 throws Exception;
+    }
+
+    @JsonConfig(uses = {UuidInputConverters.class, UuidOutputConverters.class})
+    interface PolyWithDelegatorReferencesSerde {
+        @JsonOutput
+        void writeParent(UuidParent parent, JsonGenerator gen, SerializationContext ctx) throws Exception;
+
+        @JsonInput
+        UuidParent readParent(JsonParser parser, DeserializationContext ctx) throws Exception;
+
+        @JsonOutput
+        void writeChild(UuidChild parent, JsonGenerator gen, SerializationContext ctx) throws Exception;
+
+        @JsonInput
+        UuidChild readChild(JsonParser parser, DeserializationContext ctx) throws Exception;
     }
 }

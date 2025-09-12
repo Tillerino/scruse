@@ -40,8 +40,8 @@ public class GsonJsonReaderReaderGenerator extends AbstractReaderGenerator<GsonJ
     }
 
     @Override
-    protected void startStringCase(Branch branch) {
-        branch.controlFlow(this, "$L.peek() == $T.STRING", parserVariable.getSimpleName(), jsonToken());
+    protected Snippet stringCase() {
+        return Snippet.of("$L.peek() == $T.STRING", parserVariable.getSimpleName(), jsonToken());
     }
 
     @Override

@@ -39,8 +39,8 @@ public class JaggerReaderGenerator extends AbstractReaderGenerator<JaggerReaderG
     }
 
     @Override
-    protected void startStringCase(Branch branch) {
-        branch.controlFlow(this, "$L.isText()", parserVariable.getSimpleName());
+    protected Snippet stringCase() {
+        return Snippet.of("$L.isText()", parserVariable.getSimpleName());
     }
 
     @Override

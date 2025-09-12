@@ -13,9 +13,11 @@ import org.tillerino.jagger.api.DeserializationContext;
 import org.tillerino.jagger.api.SerializationContext;
 import org.tillerino.jagger.tests.ReferenceTest;
 import org.tillerino.jagger.tests.SerdeUtil;
+import org.tillerino.jagger.tests.base.features.ReferencesSerde.PolyWithDelegatorReferencesSerde;
 import org.tillerino.jagger.tests.base.features.ReferencesSerde.ReferenceInheritanceSerde;
 import org.tillerino.jagger.tests.model.features.ReferencesModel.*;
 import org.tillerino.jagger.tests.model.features.ReferencesModel.IntSequenceParent.IntSequenceChild;
+import org.tillerino.jagger.tests.model.features.ReferencesModel.UuidParent.UuidChild;
 
 class ReferencesTest extends ReferenceTest {
     ReferencesSerde serde = SerdeUtil.impl(ReferencesSerde.class);
@@ -131,6 +133,18 @@ class ReferencesTest extends ReferenceTest {
             List<IntSequenceChild> list = inputUtils.deserialize2(
                     "[ { \"@id\": 1 }, 1 ]", new DeserializationContext(), serde::readListOfIntSequenceChild);
             assertThat(list.get(0)).isSameAs(list.get(1));
+        }
+    }
+
+    @Nested
+    class PolyWithDelegatorTest {
+        PolyWithDelegatorReferencesSerde serde = SerdeUtil.impl(PolyWithDelegatorReferencesSerde.class);
+
+        @Test
+        void roundTripParent() throws Exception {
+            UuidParent parent = new UuidChild();
+            String json = outputUtils.serialize2(parent, new SerializationContext(), serde::writeParent);
+            UuidParent deser = inputUtils.deserialize2(json, new DeserializationContext(), serde::readParent);
         }
     }
 }

@@ -60,8 +60,8 @@ public class Fastjson2ReaderGenerator extends AbstractReaderGenerator<Fastjson2R
     }
 
     @Override
-    protected void startStringCase(Branch branch) {
-        branch.controlFlow(this, "$L.isString()", parserVariable.getSimpleName());
+    protected Snippet stringCase() {
+        return Snippet.of("$L.isString()", parserVariable.getSimpleName());
     }
 
     @Override

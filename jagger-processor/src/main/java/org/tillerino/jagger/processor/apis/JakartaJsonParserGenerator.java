@@ -40,8 +40,8 @@ public class JakartaJsonParserGenerator extends AbstractReaderGenerator<JakartaJ
     }
 
     @Override
-    protected void startStringCase(Branch branch) {
-        branch.controlFlow(this, "$L.currentEvent() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
+    protected Snippet stringCase() {
+        return Snippet.of("$L.currentEvent() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
     }
 
     @Override

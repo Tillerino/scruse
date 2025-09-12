@@ -40,8 +40,8 @@ public class JacksonJsonParserReaderGenerator extends AbstractReaderGenerator<Ja
     }
 
     @Override
-    protected void startStringCase(Branch branch) {
-        branch.controlFlow(this, "$L.currentToken() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
+    protected Snippet stringCase() {
+        return Snippet.of("$L.currentToken() == $L", parserVariable.getSimpleName(), token("VALUE_STRING"));
     }
 
     @Override
